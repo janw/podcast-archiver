@@ -28,6 +28,7 @@ import sys
 import getopt
 import feedparser
 from urllib.request import urlopen
+import urllib.error
 from shutil import copyfileobj
 from os import path,remove,makedirs
 from string import ascii_letters, digits
@@ -152,8 +153,11 @@ def download_archive(nextPage):
             continue
 
         # Begin downloading
-        with urlopen(link) as response, open(filename, 'wb') as outfile:
-            copyfileobj(response, outfile)
+        try:
+            with urlopen(link) as response, open(filename, 'wb') as outfile:
+                copyfileobj(response, outfile)
+        except urllib.error.HTTPError as error:
+            print(" - Query returned", error, end="", flush=True)
 
 
 def parse_episode(episode):
