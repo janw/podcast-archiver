@@ -113,8 +113,7 @@ def download_archive(nextPage):
             # Create the subdir, if it does not exist
             if not path.isdir(curbasedir):
                 makedirs(curbasedir)
-        # print(feedobj)
-        # return
+
         for link in feedobj['feed']['links']:
             if link['rel'] == 'next':
                 nextPage = link['href']
