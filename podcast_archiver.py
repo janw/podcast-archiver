@@ -128,7 +128,8 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
 
         # Delete the current (incomplete) file
-        global filename
-        remove(filename)
-        print("\nQuit.")
-
+        try:
+            remove(filename)
+        except FileNotFoundError:
+            pass
+        print("\nQuit early.")
