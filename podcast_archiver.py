@@ -121,17 +121,11 @@ def download_archive(nextPage):
                 break
 
         for episode in feedobj['items']:
-            for link in episode['links']:
-                if link['type'] == 'audio/mp4':
-                    linklist.append(link['href'])
-                elif link['type'] == 'audio/mpeg':
-                    linklist.append(link['href'])
-                elif link['type'] == 'audio/ogg':
-                    linklist.append(link['href'])
-                elif link['type'] == 'audio/oga':
-                    linklist.append(link['href'])
-                elif link['type'] == 'audio/opus':
-                    linklist.append(link['href'])
+            linklist.append(parse_episode(episode))
+
+        if len(linklist) == 0:
+            for episode in feedobj['entries']:
+                linklist.append(parse_episode(episode))
 
 
     linklist.reverse()
@@ -160,6 +154,25 @@ def download_archive(nextPage):
         # Begin downloading
         with urlopen(link) as response, open(filename, 'wb') as outfile:
             copyfileobj(response, outfile)
+
+
+def parse_episode(episode):
+    url = None
+    for link in episode['links']:
+        if link['type'] == 'audio/mp4':
+            url = link['href']
+        elif link['type'] == 'audio/mpeg':
+            url = link['href']
+        elif link['type'] == 'audio/mp3':
+            url = link['href']
+        elif link['type'] == 'audio/ogg':
+            url = link['href']
+        elif link['type'] == 'audio/oga':
+            url = link['href']
+        elif link['type'] == 'audio/opus':
+            url = link['href']
+
+    return url
 
 
 if __name__ == "__main__":
