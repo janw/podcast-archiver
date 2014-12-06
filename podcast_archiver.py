@@ -104,7 +104,7 @@ def download_archive(nextPage):
 
             # Get subdir name and sanitize it
             subdir = feedobj['feed']['title']
-            if path.supports_unicode_filenames:
+            if not path.supports_unicode_filenames:
                 valid_chars = "-_.() %s%s" % (ascii_letters, digits)
                 subdir = ''.join(c for c in subdir if c in valid_chars)
 
