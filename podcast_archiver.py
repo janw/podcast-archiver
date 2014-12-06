@@ -29,13 +29,16 @@ import getopt
 import feedparser
 from urllib.request import urlopen
 from shutil import copyfileobj
-from os import path
+from os import path,remove
 
 
 verbose = 1
+savedir = ''
+filename = ''
 
 def main():
     global verbose
+    global savedir
     # Parse input arguments
     try:
         opts, args = getopt.getopt(sys.argv[1:],
@@ -71,6 +74,8 @@ def main():
 
 
 def download_archive(nextPage):
+    global savedir
+    global filename
     if (verbose > 0): print("1. Gathering link list ..", end="")
 
     linklist = []
