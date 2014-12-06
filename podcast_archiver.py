@@ -177,6 +177,8 @@ def parse_episode(episode):
     for link in episode['links']:
         if link['type'] == 'audio/mp4':
             url = link['href']
+        elif link['type'] == 'audio/x-m4a':
+            url = link['href']
         elif link['type'] == 'audio/mpeg':
             url = link['href']
         elif link['type'] == 'audio/mp3':
