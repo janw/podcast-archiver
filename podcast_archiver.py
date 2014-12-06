@@ -29,21 +29,24 @@ import getopt
 import feedparser
 from urllib.request import urlopen
 from shutil import copyfileobj
-from os import path,remove
+from os import path,remove,makedirs
+from string import ascii_letters, digits
 
 
 verbose = 1
 savedir = ''
 filename = ''
+subdirs = False
 
 def main():
     global verbose
     global savedir
+    global subdirs
     # Parse input arguments
     try:
         opts, args = getopt.getopt(sys.argv[1:],
-                                   "f:d:v",
-                                   ["feed=", "dir=", "verbose"])
+                                   "f:d:vs",
+                                   ["feed=", "dir=", "verbose", "subdirs"])
     except getopt.GetoptError as error:
         print("An error occured during input parsing: " + error.msg)
         return
@@ -60,6 +63,8 @@ def main():
                  return
         elif opt[0] == '-v' or opt[0] == '--verbose':
             verbose += 1
+        elif opt[0] == '-s' or opt[0] == '--subdirs':
+            subdirs = True
     print(feedlist)
 
     if verbose > 1:
@@ -67,7 +72,7 @@ def main():
 
     for feed in feedlist:
         if verbose > 0:
-            print("Downloading archive for: " + feed)
+            print("\nDownloading archive for: " + feed)
         download_archive(feed)
         if verbose > 0:
             print("\n ... Done.")
@@ -77,6 +82,7 @@ def main():
 def download_archive(nextPage):
     global savedir
     global filename
+
     if (verbose > 0): print("1. Gathering link list ..", end="")
 
     linklist = []
@@ -85,6 +91,25 @@ def download_archive(nextPage):
         feedobj = feedparser.parse(nextPage)
 
         nextPage = None
+
+        if len(linklist) == 0 and subdirs:
+
+            # Get subdir name and sanitize it
+            subdir = feedobj['feed']['title']
+            if path.supports_unicode_filenames:
+                valid_chars = "-_.() %s%s" % (ascii_letters, digits)
+                subdir = ''.join(c for c in subdir if c in valid_chars)
+
+            subdir.replace(path.pathsep,'_')
+            subdir.replace(path.sep,'_')
+
+            curbasedir = path.join(savedir, subdir, '')
+
+            # Create the subdir, if it does not exist
+            if not path.isdir(curbasedir):
+                makedirs(curbasedir)
+        # print(feedobj)
+        # return
         for link in feedobj['feed']['links']:
             if link['rel'] == 'next':
                 nextPage = link['href']
@@ -115,7 +140,10 @@ def download_archive(nextPage):
                   .format(cnt+1, nlinks, link), end="", flush=True)
 
         # Generate local path and check for existence
-        filename = path.join(savedir, path.basename(link))
+        if subdirs:
+            filename = path.join(curbasedir, path.basename(link))
+        else:
+            filename = path.join(savedir, path.basename(link))
         if path.isfile(filename):
             continue
 
