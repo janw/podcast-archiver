@@ -118,5 +118,12 @@ def download_archive(nextPage):
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+
+        # Delete the current (incomplete) file
+        global filename
+        remove(filename)
+        print("\nQuit.")
 
