@@ -110,6 +110,9 @@ def download_archive(nextPage):
 
         filename = path.join(savedir, path.basename(link))
 
+        if path.isfile(filename):
+            continue
+
         with urlopen(link) as response, open(filename, 'wb') as outfile:
             copyfileobj(response, outfile)
 
