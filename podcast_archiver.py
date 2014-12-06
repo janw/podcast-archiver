@@ -66,7 +66,6 @@ def main():
             verbose += 1
         elif opt[0] == '-s' or opt[0] == '--subdirs':
             subdirs = True
-    print(feedlist)
 
     if verbose > 1:
         print("Verbose level: ", verbose-1)
