@@ -99,6 +99,7 @@ def download_archive(nextPage):
                 elif link['type'] == 'audio/ogg':
                     linklist.append(link['href'])
 
+    linklist.reverse()
     nlinks = len(linklist)
 
     if (verbose > 0):
