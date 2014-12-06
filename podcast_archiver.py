@@ -91,9 +91,12 @@ def download_archive(nextPage):
         feedobj = feedparser.parse(nextPage)
 
         # Escape improper feed-URL
-        if feedobj['status'] == 404:
-            print("\nQuery returned 404 (Not Found) on ", nextPage)
-            return
+        try:
+            if feedobj['status'] == 404:
+                print("\nQuery returned 404 (Not Found) on ", nextPage)
+                return
+        except:
+            pass
 
         nextPage = None
 
