@@ -8,6 +8,9 @@ In my experience, very few full-fledged podcast clients are able to access a pag
 
 Before downloading any episode the function first fetches all available pages of the feed and prepares a list. That way, you will never miss any episode.
 
+## Requirements
+
+`podcast_archiver.py` requires Python 3+ and the `feedparser` library (among others, which are installed with Python by default).
 
 ## Usage
 
@@ -20,7 +23,7 @@ Before downloading any episode the function first fetches all available pages of
 * 
 Here's a full-fledged example of how I use `podcast_archiver`:
 ```
-./podcast_archiver.py -d /Users/janwillhaus/Music/Podcasts -s \
+python3 podcast_archiver.py -d /Users/janwillhaus/Music/Podcasts -s \
     -f http://freakshow.fm/feed/m4a/ \
     -f http://alternativlos.org/alternativlos.rss \
     -f http://logbuch-netzpolitik.de/feed/m4a \
