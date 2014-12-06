@@ -90,6 +90,11 @@ def download_archive(nextPage):
         print(".", end="", flush=True)
         feedobj = feedparser.parse(nextPage)
 
+        # Escape improper feed-URL
+        if feedobj['status'] == 404:
+            print("\nQuery returned 404 (Not Found) on ", nextPage)
+            return
+
         nextPage = None
 
         if len(linklist) == 0 and subdirs:
