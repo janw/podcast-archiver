@@ -70,7 +70,7 @@ def main():
     return
 
 
-def download_archive(feed):
+def download_archive(nextPage):
     if (verbose > 0): print("1. Gathering link list ..", end="")
 
     linklist = []
@@ -93,12 +93,21 @@ def download_archive(feed):
                 elif link['type'] == 'audio/ogg':
                     linklist.append(link['href'])
 
-    if (verbose > 0):
-        print(" {0:d} episodes.\n2. Downloading content .."
-              .format(len(linklist)), end="")
+    nlinks = len(linklist)
 
-    for link in linklist:
-        print(".", end="", flush=True)
+    if (verbose > 0):
+        print(" {0:d} episodes.\n2. Downloading content ... "
+              .format(nlinks), end="")
+
+
+    for cnt, link in enumerate(linklist):
+        if verbose == 1:
+            print("{0}/{1}"
+                  .format(cnt,nlinks), end="", flush=True)
+        elif verbose > 1:
+            print("\nDownloading file no. {0}/{1}:\n{2}"
+                  .format(cnt,nlinks,link), end="", flush=True)
+
         filename = path.join(savedir, path.basename(link))
 
         with urlopen(link) as response, open(filename, 'wb') as outfile:
