@@ -48,7 +48,6 @@ def main():
         print("An error occured during input parsing: " + error.msg)
         return
 
-    print(opts,args)
     feedlist = []
     for opt in opts:
         if opt[0] == '-f' or opt[0] == '--feed':
@@ -70,6 +69,8 @@ def main():
         if verbose > 0:
             print("Downloading archive for: " + feed)
         download_archive(feed)
+        if verbose > 0:
+            print("\n ... Done.")
     return
 
 
@@ -104,20 +105,20 @@ def download_archive(nextPage):
         print(" {0:d} episodes.\n2. Downloading content ... "
               .format(nlinks), end="")
 
-
     for cnt, link in enumerate(linklist):
         if verbose == 1:
             print("{0}/{1}"
-                  .format(cnt,nlinks), end="", flush=True)
+                  .format(cnt+1, nlinks), end="", flush=True)
         elif verbose > 1:
             print("\nDownloading file no. {0}/{1}:\n{2}"
-                  .format(cnt,nlinks,link), end="", flush=True)
+                  .format(cnt+1, nlinks, link), end="", flush=True)
 
+        # Generate local path and check for existence
         filename = path.join(savedir, path.basename(link))
-
         if path.isfile(filename):
             continue
 
+        # Begin downloading
         with urlopen(link) as response, open(filename, 'wb') as outfile:
             copyfileobj(response, outfile)
 
