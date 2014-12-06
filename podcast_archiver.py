@@ -119,13 +119,24 @@ def download_archive(nextPage):
                 nextPage = link['href']
                 break
 
+        # Try different feed episode layouts. 1st: 'items'
         for episode in feedobj['items']:
             linklist.append(parse_episode(episode))
 
+        linklist = [x for x in linklist if x is not None]
+
+        # Try different feed episode layouts. 1st: 'entries'
         if len(linklist) == 0:
             for episode in feedobj['entries']:
                 linklist.append(parse_episode(episode))
 
+            linklist = [x for x in linklist if x is not None]
+
+        # Exit gracefully when no episodes have been found
+        if len(linklist) == 0:
+            print("No audio items have been found.",
+                  "Maybe we don't know the feed's audio MIME type yet?")
+            return
 
     linklist.reverse()
     nlinks = len(linklist)
