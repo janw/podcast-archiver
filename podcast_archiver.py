@@ -136,6 +136,9 @@ def download_archive(nextPage):
         if len(linklist) == 0:
             print("No audio items have been found.",
                   "Maybe we don't know the feed's audio MIME type yet?")
+            print("Suggestions (as defined in the feed's 'links' field:)")
+            for link in episode['links']:
+                print(link["type"])
             return
 
     linklist.reverse()
