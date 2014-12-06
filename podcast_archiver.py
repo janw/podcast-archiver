@@ -94,7 +94,7 @@ def download_archive(nextPage):
             for link in episode['links']:
                 if link['type'] == 'audio/mp4':
                     linklist.append(link['href'])
-                elif link['type'] == 'audio/mp3':
+                elif link['type'] == 'audio/mpeg':
                     linklist.append(link['href'])
                 elif link['type'] == 'audio/ogg':
                     linklist.append(link['href'])
