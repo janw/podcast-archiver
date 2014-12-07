@@ -114,20 +114,6 @@ def download_archive(nextPage):
 
             # Get subdir name and sanitize it
             subdir = feedobj['feed']['title']
-            # if not path.supports_unicode_filenames:
-            #     # Special replacements for german umlauts
-            #     subdir.replace(u'\u00e4', 'ae')
-            #     subdir.replace(u'\u00c4', 'Ae')
-            #     subdir.replace(u'\u00f6', 'oe')
-            #     subdir.replace(u'\u00d6', 'Oe')
-            #     subdir.replace(u'\u00fc', 'ue')
-            #     subdir.replace(u'\u00dc', 'Ue')
-            #     subdir.replace(u'\u00df', 'ss')
-
-            #     # Trim name down to pure ascii, just to be save
-            #     valid_chars = "-_.() %s%s" % (ascii_letters, digits)
-            #     subdir = ''.join(c for c in subdir if c in valid_chars)
-
             subdir.replace(path.pathsep,'_')
             subdir.replace(path.sep,'_')
 
