@@ -38,16 +38,22 @@ verbose = 1
 savedir = ''
 filename = ''
 subdirs = False
+update = False
 
 def main():
     global verbose
     global savedir
     global subdirs
+    global update
     # Parse input arguments
     try:
         opts, args = getopt.getopt(sys.argv[1:],
-                                   "f:d:vs",
-                                   ["feed=", "dir=", "verbose", "subdirs"])
+                                   "f:d:vsu", [
+                                   "feed=",
+                                   "dir=",
+                                   "verbose",
+                                   "subdirs",
+                                   "update"])
     except getopt.GetoptError as error:
         print("An error occured during input parsing: " + error.msg)
         return
@@ -66,9 +72,14 @@ def main():
             verbose += 1
         elif opt[0] == '-s' or opt[0] == '--subdirs':
             subdirs = True
+        elif opt[0] == '-u' or opt[0] == '--update':
+            update = True
 
     if verbose > 1:
         print("Verbose level: ", verbose-1)
+
+    if verbose > 0 and update:
+        print("Updating archive")
 
     for feed in feedlist:
         if verbose > 0:
@@ -143,6 +154,24 @@ def download_archive(nextPage):
             for link in episode['links']:
                 print(link["type"])
             return
+
+        # On given option, run an update, break at first existing episode
+        if update:
+            curlenlinklist = len(linklist)
+
+            for cnt, link in enumerate(linklist):
+
+                # Generate local path and check for existence
+                if subdirs:
+                    filename = path.join(curbasedir, path.basename(link))
+                else:
+                    filename = path.join(savedir, path.basename(link))
+                if path.isfile(filename):
+                    del(linklist[cnt:])
+                    break
+
+            if len(linklist) != curlenlinklist:
+                break
 
     linklist.reverse()
     nlinks = len(linklist)
