@@ -19,6 +19,7 @@ Before downloading any episode the function first fetches all available pages of
 * `-f <url>` / `--feed=<url>`: Provide a feed-url that is to be archived. `-f` can be used multiple times, so you may hand over more than one feed to archive. To keep everything neat and tidy, see the `-s` option down below.
 * `-d <path>` / `--dir=<path`: Specify the output directory for the archive, denoted by `<path>`. If omitted, the files are written to the current directory.
 * `-s` / `--subdirs`: Create subdirectories for the provided feeds. This option enables reading the title of the feed and saving the episodes to a subdir of that title (of course invalid characters are removed first).
+* `-u` / `--update.`: Only update the archive. Meaning: The fetching of the feed pages (which can be slow at time) is interrupted when the first episode is detected that already has an audio file present in the archive. This option might be used, if you already have created an archive and just want to add the most recent (not yet downloaded) episode(s).
 * `-v` / `--verbose`: Increase verbose level. In level 1 for example all download paths are shown. By default, `podcast_archiver` shows basic output on how many episodes are downloaded and shows the progress on those. Multiple `v`'s each increase the verbosity (currently only level 1 is used)
 * 
 Here's a full-fledged example of how I use `podcast_archiver`:
@@ -36,7 +37,6 @@ python3 podcast_archiver.py -d /Users/janwillhaus/Music/Podcasts -s \
 
 ## Todo
 
-* Add ability to only add the latest episodes (without scanning *all* the feed pages). For example as `-u` / `--update.`
 * Add ability to define a preferred format on feeds that contain links for multiple audio codecs.
 * Add ability to define a range of episodes or time to download only episode from that point on or from there to the beginning or or or …
 * Add ability to choose a prefix episodes with the episode number (rarely necessary, since most podcasts feature some kind of episode numbering in the filename)
