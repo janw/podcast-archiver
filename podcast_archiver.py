@@ -66,8 +66,8 @@ def main():
             if path.isdir(opt[1]):
                 savedir = opt[1]
             else:
-                 print("The provided directory does not exist")
-                 return
+                print("The provided directory does not exist")
+                return
         elif opt[0] == '-v' or opt[0] == '--verbose':
             verbose += 1
         elif opt[0] == '-s' or opt[0] == '--subdirs':
@@ -94,7 +94,8 @@ def download_archive(nextPage):
     global savedir
     global filename
 
-    if (verbose > 0): print("1. Gathering link list ..", end="")
+    if verbose > 0:
+        print("1. Gathering link list ..", end="")
 
     linklist = []
     while nextPage is not None:
