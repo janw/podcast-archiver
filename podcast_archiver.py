@@ -85,8 +85,6 @@ def main():
         if verbose > 0:
             print("\nDownloading archive for: " + feed)
         download_archive(feed)
-        if verbose > 0:
-            print("\n ... Done.")
     return
 
 
@@ -177,6 +175,11 @@ def download_archive(nextPage):
     linklist.reverse()
     nlinks = len(linklist)
 
+    if nlinks == 0:
+        if verbose > 0:
+            print("Nothing to do.")
+        return
+
     if (verbose > 0):
         print(" {0:d} episodes.\n2. Downloading content ... "
               .format(nlinks), end="")
@@ -203,6 +206,9 @@ def download_archive(nextPage):
                 copyfileobj(response, outfile)
         except urllib.error.HTTPError as error:
             print(" - Query returned", error, end="", flush=True)
+
+    if verbose > 0:
+            print("\n ... Done.")
 
 
 def parse_episode(episode):
