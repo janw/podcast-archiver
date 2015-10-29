@@ -84,12 +84,7 @@ def main():
 
             else:
                 print("The provided OPML file does not exist")
-
-
-
-            print(feedlist)
-            return 0
-
+                
         elif opt[0] == '-d' or opt[0] == '--dir':
             if path.isdir(opt[1]):
                 savedir = opt[1]
