@@ -213,21 +213,9 @@ def download_archive(nextPage):
 def parse_episode(episode):
     url = None
     for link in episode['links']:
-        if link['type'] == 'audio/mp4':
+        if link['type'].startswith('audio'):
             url = link['href']
-        elif link['type'] == 'audio/x-m4a':
-            url = link['href']
-        elif link['type'] == 'audio/mpeg':
-            url = link['href']
-        elif link['type'] == 'audio/mp3':
-            url = link['href']
-        elif link['type'] == 'audio/ogg':
-            url = link['href']
-        elif link['type'] == 'audio/oga':
-            url = link['href']
-        elif link['type'] == 'audio/opus':
-            url = link['href']
-        elif link['type'] == 'audio/x-mpeg':
+        elif link['type'].startswith('video'):
             url = link['href']
 
     return url
