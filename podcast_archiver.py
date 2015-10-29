@@ -177,12 +177,12 @@ def download_archive(nextPage):
         return
 
     if (verbose > 0):
-        print(" {0:d} episodes.\n2. Downloading content ... "
+        print(" {0:d} episodes.\n2. Downloading content ... \n"
               .format(nlinks), end="")
 
     for cnt, link in enumerate(linklist):
         if verbose == 1:
-            print("{0}/{1}"
+            print("\r{0}/{1}"
                   .format(cnt+1, nlinks), end="", flush=True)
         elif verbose > 1:
             print("\nDownloading file no. {0}/{1}:\n{2}"
