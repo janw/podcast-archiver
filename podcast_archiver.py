@@ -48,7 +48,8 @@ def main():
     # Parse input arguments
     try:
         opts, args = getopt.getopt(sys.argv[1:],
-                                   "f:d:vsu", [
+                                   "o:f:d:vsu", [
+                                   "opml=",
                                    "feed=",
                                    "dir=",
                                    "verbose",
@@ -65,6 +66,30 @@ def main():
                 feedlist += open(opt[1],'r').read().strip().splitlines()
             else:
                 feedlist.append(opt[1])
+        if opt[0] == '-o' or opt[0] == '--opml':
+            if path.isfile(opt[1]):
+                import xml.etree.ElementTree as etree
+                tree = etree.parse(opt[1])
+
+                for node in tree.iter():
+                    if node.tag == 'outline':
+                        if node.get('type') != 'rss':
+                            continue
+
+                        url = node.get('xmlUrl')
+                        if url is None:
+                            continue
+                        else:
+                            feedlist.append(node.get('xmlUrl'))
+
+            else:
+                print("The provided OPML file does not exist")
+
+
+
+            print(feedlist)
+            return 0
+
         elif opt[0] == '-d' or opt[0] == '--dir':
             if path.isdir(opt[1]):
                 savedir = opt[1]
