@@ -17,6 +17,7 @@ Before downloading any episode the function first fetches all available pages of
 `podcast_archiver.py` takes command line arguments, containing for example the feeds that are supposed to be archived:
 
 * `-f <url>` / `--feed=<url>`: Provide a feed-url that is to be archived. `-f` can be used multiple times, so you may hand over more than one feed to archive. To keep everything neat and tidy, see the `-s` option down below.
+* `-f <filename>` / `--feed=<filename>`: Provide one or multiple feed urls by prodivind a simple text file, containing one feed url per line. To keep everything neat and tidy, see the `-s` option down below.
 * `-d <path>` / `--dir=<path`: Specify the output directory for the archive, denoted by `<path>`. If omitted, the files are written to the current directory.
 * `-s` / `--subdirs`: Create subdirectories for the provided feeds. This option enables reading the title of the feed and saving the episodes to a subdir of that title (of course invalid characters are removed first).
 * `-u` / `--update.`: Only update the archive. Meaning: The fetching of the feed pages (which can be slow at time) is interrupted when the first episode is detected that already has an audio file present in the archive. This option might be used, if you already have created an archive and just want to add the most recent (not yet downloaded) episode(s).
@@ -36,23 +37,25 @@ python3 podcast_archiver.py -d /Users/janwillhaus/Music/Podcasts -s \
 
 ### Process the feed list from a file
 
-If you have a larger list of podcasts and/or want to update the archive on a cronjob basis, the `-f` argument can be outsourced into a text file like this:
+** Recently changed syntax **
+
+If you have a larger list of podcasts and/or want to update the archive on a cronjob basis, the `-f` argument can be outsourced into a text file. The text file may contain one feed URL per line, looking like this:
 ```bash
-python3 podcast_archiver.py -d ~/Music/Podcasts -s -u $(< feedlist.txt)
+python3 podcast_archiver.py -d ~/Music/Podcasts -s -u -f feedlist.txt
 ```
 
 where `feedlist.txt contains the URLs as if entered into the command line:
 ```
-    -f http://freakshow.fm/feed/m4a/ \
-    -f http://alternativlos.org/alternativlos.rss \
-    -f http://logbuch-netzpolitik.de/feed/m4a \
-    -f http://not-safe-for-work.de/feed/m4a/ \
-    -f http://raumzeit-podcast.de/feed/m4a/ \
-    -f http://www.ard.de/static/radio/radiofeature/rss/podcast.xml \
-    -f http://wir.muessenreden.de/feed/podcast/
+    http://freakshow.fm/feed/m4a/
+    http://alternativlos.org/alternativlos.rss
+    http://logbuch-netzpolitik.de/feed/m4a
+    http://not-safe-for-work.de/feed/m4a/
+    http://raumzeit-podcast.de/feed/m4a/
+    http://www.ard.de/static/radio/radiofeature/rss/podcast.xml
+    http://wir.muessenreden.de/feed/podcast/
 ```
 
-This way, you can easily add and remove feeds to the list and let the archiver fetch the newest episodes whenever you you configure in your crontab.
+This way, you can easily add and remove feeds to the list and let the archiver fetch the newest episodes for example by addig it to your crontab.
 
 
 ## Todo

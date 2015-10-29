@@ -61,7 +61,10 @@ def main():
     feedlist = []
     for opt in opts:
         if opt[0] == '-f' or opt[0] == '--feed':
-            feedlist.append(opt[1])
+            if path.isfile(opt[1]):
+                feedlist += open(opt[1],'r').read().strip().splitlines()
+            else:
+                feedlist.append(opt[1])
         elif opt[0] == '-d' or opt[0] == '--dir':
             if path.isdir(opt[1]):
                 savedir = opt[1]
