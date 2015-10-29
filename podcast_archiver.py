@@ -224,6 +224,8 @@ def parse_episode(episode):
             url = link['href']
         elif link['type'] == 'audio/opus':
             url = link['href']
+        elif link['type'] == 'audio/x-mpeg':
+            url = link['href']
 
     return url
 
