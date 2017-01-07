@@ -80,6 +80,10 @@ def main():
 
     args = parser.parse_args()
 
+    verbose = args.verbose or 0
+    if verbose > 2:
+        print('Input arguments:', args)
+
     feedlist = []
     for feed in (args.feed or []):
         if path.isfile(feed):
@@ -103,15 +107,11 @@ def main():
                     feedlist.append(node.get('xmlUrl'))
 
     savedir = args.dir or ''
-    verbose = args.verbose or 0
     subdirs = args.subdirs
     update = args.update
 
     if verbose > 1:
         print("Verbose level: ", verbose)
-
-    if verbose > 2:
-        print('Input arguments:', args)
 
     if verbose > 0 and update:
         print("Updating archive")
