@@ -145,6 +145,11 @@ def download_archive(nextPage):
         except:
             pass
 
+        # Escape malformatted XML
+        if feedobj['bozo'] == 1:
+            print('\nDownloaded feed is malformatted on', nextPage)
+            return
+
         nextPage = None
 
         if len(linklist) == 0 and subdirs:
