@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 
 import sys
-import getopt
+import argparse
 import feedparser
 from urllib.request import urlopen
 import urllib.error
@@ -40,66 +40,72 @@ filename = ''
 subdirs = False
 update = False
 
+
 def main():
     global verbose
     global savedir
     global subdirs
     global update
-    # Parse input arguments
-    try:
-        opts, args = getopt.getopt(sys.argv[1:],
-                                   "o:f:d:vsu", [
-                                   "opml=",
-                                   "feed=",
-                                   "dir=",
-                                   "verbose",
-                                   "subdirs",
-                                   "update"])
-    except getopt.GetoptError as error:
-        print("An error occured during input parsing: " + error.msg)
-        return
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-o', '--opml', action='append', type=argparse.FileType('r'),
+                        help='''Provide an OPML file (as exported by many other podcatchers)
+                             containing your feeds.''')
+    parser.add_argument('-f', '--feed', action='append',
+                        help='''Add a feed URl to the archiver. The parameter can be used
+                             multiple times, once for every feed.''')
+    parser.add_argument('-d', '--dir',
+                        help='''Set the output directory of the podcast archive.''')
+    parser.add_argument('-s', '--subdirs', action='store_true',
+                        help='''Place downloaded podcasts in separate subdirectories per
+                             podcast (named with their title).''')
+    parser.add_argument('-u', '--update', action='store_true',
+                        help='''Force the archiver to only update the feeds with newly added
+                             episodes. As soon as the first old episode found in the
+                             download directory, further downloading is interrupted.''')
+    parser.add_argument('-v', '--verbose', action='count',
+                        help='''Increase the level of verbosity while downloading.''')
+
+    args = parser.parse_args()
 
     feedlist = []
-    for opt in opts:
-        if opt[0] == '-f' or opt[0] == '--feed':
-            if path.isfile(opt[1]):
-                feedlist += open(opt[1],'r').read().strip().splitlines()
-            else:
-                feedlist.append(opt[1])
-        if opt[0] == '-o' or opt[0] == '--opml':
-            if path.isfile(opt[1]):
-                import xml.etree.ElementTree as etree
-                tree = etree.parse(opt[1])
+    for feed in (args.feed or []):
+        if path.isfile(feed):
+            feedlist += open(feed, 'r').read().strip().splitlines()
+        else:
+            feedlist.append(feed)
 
-                for node in tree.iter():
-                    if node.tag == 'outline':
-                        if node.get('type') != 'rss':
-                            continue
+    if args.opml:
+        import xml.etree.ElementTree as etree
+        tree = etree.parse(args.opml)
 
-                        url = node.get('xmlUrl')
-                        if url is None:
-                            continue
-                        else:
-                            feedlist.append(node.get('xmlUrl'))
+        for node in tree.iter():
+            if node.tag == 'outline':
+                if node.get('type') != 'rss':
+                    continue
 
-            else:
-                print("The provided OPML file does not exist")
-                
-        elif opt[0] == '-d' or opt[0] == '--dir':
-            if path.isdir(opt[1]):
-                savedir = opt[1]
-            else:
-                print("The provided directory does not exist")
-                return
-        elif opt[0] == '-v' or opt[0] == '--verbose':
-            verbose += 1
-        elif opt[0] == '-s' or opt[0] == '--subdirs':
-            subdirs = True
-        elif opt[0] == '-u' or opt[0] == '--update':
-            update = True
+                url = node.get('xmlUrl')
+                if url is None:
+                    continue
+                else:
+                    feedlist.append(node.get('xmlUrl'))
+
+    if args.dir and path.isdir(args.dir):
+        savedir = args.dir
+    elif args.dir:
+        print("The provided directory does not exist")
+        return
+
+    verbose = args.verbose or 0
+    subdirs = args.subdirs
+    update = args.update
 
     if verbose > 1:
-        print("Verbose level: ", verbose-1)
+        print("Verbose level: ", verbose)
+
+    if verbose > 2:
+        print('Input arguments:', args)
+
 
     if verbose > 0 and update:
         print("Updating archive")
