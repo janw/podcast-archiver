@@ -250,8 +250,10 @@ def download_archive(nextPage):
         try:
             with urlopen(link) as response, open(filename, 'wb') as outfile:
                 copyfileobj(response, outfile)
-        except urllib.error.HTTPError as error:
-            print(" - Query returned", error, end="", flush=True)
+        except (urllib.error.HTTPError,
+                urllib.error.URLError) as error:
+            print("\n - Query returned", error, end="", flush=True)
+
 
     if verbose > 0:
             print("\n ... Done.")
