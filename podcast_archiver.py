@@ -62,7 +62,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-o', '--opml', action='append', type=argparse.FileType('r'),
                         help='''Provide an OPML file (as exported by many other podcatchers)
-                             containing your feeds.''')
+                             containing your feeds. The parameter can be used multiple
+                             times, once for every OPML file.''')
     parser.add_argument('-f', '--feed', action='append',
                         help='''Add a feed URl to the archiver. The parameter can be used
                              multiple times, once for every feed.''')
@@ -91,20 +92,21 @@ def main():
         else:
             feedlist.append(feed)
 
-    if args.opml:
+    for opml in (args.opml or []):
         import xml.etree.ElementTree as etree
-        tree = etree.parse(args.opml)
+        with opml as file:
+            tree = etree.fromstringlist(file)
 
-        for node in tree.iter():
-            if node.tag == 'outline':
-                if node.get('type') != 'rss':
-                    continue
+            for node in tree.iter():
+                if node.tag == 'outline':
+                    if node.get('type') != 'rss':
+                        continue
 
-                url = node.get('xmlUrl')
-                if url is None:
-                    continue
-                else:
-                    feedlist.append(node.get('xmlUrl'))
+                    url = node.get('xmlUrl')
+                    if url is None:
+                        continue
+                    else:
+                        feedlist.append(node.get('xmlUrl'))
 
     savedir = args.dir or ''
     subdirs = args.subdirs
