@@ -32,6 +32,7 @@ import urllib.error
 from shutil import copyfileobj
 from os import path, remove, makedirs, access, W_OK
 from string import ascii_letters, digits
+import re
 
 
 verbose = 1
@@ -230,11 +231,18 @@ def download_archive(nextPage):
             print("\nDownloading file no. {0}/{1}:\n{2}"
                   .format(cnt + 1, nlinks, link), end="", flush=True)
 
+        # Remove HTTP GET parameters from filename
+        fileparts = path.splitext(path.basename(link))
+        match_gets = re.search('^(.+)(\?.*)$', fileparts[1])
+        if match_gets:
+            fileparts = (fileparts[0], match_gets.group(1))
+
         # Generate local path and check for existence
         if subdirs:
-            filename = path.join(curbasedir, path.basename(link))
+            filename = path.join(curbasedir, fileparts[0] + fileparts[1])
         else:
-            filename = path.join(savedir, path.basename(link))
+            filename = path.join(savedir, fileparts[0] + fileparts[1])
+
         if path.isfile(filename):
             continue
 
