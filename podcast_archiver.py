@@ -52,6 +52,7 @@ class writeable_dir(argparse.Action):
         else:
             raise argparse.ArgumentTypeError("writeable_dir:{0} is not a writeable dir".format(prospective_dir))
 
+
 def main():
     global verbose
     global savedir
@@ -112,7 +113,6 @@ def main():
     if verbose > 2:
         print('Input arguments:', args)
 
-
     if verbose > 0 and update:
         print("Updating archive")
 
@@ -149,8 +149,8 @@ def download_archive(nextPage):
 
             # Get subdir name and sanitize it
             subdir = feedobj['feed']['title']
-            subdir.replace(path.pathsep,'_')
-            subdir.replace(path.sep,'_')
+            subdir.replace(path.pathsep, '_')
+            subdir.replace(path.sep, '_')
 
             curbasedir = path.join(savedir, subdir, '')
 
@@ -218,10 +218,10 @@ def download_archive(nextPage):
     for cnt, link in enumerate(linklist):
         if verbose == 1:
             print("\r{0}/{1}"
-                  .format(cnt+1, nlinks), end="", flush=True)
+                  .format(cnt + 1, nlinks), end="", flush=True)
         elif verbose > 1:
             print("\nDownloading file no. {0}/{1}:\n{2}"
-                  .format(cnt+1, nlinks, link), end="", flush=True)
+                  .format(cnt + 1, nlinks, link), end="", flush=True)
 
         # Generate local path and check for existence
         if subdirs:
