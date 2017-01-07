@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Podcast Archiver v0.1: Feed parser for local podcast archive creation
 
