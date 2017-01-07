@@ -30,7 +30,7 @@ import feedparser
 from urllib.request import urlopen
 import urllib.error
 from shutil import copyfileobj
-from os import path,remove,makedirs
+from os import path, remove, makedirs, access, W_OK
 from string import ascii_letters, digits
 
 
@@ -40,6 +40,17 @@ filename = ''
 subdirs = False
 update = False
 
+
+class writeable_dir(argparse.Action):
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        prospective_dir = values
+        if not path.isdir(prospective_dir):
+            raise argparse.ArgumentTypeError("writeable_dir:{0} is not a valid path".format(prospective_dir))
+        if access(prospective_dir, W_OK):
+            setattr(namespace, self.dest, prospective_dir)
+        else:
+            raise argparse.ArgumentTypeError("writeable_dir:{0} is not a writeable dir".format(prospective_dir))
 
 def main():
     global verbose
@@ -54,7 +65,7 @@ def main():
     parser.add_argument('-f', '--feed', action='append',
                         help='''Add a feed URl to the archiver. The parameter can be used
                              multiple times, once for every feed.''')
-    parser.add_argument('-d', '--dir',
+    parser.add_argument('-d', '--dir', action=writeable_dir,
                         help='''Set the output directory of the podcast archive.''')
     parser.add_argument('-s', '--subdirs', action='store_true',
                         help='''Place downloaded podcasts in separate subdirectories per
@@ -90,12 +101,7 @@ def main():
                 else:
                     feedlist.append(node.get('xmlUrl'))
 
-    if args.dir and path.isdir(args.dir):
-        savedir = args.dir
-    elif args.dir:
-        print("The provided directory does not exist")
-        return
-
+    savedir = args.dir or ''
     verbose = args.verbose or 0
     subdirs = args.subdirs
     update = args.update
