@@ -48,7 +48,7 @@ If you have a larger list of podcasts and/or want to update the archive on a cro
 python3 podcast_archiver.py -d ~/Music/Podcasts -s -u -f feedlist.txt
 ```
 
-where `feedlist.txt contains the URLs as if entered into the command line:
+where `feedlist.txt` contains the URLs as if entered into the command line:
 ```
     http://freakshow.fm/feed/m4a/
     http://alternativlos.org/alternativlos.rss
