@@ -186,11 +186,11 @@ def main():
     for feed in feedlist:
         if verbose > 0:
             print("\nDownloading archive for: " + feed)
-        download_archive(feed)
+        processPodcastLink(feed)
     return
 
 
-def download_archive(nextPage):
+def processPodcastLink(nextPage):
     global filename
 
     if verbose > 0:
