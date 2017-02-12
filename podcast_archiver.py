@@ -289,10 +289,11 @@ def download_archive(nextPage):
 def parse_episode(episode):
     url = None
     for link in episode['links']:
-        if link['type'].startswith('audio'):
-            url = link['href']
-        elif link['type'].startswith('video'):
-            url = link['href']
+        if 'type' in link.keys():
+            if link['type'].startswith('audio'):
+                url = link['href']
+            elif link['type'].startswith('video'):
+                url = link['href']
 
     return url
 
