@@ -130,7 +130,6 @@ def main():
 
 
 def download_archive(nextPage):
-    global savedir
     global filename
 
     if verbose > 0:
