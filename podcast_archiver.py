@@ -90,6 +90,7 @@ def linkToTargetFilename(link, feedtitle):
 
 def parseFeed(feedobj):
     nextPage = None
+    linklist = []
     for link in feedobj['feed']['links']:
         if link['rel'] == 'next':
             nextPage = link['href']
