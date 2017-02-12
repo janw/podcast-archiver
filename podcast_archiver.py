@@ -255,7 +255,7 @@ def download_archive(nextPage):
             print("\n - Query returned", error, end="", flush=True)
 
     if verbose > 0:
-            print("\n ... Done.")
+        print("\n ... Done.")
 
 
 def parse_episode(episode):
