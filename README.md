@@ -1,5 +1,7 @@
 # Podcast Archiver
 
+[![Code Health](https://landscape.io/github/janwh/Podcast-Archiver/master/landscape.svg?style=flat)](https://landscape.io/github/janwh/Podcast-Archiver/master)
+
 This python script takes the feed URL of your favorite podcast and downloads all available episodes to your computer. Even those files "hidden" in a paged feed will be tapped, so you'll have an entire backup of the series.
 
 ## Outline
@@ -64,4 +66,3 @@ This way, you can easily add and remove feeds to the list and let the archiver f
 * Add ability to define a preferred format on feeds that contain links for multiple audio codecs.
 * Add ability to define a range of episodes or time to download only episode from that point on or from there to the beginning or or or …
 * Add ability to choose a prefix episodes with the episode number (rarely necessary, since most podcasts feature some kind of episode numbering in the filename)
-
