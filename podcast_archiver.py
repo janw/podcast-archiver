@@ -24,14 +24,12 @@ THE SOFTWARE.
 """
 
 
-import sys
 import argparse
 import feedparser
 from urllib.request import urlopen
 import urllib.error
 from shutil import copyfileobj
 from os import path, remove, makedirs, access, W_OK
-from string import ascii_letters, digits
 from urllib.parse import urlparse
 import re
 
@@ -57,11 +55,47 @@ class writeable_dir(argparse.Action):
                                              .format(prospective_dir))
 
 
+def slugifyString(filename):
+    import unicodedata
+    import re
+
+    filename = unicodedata.normalize('NFKD', filename).encode('ascii', 'ignore')
+    filename = re.sub('[^\w\s\-\.]', '', filename.decode('ascii')).strip()
+    filename = re.sub('[-\s]+', '-', filename)
+
+    return filename
+
+def linkToTargetFilename(link, feedtitle):
+
+    # Remove HTTP GET parameters from filename by parsing URL properly
+    linkpath = urlparse(link).path
+    basename = path.basename(linkpath)
+
+    # If requested, slugify the filename
+    if slugify:
+        basename = slugifyString(basename)
+        feedtitle = slugifyString(feedtitle)
+    else:
+        basename.replace(path.pathsep, '_')
+        basename.replace(path.sep, '_')
+        feedtitle.replace(path.pathsep, '_')
+        feedtitle.replace(path.sep, '_')
+
+    # Generate local path and check for existence
+    if subdirs:
+        filename = path.join(savedir, feedtitle, basename)
+    else:
+        filename = path.join(savedir, basename)
+
+    return filename
+
+
 def main():
     global verbose
     global savedir
     global subdirs
     global update
+    global slugify
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-o', '--opml', action='append', type=argparse.FileType('r'),
@@ -82,6 +116,10 @@ def main():
                              download directory, further downloading is interrupted.''')
     parser.add_argument('-v', '--verbose', action='count',
                         help='''Increase the level of verbosity while downloading.''')
+    parser.add_argument('-S', '--slugify', action='store_true',
+                        help='''Clean all folders and filename of potentially weird
+                             characters that might cause trouble with one or another
+                             target filesystem.''')
 
     args = parser.parse_args()
 
@@ -115,6 +153,7 @@ def main():
     savedir = args.dir or ''
     subdirs = args.subdirs
     update = args.update
+    slugify = args.slugify
 
     if verbose > 1:
         print("Verbose level: ", verbose)
@@ -136,6 +175,7 @@ def download_archive(nextPage):
         print("1. Gathering link list ..", end="")
 
     linklist = []
+    feedtitle = None
     while nextPage is not None:
         print(".", end="", flush=True)
         feedobj = feedparser.parse(nextPage)
@@ -155,18 +195,8 @@ def download_archive(nextPage):
 
         nextPage = None
 
-        if len(linklist) == 0 and subdirs:
-
-            # Get subdir name and sanitize it
-            subdir = feedobj['feed']['title']
-            subdir.replace(path.pathsep, '_')
-            subdir.replace(path.sep, '_')
-
-            curbasedir = path.join(savedir, subdir, '')
-
-            # Create the subdir, if it does not exist
-            if not path.isdir(curbasedir):
-                makedirs(curbasedir)
+        if feedtitle is None:
+            feedtitle = feedobj['feed']['title']
 
         for link in feedobj['feed']['links']:
             if link['rel'] == 'next':
@@ -200,12 +230,8 @@ def download_archive(nextPage):
             curlenlinklist = len(linklist)
 
             for cnt, link in enumerate(linklist):
+                filename = linkToTargetFilename(link, feedtitle)
 
-                # Generate local path and check for existence
-                if subdirs:
-                    filename = path.join(curbasedir, path.basename(link))
-                else:
-                    filename = path.join(savedir, path.basename(link))
                 if path.isfile(filename):
                     del(linklist[cnt:])
                     break
@@ -233,18 +259,16 @@ def download_archive(nextPage):
             print("\nDownloading file no. {0}/{1}:\n{2}"
                   .format(cnt + 1, nlinks, link), end="", flush=True)
 
-        # Remove HTTP GET parameters from filename by parsing URL properly
-        linkpath = urlparse(link).path
-        basename = path.basename(linkpath)
+        filename = linkToTargetFilename(link, feedtitle)
 
-        # Generate local path and check for existence
-        if subdirs:
-            filename = path.join(curbasedir, basename)
-        else:
-            filename = path.join(savedir, basename)
+        if verbose > 1:
+            print("\nLocal filename:", filename)
 
         if path.isfile(filename):
             continue
+
+        # Create the subdir, if it does not exist
+        makedirs(path.dirname(filename), exist_ok=True)
 
         # Begin downloading
         try:
@@ -261,10 +285,11 @@ def download_archive(nextPage):
 def parse_episode(episode):
     url = None
     for link in episode['links']:
-        if link['type'].startswith('audio'):
-            url = link['href']
-        elif link['type'].startswith('video'):
-            url = link['href']
+        if 'type' in link.keys():
+            if link['type'].startswith('audio'):
+                url = link['href']
+            elif link['type'].startswith('video'):
+                url = link['href']
 
     return url
 
