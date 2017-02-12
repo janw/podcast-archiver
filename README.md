@@ -61,6 +61,22 @@ where `feedlist.txt` contains the URLs as if entered into the command line:
 
 This way, you can easily add and remove feeds to the list and let the archiver fetch the newest episodes for example by addig it to your crontab.
 
+## Excursion: Unicode Normalization in Slugify
+
+The `--slugify` option removes all ambiguous characters from folders and filenames used in the archiving process. The removal includes unicode normalization according to [Compatibility Decomposition](http://unicode.org/reports/tr15/tr15-18.html#Decomposition). What? Yeah, me too. I figured this is best seen in an example, so here's a fictitious episode name, and how it would be translated to an target filename using the Archiver:
+
+```
+SPR001 Umlaute sind ausschließlich in schönen Sprachen/Dialekten zu finden.mp3
+```
+
+will be turned into
+
+```
+SPR001-Umlaute-sind-ausschlielich-in-schonen-SprachenDialekten-zu-finden.mp3
+```
+
+Note that "decorated" characters like `ö` are replaced with their basic counterparts (`o`), while somewhat ligatur-ish ones like `ß` (amongst most unessential punctuation) are removed entirely.
+
 
 ## Todo
 
