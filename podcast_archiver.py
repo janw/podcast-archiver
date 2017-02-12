@@ -273,6 +273,10 @@ def download_archive(nextPage):
         except (urllib.error.HTTPError,
                 urllib.error.URLError) as error:
             print("\n - Query returned", error, end="", flush=True)
+        except KeyboardInterrupt as error:
+            print("\nUnexpected interruption. Deleting unfinished file.")
+            remove(filename)
+            raise
 
     if verbose > 0:
         print("\n ... Done.")
@@ -291,13 +295,4 @@ def parse_episode(episode):
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-
-        # Delete the current (incomplete) file
-        try:
-            remove(filename)
-        except FileNotFoundError:
-            pass
-        print("\nQuit early.")
+    main()
