@@ -24,14 +24,12 @@ THE SOFTWARE.
 """
 
 
-import sys
 import argparse
 import feedparser
 from urllib.request import urlopen
 import urllib.error
 from shutil import copyfileobj
 from os import path, remove, makedirs, access, W_OK
-from string import ascii_letters, digits
 from urllib.parse import urlparse
 import re
 
