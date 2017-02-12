@@ -25,6 +25,7 @@ Before downloading any episode the function first fetches all available pages of
 * `-s` / `--subdirs`: Create subdirectories for the provided feeds. This option enables reading the title of the feed and saving the episodes to a subdir of that title (of course invalid characters are removed first).
 * `-u` / `--update.`: Only update the archive. Meaning: The fetching of the feed pages (which can be slow at time) is interrupted when the first episode is detected that already has an audio file present in the archive. This option might be used, if you already have created an archive and just want to add the most recent (not yet downloaded) episode(s).
 * `-v` / `--verbose`: Increase verbose level. In level 1 for example all download paths are shown. By default, `podcast_archiver` shows basic output on how many episodes are downloaded and shows the progress on those. Multiple `v`'s each increase the verbosity (currently only level 1 is used)
+* `-S` / `--slugify`: Clean all folders and filename of potentially weird characters that might cause trouble with one or another target filesystem. The character set boils down to about: alphanumeric characters (both upper and lower case), dashes, and underscores, with unicode characters being normalized according to [Compatibility Decomposition](#excursion-unicode-normalization-in-slugify).
 
 ### Full-fledged example
 ```
