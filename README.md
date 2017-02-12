@@ -6,7 +6,7 @@ This python script takes the feed URL of your favorite podcast and downloads all
 
 ## Outline
 
-In my experience, very few full-fledged podcast clients are able to access a paged feed (following IETF RFC5005), so only the last few episodes of a podcast will be available to download. When you discover a podcast that has been around for quite a while, you'll have a hard time to follow the "gentle listener's duty" and listen to the whole archive. The script in this repository is supposed to help you aquiring every last episode of your new listening pleasure.
+In my experience, very few full-fledged podcast clients are able to access a paged feed (following IETF RFC5005), so only the last few episodes of a podcast will be available to download. When you discover a podcast that has been around for quite a while, you'll have a hard time to follow the "gentle listener's duty" and listen to the whole archive. The script in this repository is supposed to help you acquiring every last episode of your new listening pleasure.
 
 Before downloading any episode the function first fetches all available pages of the feed and prepares a list. That way, you will never miss any episode.
 
@@ -19,7 +19,7 @@ Before downloading any episode the function first fetches all available pages of
 `podcast_archiver.py` takes command line arguments, containing for example the feeds that are supposed to be archived:
 
 * `-f <url>` / `--feed=<url>`: Provide a feed-url that is to be archived. `-f` can be used multiple times, so you may hand over more than one feed to archive. To keep everything neat and tidy, see the `-s` option down below.
-* `-f <filename>` / `--feed=<filename>`: Provide one or multiple feed urls by prodivind a simple text file, containing one feed url per line. To keep everything neat and tidy, see the `-s` option down below.
+* `-f <filename>` / `--feed=<filename>`: Provide one or multiple feed urls by providing a simple text file, containing one feed url per line. To keep everything neat and tidy, see the `-s` option down below.
 * `-o <opml_filename>` / `--opml=<opml_filename>`: If you carry your podcast feeds in iTunes, Downcast, Overcast, or any other podcather that allows OPML export, you can reference the OPML filename right here, and Podcast Archiver will extract the feeds from there, without the need to use above-mentioned option `-f/--feed`.
 * `-d <path>` / `--dir=<path`: Specify the output directory for the archive, denoted by `<path>`. If omitted, the files are written to the current directory.
 * `-s` / `--subdirs`: Create subdirectories for the provided feeds. This option enables reading the title of the feed and saving the episodes to a subdir of that title (of course invalid characters are removed first).
@@ -58,7 +58,7 @@ where `feedlist.txt contains the URLs as if entered into the command line:
     http://wir.muessenreden.de/feed/podcast/
 ```
 
-This way, you can easily add and remove feeds to the list and let the archiver fetch the newest episodes for example by addig it to your crontab.
+This way, you can easily add and remove feeds to the list and let the archiver fetch the newest episodes for example by adding it to your crontab.
 
 
 ## Todo
