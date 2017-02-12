@@ -268,6 +268,9 @@ def download_archive(nextPage):
         else:
             filename = path.join(savedir, basename)
 
+        if verbose > 1:
+            print("\nLocal filename:", filename)
+
         if path.isfile(filename):
             continue
 
