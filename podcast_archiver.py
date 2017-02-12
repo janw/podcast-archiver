@@ -67,6 +67,30 @@ def slugifyString(filename):
 
     return filename
 
+def linkToTargetFilename(link, feedtitle):
+
+    # Remove HTTP GET parameters from filename by parsing URL properly
+    linkpath = urlparse(link).path
+    basename = path.basename(linkpath)
+
+    # If requested, slugify the filename
+    if slugify:
+        basename = slugifyString(basename)
+        feedtitle = slugifyString(feedtitle)
+    else:
+        basename.replace(path.pathsep, '_')
+        basename.replace(path.sep, '_')
+        feedtitle.replace(path.pathsep, '_')
+        feedtitle.replace(path.sep, '_')
+
+    # Generate local path and check for existence
+    if subdirs:
+        filename = path.join(savedir, feedtitle, basename)
+    else:
+        filename = path.join(savedir, basename)
+
+    return filename
+
 
 def main():
     global verbose
