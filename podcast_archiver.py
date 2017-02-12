@@ -177,6 +177,7 @@ def download_archive(nextPage):
         print("1. Gathering link list ..", end="")
 
     linklist = []
+    feedtitle = None
     while nextPage is not None:
         print(".", end="", flush=True)
         feedobj = feedparser.parse(nextPage)
@@ -196,22 +197,8 @@ def download_archive(nextPage):
 
         nextPage = None
 
-        if len(linklist) == 0 and subdirs:
-
-            # Get subdir name and sanitize it
-            subdir = feedobj['feed']['title']
-
-            if slugify:
-                subdir = slugifyString(subdir)
-            else:
-                subdir.replace(path.pathsep, '_')
-                subdir.replace(path.sep, '_')
-
-            curbasedir = path.join(savedir, subdir, '')
-
-            # Create the subdir, if it does not exist
-            if not path.isdir(curbasedir):
-                makedirs(curbasedir)
+        if feedtitle is None:
+            feedtitle = feedobj['feed']['title']
 
         for link in feedobj['feed']['links']:
             if link['rel'] == 'next':
@@ -245,12 +232,8 @@ def download_archive(nextPage):
             curlenlinklist = len(linklist)
 
             for cnt, link in enumerate(linklist):
+                filename = linkToTargetFilename(link, feedtitle)
 
-                # Generate local path and check for existence
-                if subdirs:
-                    filename = path.join(curbasedir, path.basename(link))
-                else:
-                    filename = path.join(savedir, path.basename(link))
                 if path.isfile(filename):
                     del(linklist[cnt:])
                     break
