@@ -212,37 +212,16 @@ def download_archive(nextPage):
             print('\nDownloaded feed is malformatted on', nextPage)
             return
 
-        nextPage = None
-
-        if feedtitle is None:
-            feedtitle = feedobj['feed']['title']
-
-        for link in feedobj['feed']['links']:
-            if link['rel'] == 'next':
-                nextPage = link['href']
-                break
-
-        # Try different feed episode layouts. 1st: 'items'
-        for episode in feedobj['items']:
-            linklist.append(parse_episode(episode))
-
-        linklist = [x for x in linklist if x is not None]
-
-        # Try different feed episode layouts. 1st: 'entries'
-        if len(linklist) == 0:
-            for episode in feedobj['entries']:
-                linklist.append(parse_episode(episode))
-
-            linklist = [x for x in linklist if x is not None]
+        # Parse the feed object for episodes and the next page
+        nextPage, linklist = parseFeed(feedobj)
 
         # Exit gracefully when no episodes have been found
         if len(linklist) == 0:
-            print("No audio items have been found.",
-                  "Maybe we don't know the feed's audio MIME type yet?")
-            print("Suggestions (as defined in the feed's 'links' field:)")
-            for link in episode['links']:
-                print(link["type"])
+            print("No items have been found.")
             return
+
+        if feedtitle is None:
+            feedtitle = feedobj['feed']['title']
 
         # On given option, run an update, break at first existing episode
         if update:
