@@ -89,6 +89,29 @@ def linkToTargetFilename(link, feedtitle):
     return filename
 
 
+def parseFeed(feedobj):
+    nextPage = None
+    for link in feedobj['feed']['links']:
+        if link['rel'] == 'next':
+            nextPage = link['href']
+            break
+
+    # Try different feed episode layouts. 1st: 'items'
+    for episode in feedobj['items']:
+        linklist.append(parse_episode(episode))
+
+    linklist = [x for x in linklist if x is not None]
+
+    # Try different feed episode layouts. 1st: 'entries'
+    if len(linklist) == 0:
+        for episode in feedobj['entries']:
+            linklist.append(parse_episode(episode))
+
+        linklist = [x for x in linklist if x is not None]
+
+    return nextPage, linklist
+
+
 def main():
     global verbose
     global savedir
