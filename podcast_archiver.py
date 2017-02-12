@@ -261,25 +261,16 @@ def download_archive(nextPage):
             print("\nDownloading file no. {0}/{1}:\n{2}"
                   .format(cnt + 1, nlinks, link), end="", flush=True)
 
-        # Remove HTTP GET parameters from filename by parsing URL properly
-        linkpath = urlparse(link).path
-        basename = path.basename(linkpath)
-
-        # If requested, slugify the filename
-        if slugify:
-            basename = slugifyString(basename)
-
-        # Generate local path and check for existence
-        if subdirs:
-            filename = path.join(curbasedir, basename)
-        else:
-            filename = path.join(savedir, basename)
+        filename = linkToTargetFilename(link, feedtitle)
 
         if verbose > 1:
             print("\nLocal filename:", filename)
 
         if path.isfile(filename):
             continue
+
+        # Create the subdir, if it does not exist
+        makedirs(path.dirname(filename), exist_ok=True)
 
         # Begin downloading
         try:
