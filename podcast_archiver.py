@@ -37,7 +37,6 @@ import re
 
 verbose = 1
 savedir = ''
-filename = ''
 subdirs = False
 update = False
 
@@ -191,8 +190,6 @@ def main():
 
 
 def processPodcastLink(nextPage):
-    global filename
-
     if verbose > 0:
         print("1. Gathering link list ..", end="")
 
