@@ -31,6 +31,7 @@ import urllib.error
 from shutil import copyfileobj
 from os import path, remove, makedirs, access, W_OK
 from urllib.parse import urlparse
+import unicodedata
 import re
 
 
@@ -56,14 +57,12 @@ class writeable_dir(argparse.Action):
 
 
 def slugifyString(filename):
-    import unicodedata
-    import re
-
     filename = unicodedata.normalize('NFKD', filename).encode('ascii', 'ignore')
     filename = re.sub('[^\w\s\-\.]', '', filename.decode('ascii')).strip()
     filename = re.sub('[-\s]+', '-', filename)
 
     return filename
+
 
 def linkToTargetFilename(link, feedtitle):
 
