@@ -57,11 +57,23 @@ class writeable_dir(argparse.Action):
                                              .format(prospective_dir))
 
 
+def slugifyString(filename):
+    import unicodedata
+    import re
+
+    filename = unicodedata.normalize('NFKD', filename).encode('ascii', 'ignore')
+    filename = re.sub('[^\w\s-]', '', filename.decode('ascii')).strip().lower()
+    filename = re.sub('[-\s]+', '-', filename)
+
+    return filename
+
+
 def main():
     global verbose
     global savedir
     global subdirs
     global update
+    global slugify
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-o', '--opml', action='append', type=argparse.FileType('r'),
@@ -82,6 +94,10 @@ def main():
                              download directory, further downloading is interrupted.''')
     parser.add_argument('-v', '--verbose', action='count',
                         help='''Increase the level of verbosity while downloading.''')
+    parser.add_argument('-S', '--slugify', action='store_true',
+                        help='''Clean all folders and filename of potentially weird
+                             characters that might cause trouble with one or another
+                             target filesystem.''')
 
     args = parser.parse_args()
 
@@ -115,6 +131,7 @@ def main():
     savedir = args.dir or ''
     subdirs = args.subdirs
     update = args.update
+    slugify = args.slugify
 
     if verbose > 1:
         print("Verbose level: ", verbose)
@@ -159,8 +176,12 @@ def download_archive(nextPage):
 
             # Get subdir name and sanitize it
             subdir = feedobj['feed']['title']
-            subdir.replace(path.pathsep, '_')
-            subdir.replace(path.sep, '_')
+
+            if slugify:
+                subdir = slugifyString(subdir)
+            else:
+                subdir.replace(path.pathsep, '_')
+                subdir.replace(path.sep, '_')
 
             curbasedir = path.join(savedir, subdir, '')
 
@@ -236,6 +257,10 @@ def download_archive(nextPage):
         # Remove HTTP GET parameters from filename by parsing URL properly
         linkpath = urlparse(link).path
         basename = path.basename(linkpath)
+
+        # If requested, slugify the filename
+        if slugify:
+            basename = slugifyString(basename)
 
         # Generate local path and check for existence
         if subdirs:
