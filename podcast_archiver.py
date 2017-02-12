@@ -189,12 +189,13 @@ def main():
     return
 
 
-def processPodcastLink(nextPage):
+def processPodcastLink(link):
     if verbose > 0:
         print("1. Gathering link list ..", end="")
 
     linklist = []
     feedtitle = None
+    nextPage = link
     while nextPage is not None:
         print(".", end="", flush=True)
         feedobj = feedparser.parse(nextPage)
@@ -224,11 +225,11 @@ def processPodcastLink(nextPage):
         if update:
             curlenlinklist = len(linklist)
 
-            for cnt, link in enumerate(linklist):
+            for index, link in enumerate(linklist):
                 filename = linkToTargetFilename(link, feedtitle)
 
                 if path.isfile(filename):
-                    del(linklist[cnt:])
+                    del(linklist[index:])
                     break
 
             if len(linklist) != curlenlinklist:
