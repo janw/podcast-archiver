@@ -62,7 +62,7 @@ def slugifyString(filename):
     import re
 
     filename = unicodedata.normalize('NFKD', filename).encode('ascii', 'ignore')
-    filename = re.sub('[^\w\s-\.]', '', filename.decode('ascii')).strip()
+    filename = re.sub('[^\w\s\-\.]', '', filename.decode('ascii')).strip()
     filename = re.sub('[-\s]+', '-', filename)
 
     return filename
