@@ -86,3 +86,4 @@ Note that "decorated" characters like `ö` are replaced with their basic counter
 * Add ability to define a preferred format on feeds that contain links for multiple audio codecs.
 * Add ability to define a range of episodes or time to download only episode from that point on or from there to the beginning or or or …
 * Add ability to choose a prefix episodes with the episode number (rarely necessary, since most podcasts feature some kind of episode numbering in the filename)
+* Add unittests
