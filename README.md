@@ -1,6 +1,9 @@
 # Podcast Archiver
 
 [![Code Health](https://landscape.io/github/janwh/Podcast-Archiver/master/landscape.svg?style=flat)](https://landscape.io/github/janwh/Podcast-Archiver/master)
+[![Code Climate](https://codeclimate.com/github/janwh/Podcast-Archiver/badges/gpa.svg)](https://codeclimate.com/github/janwh/Podcast-Archiver)
+[![Issue Count](https://codeclimate.com/github/janwh/Podcast-Archiver/badges/issue_count.svg)](https://codeclimate.com/github/janwh/Podcast-Archiver)
+[![Test Coverage](https://codeclimate.com/github/janwh/Podcast-Archiver/badges/coverage.svg)](https://codeclimate.com/github/janwh/Podcast-Archiver/coverage)
 
 This python script takes the feed URL of your favorite podcast and downloads all available episodes to your computer. Even those files "hidden" in a paged feed will be tapped, so you'll have an entire backup of the series.
 
