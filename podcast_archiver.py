@@ -113,22 +113,14 @@ def parseFeed(feedobj, linklist=[]):
     return nextPage, linklist
 
 def parseOpmlFile(opml):
-    feedlist = []
     with opml as file:
         tree = etree.fromstringlist(file)
 
-        for node in tree.iter():
-            if node.tag == 'outline':
-                if node.get('type') != 'rss':
-                    continue
+        feedlist = [node.get('xmlUrl') for node
+                    in tree.findall("*/outline/[@type='rss']")
+                    if node.get('xmlUrl') is not None]
 
-                url = node.get('xmlUrl')
-                if url is None:
-                    continue
-                else:
-                    feedlist.append(node.get('xmlUrl'))
-
-    return feedlist
+        return feedlist
 
 
 def main():
