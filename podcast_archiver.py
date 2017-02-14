@@ -107,7 +107,7 @@ def parseFeedToLinks(feedobj):
     # Try different feed episode layouts: 'items' or 'entries'
     episodeList = feedobj.get('items', False) or feedobj.get('entries', False)
     if episodeList:
-        linklist = [parse_episode(episode) for episode in episodeList]
+        linklist = [parseEpisode(episode) for episode in episodeList]
         linklist = [link for link in linklist if link is not None]
     else:
         linklist = []
@@ -115,7 +115,7 @@ def parseFeedToLinks(feedobj):
     return linklist
 
 
-def parse_episode(episode):
+def parseEpisode(episode):
     url = None
     for link in episode['links']:
         if 'type' in link.keys():
