@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Podcast Archiver v0.2: Feed parser for local podcast archive creation
+Podcast Archiver v0.3: Feed parser for local podcast archive creation
 
 Copyright (c) 2014-2017 Jan Willhaus
 
