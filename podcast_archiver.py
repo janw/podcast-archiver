@@ -245,15 +245,16 @@ def processPodcastLink(link):
                 if path.isfile(filename):
                     del(linklist[index:])
                     break
-
-            if len(linklist) != numberOfLinks:
-                break
+            numberOfLinks = len(linklist)
 
         # On given option, crop linklist to maximum number of episodes
         if maximumEpisodes is not None and maximumEpisodes < numberOfLinks:
             linklist = linklist[0:maximumEpisodes]
             numberOfLinks = maximumEpisodes
+
+        if maximumEpisodes is not None or update:
             break
+
 
     linklist.reverse()
 
