@@ -42,6 +42,7 @@ subdirs = False
 update = False
 maximumEpisodes = None
 
+
 class writeable_dir(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
@@ -227,7 +228,6 @@ def processPodcastLink(link):
         linklist += parseFeedToLinks(feedobj)
         nextPage = parseFeedToNextPage(feedobj)
 
-
         # Exit gracefully when no episodes have been found
         if len(linklist) == 0:
             print("No items have been found.")
@@ -237,7 +237,6 @@ def processPodcastLink(link):
             feedtitle = feedobj['feed']['title']
 
         numberOfLinks = len(linklist)
-
 
         # On given option, run an update, break at first existing episode
         if update:
@@ -256,7 +255,6 @@ def processPodcastLink(link):
 
         if maximumEpisodes is not None or update:
             break
-
 
     linklist.reverse()
 
