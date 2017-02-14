@@ -186,7 +186,12 @@ def main():
     for feed in feedlist:
         if verbose > 0:
             print("\nDownloading archive for: " + feed)
-        processPodcastLink(feed)
+        linklist, feedtitle = processPodcastLink(feed)
+        downloadPodcastFiles(linklist, feedtitle)
+
+    if verbose > 0:
+        print("\nDone.")
+
     return
 
 
@@ -194,22 +199,23 @@ def processPodcastLink(link):
     if verbose > 0:
         print("1. Gathering link list ..", end="")
 
-    linklist = []
     feedtitle = None
     nextPage = link
     while nextPage is not None:
-        print(".", end="", flush=True)
+        if verbose > 0:
+            print(".", end="", flush=True)
+
         feedobj = feedparser.parse(nextPage)
 
         # Escape improper feed-URL
         if 'status' in feedobj.keys() and feedobj['status'] == 404:
             print("\nQuery returned 404 (Not Found) on ", nextPage)
-            return
+            return None, None
 
         # Escape malformatted XML
         if feedobj['bozo'] == 1:
             print('\nDownloaded feed is malformatted on', nextPage)
-            return
+            return None, None
 
         # Parse the feed object for episodes and the next page
         nextPage, linklist = parseFeed(feedobj)
@@ -217,7 +223,7 @@ def processPodcastLink(link):
         # Exit gracefully when no episodes have been found
         if len(linklist) == 0:
             print("No items have been found.")
-            return
+            continue
 
         if feedtitle is None:
             feedtitle = feedobj['feed']['title']
@@ -237,29 +243,33 @@ def processPodcastLink(link):
                 break
 
     linklist.reverse()
-    nlinks = len(linklist)
 
-    if nlinks == 0:
-        if verbose > 0:
-            print("Nothing to do.")
+    if verbose > 0:
+        print(" %d episodes" % len(linklist))
+
+    return linklist, feedtitle
+
+
+def downloadPodcastFiles(linklist, feedtitle):
+    if linklist is None or feedtitle is None:
         return
 
-    if (verbose > 0):
-        print(" {0:d} episodes.\n2. Downloading content ... \n"
-              .format(nlinks), end="")
+    nlinks = len(linklist)
+    if nlinks > 0:
+        print("2. Downloading content ...")
 
     for cnt, link in enumerate(linklist):
         if verbose == 1:
-            print("\r{0}/{1}"
+            print("\r\t{0}/{1}"
                   .format(cnt + 1, nlinks), end="", flush=True)
         elif verbose > 1:
-            print("\nDownloading file no. {0}/{1}:\n{2}"
-                  .format(cnt + 1, nlinks, link), end="", flush=True)
+            print("\n\tDownloading file no. {0}/{1}:\n\t{2}"
+                  .format(cnt + 1, nlinks, link))
 
         filename = linkToTargetFilename(link, feedtitle)
 
         if verbose > 1:
-            print("\nLocal filename:", filename)
+            print("\tLocal filename:", filename)
 
         if path.isfile(filename):
             continue
@@ -278,9 +288,6 @@ def processPodcastLink(link):
             print("\nUnexpected interruption. Deleting unfinished file.")
             remove(filename)
             raise
-
-    if verbose > 0:
-        print("\n ... Done.")
 
 
 def parse_episode(episode):
