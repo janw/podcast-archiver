@@ -39,7 +39,7 @@ verbose = 1
 savedir = ''
 subdirs = False
 update = False
-
+maximumEpisodes = None
 
 class writeable_dir(argparse.Action):
 
@@ -118,6 +118,7 @@ def main():
     global subdirs
     global update
     global slugify
+    global maximumEpisodes
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-o', '--opml', action='append', type=argparse.FileType('r'),
@@ -142,6 +143,9 @@ def main():
                         help='''Clean all folders and filename of potentially weird
                              characters that might cause trouble with one or another
                              target filesystem.''')
+    parser.add_argument('-m', '--max-episodes', type=int,
+                        help='''Only download the given number of episodes per podcast
+                             feed. Useful if you don't really need the entire backlog.''')
 
     args = parser.parse_args()
 
@@ -176,6 +180,7 @@ def main():
     subdirs = args.subdirs
     update = args.update
     slugify = args.slugify
+    maximumEpisodes = args.max_episodes or None
 
     if verbose > 1:
         print("Verbose level: ", verbose)
@@ -229,10 +234,11 @@ def processPodcastLink(link):
         if feedtitle is None:
             feedtitle = feedobj['feed']['title']
 
+        numberOfLinks = len(linklist)
+
+
         # On given option, run an update, break at first existing episode
         if update:
-            curlenlinklist = len(linklist)
-
             for index, link in enumerate(linklist):
                 filename = linkToTargetFilename(link, feedtitle)
 
@@ -240,13 +246,19 @@ def processPodcastLink(link):
                     del(linklist[index:])
                     break
 
-            if len(linklist) != curlenlinklist:
+            if len(linklist) != numberOfLinks:
                 break
+
+        # On given option, crop linklist to maximum number of episodes
+        if maximumEpisodes is not None and maximumEpisodes < numberOfLinks:
+            linklist = linklist[0:maximumEpisodes]
+            numberOfLinks = maximumEpisodes
+            break
 
     linklist.reverse()
 
     if verbose > 0:
-        print(" %d episodes" % len(linklist))
+        print(" %d episodes" % numberOfLinks)
 
     return linklist, feedtitle
 
