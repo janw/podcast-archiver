@@ -269,7 +269,7 @@ def downloadPodcastFiles(linklist, feedtitle):
         return
 
     nlinks = len(linklist)
-    if nlinks > 0:
+    if nlinks > 0 and verbose > 0:
         print("2. Downloading content ...")
 
     for cnt, link in enumerate(linklist):
@@ -286,6 +286,8 @@ def downloadPodcastFiles(linklist, feedtitle):
             print("\tLocal filename:", filename)
 
         if path.isfile(filename):
+            if verbose > 1:
+                print("\t✓ Already exists.")
             continue
 
         # Create the subdir, if it does not exist
@@ -295,11 +297,12 @@ def downloadPodcastFiles(linklist, feedtitle):
         try:
             with urlopen(link) as response, open(filename, 'wb') as outfile:
                 copyfileobj(response, outfile)
+            print("\t✓ Download successful.")
         except (urllib.error.HTTPError,
                 urllib.error.URLError) as error:
-            print("\n - Query returned", error, end="", flush=True)
+            print("\t✗ Download failed. Query returned '%s'" % error)
         except KeyboardInterrupt as error:
-            print("\nUnexpected interruption. Deleting unfinished file.")
+            print("\t✗ Unexpected interruption. Deleting unfinished file.")
             remove(filename)
             raise
 
