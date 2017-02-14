@@ -112,6 +112,24 @@ def parseFeed(feedobj, linklist=[]):
 
     return nextPage, linklist
 
+def parseOpmlFile(opml):
+    feedlist = []
+    with opml as file:
+        tree = etree.fromstringlist(file)
+
+        for node in tree.iter():
+            if node.tag == 'outline':
+                if node.get('type') != 'rss':
+                    continue
+
+                url = node.get('xmlUrl')
+                if url is None:
+                    continue
+                else:
+                    feedlist.append(node.get('xmlUrl'))
+
+    return feedlist
+
 
 def main():
     global verbose
@@ -162,19 +180,7 @@ def main():
             feedlist.append(feed)
 
     for opml in (args.opml or []):
-        with opml as file:
-            tree = etree.fromstringlist(file)
-
-            for node in tree.iter():
-                if node.tag == 'outline':
-                    if node.get('type') != 'rss':
-                        continue
-
-                    url = node.get('xmlUrl')
-                    if url is None:
-                        continue
-                    else:
-                        feedlist.append(node.get('xmlUrl'))
+        feedlist += parseOpmlFile(opml)
 
     savedir = args.dir or ''
     subdirs = args.subdirs
