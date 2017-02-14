@@ -89,28 +89,30 @@ def linkToTargetFilename(link, feedtitle):
     return filename
 
 
-def parseFeed(feedobj, linklist=[]):
-    nextPage = None
-    for link in feedobj['feed']['links']:
-        if link['rel'] == 'next':
-            nextPage = link['href']
-            break
+def parseFeedToNextPage(feedobj):
 
-    # Try different feed episode layouts. 1st: 'items'
-    for episode in feedobj['items']:
-        newEpisode = parse_episode(episode)
-        if newEpisode is not None:
-            linklist.append(newEpisode)
+    # Assuming there will only be one link declared as 'next'
+    nextPage = [link['href'] for link in feedobj['feed']['links'] if link['rel'] == 'next']
+    if len(nextPage) > 0:
+        nextPage = nextPage[0]
+    else:
+        nextPage = None
 
-    # Try different feed episode layouts. 2nd: 'entries'
-    if len(linklist) == 0:
-        for episode in feedobj['entries']:
-            newEpisode = parse_episode(episode)
-            if newEpisode is not None:
-                linklist.append(newEpisode)
+    return nextPage
 
 
-    return nextPage, linklist
+def parseFeedToLinks(feedobj):
+
+    # Try different feed episode layouts: 'items' or 'entries'
+    episodeList = feedobj.get('items', False) or feedobj.get('entries', False)
+    if episodeList:
+        linklist = [parse_episode(episode) for episode in episodeList]
+        linklist = [link for link in linklist if link is not None]
+    else:
+        linklist = []
+
+    return linklist
+
 
 def parseOpmlFile(opml):
     with opml as file:
@@ -222,7 +224,9 @@ def processPodcastLink(link):
             return None, None
 
         # Parse the feed object for episodes and the next page
-        nextPage, linklist = parseFeed(feedobj, linklist)
+        linklist += parseFeedToLinks(feedobj)
+        nextPage = parseFeedToNextPage(feedobj)
+
 
         # Exit gracefully when no episodes have been found
         if len(linklist) == 0:
