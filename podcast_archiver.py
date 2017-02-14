@@ -115,6 +115,18 @@ def parseFeedToLinks(feedobj):
     return linklist
 
 
+def parse_episode(episode):
+    url = None
+    for link in episode['links']:
+        if 'type' in link.keys():
+            if link['type'].startswith('audio'):
+                url = link['href']
+            elif link['type'].startswith('video'):
+                url = link['href']
+
+    return url
+
+
 def parseOpmlFile(opml):
     with opml as file:
         tree = etree.fromstringlist(file)
@@ -305,18 +317,6 @@ def downloadPodcastFiles(linklist, feedtitle):
             print("\t✗ Unexpected interruption. Deleting unfinished file.")
             remove(filename)
             raise
-
-
-def parse_episode(episode):
-    url = None
-    for link in episode['links']:
-        if 'type' in link.keys():
-            if link['type'].startswith('audio'):
-                url = link['href']
-            elif link['type'].startswith('video'):
-                url = link['href']
-
-    return url
 
 
 if __name__ == "__main__":
