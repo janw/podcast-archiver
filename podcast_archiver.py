@@ -97,16 +97,17 @@ def parseFeed(feedobj, linklist=[]):
 
     # Try different feed episode layouts. 1st: 'items'
     for episode in feedobj['items']:
-        linklist.append(parse_episode(episode))
+        newEpisode = parse_episode(episode)
+        if newEpisode is not None:
+            linklist.append(newEpisode)
 
-    linklist = [x for x in linklist if x is not None]
-
-    # Try different feed episode layouts. 1st: 'entries'
+    # Try different feed episode layouts. 2nd: 'entries'
     if len(linklist) == 0:
         for episode in feedobj['entries']:
-            linklist.append(parse_episode(episode))
+            newEpisode = parse_episode(episode)
+            if newEpisode is not None:
+                linklist.append(newEpisode)
 
-        linklist = [x for x in linklist if x is not None]
 
     return nextPage, linklist
 
