@@ -39,7 +39,7 @@ verbose = 1
 savedir = ''
 subdirs = False
 update = False
-
+maximumEpisodes = None
 
 class writeable_dir(argparse.Action):
 
@@ -88,9 +88,8 @@ def linkToTargetFilename(link, feedtitle):
     return filename
 
 
-def parseFeed(feedobj):
+def parseFeed(feedobj, linklist=[]):
     nextPage = None
-    linklist = []
     for link in feedobj['feed']['links']:
         if link['rel'] == 'next':
             nextPage = link['href']
@@ -98,16 +97,17 @@ def parseFeed(feedobj):
 
     # Try different feed episode layouts. 1st: 'items'
     for episode in feedobj['items']:
-        linklist.append(parse_episode(episode))
+        newEpisode = parse_episode(episode)
+        if newEpisode is not None:
+            linklist.append(newEpisode)
 
-    linklist = [x for x in linklist if x is not None]
-
-    # Try different feed episode layouts. 1st: 'entries'
+    # Try different feed episode layouts. 2nd: 'entries'
     if len(linklist) == 0:
         for episode in feedobj['entries']:
-            linklist.append(parse_episode(episode))
+            newEpisode = parse_episode(episode)
+            if newEpisode is not None:
+                linklist.append(newEpisode)
 
-        linklist = [x for x in linklist if x is not None]
 
     return nextPage, linklist
 
@@ -118,6 +118,7 @@ def main():
     global subdirs
     global update
     global slugify
+    global maximumEpisodes
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-o', '--opml', action='append', type=argparse.FileType('r'),
@@ -142,6 +143,9 @@ def main():
                         help='''Clean all folders and filename of potentially weird
                              characters that might cause trouble with one or another
                              target filesystem.''')
+    parser.add_argument('-m', '--max-episodes', type=int,
+                        help='''Only download the given number of episodes per podcast
+                             feed. Useful if you don't really need the entire backlog.''')
 
     args = parser.parse_args()
 
@@ -176,6 +180,7 @@ def main():
     subdirs = args.subdirs
     update = args.update
     slugify = args.slugify
+    maximumEpisodes = args.max_episodes or None
 
     if verbose > 1:
         print("Verbose level: ", verbose)
@@ -201,6 +206,7 @@ def processPodcastLink(link):
 
     feedtitle = None
     nextPage = link
+    linklist = []
     while nextPage is not None:
         if verbose > 0:
             print(".", end="", flush=True)
@@ -218,7 +224,7 @@ def processPodcastLink(link):
             return None, None
 
         # Parse the feed object for episodes and the next page
-        nextPage, linklist = parseFeed(feedobj)
+        nextPage, linklist = parseFeed(feedobj, linklist)
 
         # Exit gracefully when no episodes have been found
         if len(linklist) == 0:
@@ -228,24 +234,32 @@ def processPodcastLink(link):
         if feedtitle is None:
             feedtitle = feedobj['feed']['title']
 
+        numberOfLinks = len(linklist)
+
+
         # On given option, run an update, break at first existing episode
         if update:
-            curlenlinklist = len(linklist)
-
             for index, link in enumerate(linklist):
                 filename = linkToTargetFilename(link, feedtitle)
 
                 if path.isfile(filename):
                     del(linklist[index:])
                     break
+            numberOfLinks = len(linklist)
 
-            if len(linklist) != curlenlinklist:
-                break
+        # On given option, crop linklist to maximum number of episodes
+        if maximumEpisodes is not None and maximumEpisodes < numberOfLinks:
+            linklist = linklist[0:maximumEpisodes]
+            numberOfLinks = maximumEpisodes
+
+        if maximumEpisodes is not None or update:
+            break
+
 
     linklist.reverse()
 
     if verbose > 0:
-        print(" %d episodes" % len(linklist))
+        print(" %d episodes" % numberOfLinks)
 
     return linklist, feedtitle
 
@@ -255,7 +269,7 @@ def downloadPodcastFiles(linklist, feedtitle):
         return
 
     nlinks = len(linklist)
-    if nlinks > 0:
+    if nlinks > 0 and verbose > 0:
         print("2. Downloading content ...")
 
     for cnt, link in enumerate(linklist):
@@ -272,6 +286,8 @@ def downloadPodcastFiles(linklist, feedtitle):
             print("\tLocal filename:", filename)
 
         if path.isfile(filename):
+            if verbose > 1:
+                print("\t✓ Already exists.")
             continue
 
         # Create the subdir, if it does not exist
@@ -281,11 +297,12 @@ def downloadPodcastFiles(linklist, feedtitle):
         try:
             with urlopen(link) as response, open(filename, 'wb') as outfile:
                 copyfileobj(response, outfile)
+            print("\t✓ Download successful.")
         except (urllib.error.HTTPError,
                 urllib.error.URLError) as error:
-            print("\n - Query returned", error, end="", flush=True)
+            print("\t✗ Download failed. Query returned '%s'" % error)
         except KeyboardInterrupt as error:
-            print("\nUnexpected interruption. Deleting unfinished file.")
+            print("\t✗ Unexpected interruption. Deleting unfinished file.")
             remove(filename)
             raise
 
