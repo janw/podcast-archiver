@@ -88,9 +88,8 @@ def linkToTargetFilename(link, feedtitle):
     return filename
 
 
-def parseFeed(feedobj):
+def parseFeed(feedobj, linklist=[]):
     nextPage = None
-    linklist = []
     for link in feedobj['feed']['links']:
         if link['rel'] == 'next':
             nextPage = link['href']
@@ -201,6 +200,7 @@ def processPodcastLink(link):
 
     feedtitle = None
     nextPage = link
+    linklist = []
     while nextPage is not None:
         if verbose > 0:
             print(".", end="", flush=True)
@@ -218,7 +218,7 @@ def processPodcastLink(link):
             return None, None
 
         # Parse the feed object for episodes and the next page
-        nextPage, linklist = parseFeed(feedobj)
+        nextPage, linklist = parseFeed(feedobj, linklist)
 
         # Exit gracefully when no episodes have been found
         if len(linklist) == 0:
