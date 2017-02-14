@@ -33,6 +33,7 @@ from os import path, remove, makedirs, access, W_OK
 from urllib.parse import urlparse
 import unicodedata
 import re
+import xml.etree.ElementTree as etree
 
 
 verbose = 1
@@ -161,7 +162,6 @@ def main():
             feedlist.append(feed)
 
     for opml in (args.opml or []):
-        import xml.etree.ElementTree as etree
         with opml as file:
             tree = etree.fromstringlist(file)
 
