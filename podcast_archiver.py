@@ -240,11 +240,6 @@ def processPodcastLink(link):
         linklist += parseFeedToLinks(feedobj)
         nextPage = parseFeedToNextPage(feedobj)
 
-        # Exit gracefully when no episodes have been found
-        if len(linklist) == 0:
-            print("No items have been found.")
-            continue
-
         if feedtitle is None:
             feedtitle = feedobj['feed']['title']
 
