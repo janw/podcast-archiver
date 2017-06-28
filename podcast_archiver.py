@@ -290,11 +290,23 @@ def downloadPodcastFiles(linklist, feedtitle):
             print("\n\tDownloading file no. {0}/{1}:\n\t{2}"
                   .format(cnt + 1, nlinks, link))
 
+        # Check existence once ...
+        filename = linkToTargetFilename(link, feedtitle)
+
+        if verbose > 1:
+            print("\tLocal filename:", filename)
+
+        if path.isfile(filename):
+            if verbose > 1:
+                print("\t✓ Already exists.")
+            continue
+
         # Begin downloading
         prepared_request = Request(link, headers=headers)
         try:
             with urlopen(prepared_request) as response:
 
+                # Check existence another time, with resolved link
                 link = response.geturl()
                 filename = linkToTargetFilename(link, feedtitle)
 
