@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 import argparse
 import feedparser
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 import urllib.error
 from shutil import copyfileobj
 from os import path, remove, makedirs, access, W_OK
@@ -41,6 +41,10 @@ savedir = ''
 subdirs = False
 update = False
 maximumEpisodes = None
+
+userAgent = 'Podcast-Archiver/0.4 (https://github.com/janwh/podcast-archiver)'
+headers = {'User-Agent': userAgent}
+feedparser.USER_AGENT = userAgent
 
 class writeable_dir(argparse.Action):
 
@@ -300,8 +304,9 @@ def downloadPodcastFiles(linklist, feedtitle):
         makedirs(path.dirname(filename), exist_ok=True)
 
         # Begin downloading
+        prepared_request = Request(link, headers=headers)
         try:
-            with urlopen(link) as response, open(filename, 'wb') as outfile:
+            with urlopen(prepared_request) as response, open(filename, 'wb') as outfile:
                 copyfileobj(response, outfile)
             print("\t✓ Download successful.")
         except (urllib.error.HTTPError,
