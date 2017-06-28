@@ -290,24 +290,27 @@ def downloadPodcastFiles(linklist, feedtitle):
             print("\n\tDownloading file no. {0}/{1}:\n\t{2}"
                   .format(cnt + 1, nlinks, link))
 
-        filename = linkToTargetFilename(link, feedtitle)
-
-        if verbose > 1:
-            print("\tLocal filename:", filename)
-
-        if path.isfile(filename):
-            if verbose > 1:
-                print("\t✓ Already exists.")
-            continue
-
-        # Create the subdir, if it does not exist
-        makedirs(path.dirname(filename), exist_ok=True)
-
         # Begin downloading
         prepared_request = Request(link, headers=headers)
         try:
-            with urlopen(prepared_request) as response, open(filename, 'wb') as outfile:
-                copyfileobj(response, outfile)
+            with urlopen(prepared_request) as response:
+
+                link = response.geturl()
+                filename = linkToTargetFilename(link, feedtitle)
+
+                if verbose > 1:
+                    print("\tLocal filename:", filename)
+
+                if path.isfile(filename):
+                    if verbose > 1:
+                        print("\t✓ Already exists.")
+                    continue
+
+                # Create the subdir, if it does not exist
+                makedirs(path.dirname(filename), exist_ok=True)
+
+                with open(filename, 'wb') as outfile:
+                    copyfileobj(response, outfile)
             print("\t✓ Download successful.")
         except (urllib.error.HTTPError,
                 urllib.error.URLError) as error:
