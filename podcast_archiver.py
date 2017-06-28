@@ -93,46 +93,52 @@ def linkToTargetFilename(link, feedtitle):
     return filename
 
 
-def parseFeed(feedobj, linklist=[]):
-    nextPage = None
-    for link in feedobj['feed']['links']:
-        if link['rel'] == 'next':
-            nextPage = link['href']
-            break
+def parseFeedToNextPage(feedobj):
 
-    # Try different feed episode layouts. 1st: 'items'
-    for episode in feedobj['items']:
-        newEpisode = parse_episode(episode)
-        if newEpisode is not None:
-            linklist.append(newEpisode)
+    # Assuming there will only be one link declared as 'next'
+    nextPage = [link['href'] for link in feedobj['feed']['links'] if link['rel'] == 'next']
+    if len(nextPage) > 0:
+        nextPage = nextPage[0]
+    else:
+        nextPage = None
 
-    # Try different feed episode layouts. 2nd: 'entries'
-    if len(linklist) == 0:
-        for episode in feedobj['entries']:
-            newEpisode = parse_episode(episode)
-            if newEpisode is not None:
-                linklist.append(newEpisode)
+    return nextPage
 
 
-    return nextPage, linklist
+def parseFeedToLinks(feedobj):
+
+    # Try different feed episode layouts: 'items' or 'entries'
+    episodeList = feedobj.get('items', False) or feedobj.get('entries', False)
+    if episodeList:
+        linklist = [parseEpisode(episode) for episode in episodeList]
+        linklist = [link for link in linklist if link is not None]
+    else:
+        linklist = []
+
+    return linklist
+
+
+def parseEpisode(episode):
+    url = None
+    for link in episode['links']:
+        if 'type' in link.keys():
+            if link['type'].startswith('audio'):
+                url = link['href']
+            elif link['type'].startswith('video'):
+                url = link['href']
+
+    return url
+
 
 def parseOpmlFile(opml):
-    feedlist = []
     with opml as file:
         tree = etree.fromstringlist(file)
 
-        for node in tree.iter():
-            if node.tag == 'outline':
-                if node.get('type') != 'rss':
-                    continue
+        feedlist = [node.get('xmlUrl') for node
+                    in tree.findall("*/outline/[@type='rss']")
+                    if node.get('xmlUrl') is not None]
 
-                url = node.get('xmlUrl')
-                if url is None:
-                    continue
-                else:
-                    feedlist.append(node.get('xmlUrl'))
-
-    return feedlist
+        return feedlist
 
 
 def main():
@@ -234,18 +240,13 @@ def processPodcastLink(link):
             return None, None
 
         # Parse the feed object for episodes and the next page
-        nextPage, linklist = parseFeed(feedobj, linklist)
-
-        # Exit gracefully when no episodes have been found
-        if len(linklist) == 0:
-            print("No items have been found.")
-            continue
+        linklist += parseFeedToLinks(feedobj)
+        nextPage = parseFeedToNextPage(feedobj)
 
         if feedtitle is None:
             feedtitle = feedobj['feed']['title']
 
         numberOfLinks = len(linklist)
-
 
         # On given option, run an update, break at first existing episode
         if update:
@@ -264,7 +265,6 @@ def processPodcastLink(link):
 
         if maximumEpisodes is not None or update:
             break
-
 
     linklist.reverse()
 
@@ -316,18 +316,6 @@ def downloadPodcastFiles(linklist, feedtitle):
             print("\t✗ Unexpected interruption. Deleting unfinished file.")
             remove(filename)
             raise
-
-
-def parse_episode(episode):
-    url = None
-    for link in episode['links']:
-        if 'type' in link.keys():
-            if link['type'].startswith('audio'):
-                url = link['href']
-            elif link['type'].startswith('video'):
-                url = link['href']
-
-    return url
 
 
 if __name__ == "__main__":
