@@ -237,8 +237,11 @@ def processPodcastLink(link):
 
         # Escape malformatted XML
         if feedobj['bozo'] == 1:
-            print('\nDownloaded feed is malformatted on', nextPage)
-            return None, None
+
+            # If the character encoding is wrong, we continue as long as the reparsing succeeded
+            if type(feedobj['bozo_exception']) is not feedparser.CharacterEncodingOverride:
+                print('\nDownloaded feed is malformatted on', nextPage)
+                return None, None
 
         # Parse the feed object for episodes and the next page
         linklist += parseFeedToLinks(feedobj)
