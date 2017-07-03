@@ -46,6 +46,7 @@ userAgent = 'Podcast-Archiver/0.4 (https://github.com/janwh/podcast-archiver)'
 headers = {'User-Agent': userAgent}
 feedparser.USER_AGENT = userAgent
 
+
 class writeable_dir(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
@@ -230,8 +231,8 @@ def processPodcastLink(link):
         feedobj = feedparser.parse(nextPage)
 
         # Escape improper feed-URL
-        if 'status' in feedobj.keys() and feedobj['status'] == 404:
-            print("\nQuery returned 404 (Not Found) on ", nextPage)
+        if 'status' in feedobj.keys() and feedobj['status'] >= 400:
+            print("\nQuery returned HTTP error", feedobj['status'])
             return None, None
 
         # Escape malformatted XML
