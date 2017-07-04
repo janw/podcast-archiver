@@ -213,7 +213,7 @@ class PodcastArchiver:
             # Escape improper feed-URL
             if 'status' in self._feedobj.keys() and self._feedobj['status'] >= 400:
                 print("\nQuery returned HTTP error", self._feedobj['status'])
-                return None, None
+                return None
 
             # Escape malformatted XML
             if self._feedobj['bozo'] == 1:
@@ -221,7 +221,7 @@ class PodcastArchiver:
                 # If the character encoding is wrong, we continue as long as the reparsing succeeded
                 if type(self._feedobj['bozo_exception']) is not feedparser.CharacterEncodingOverride:
                     print('\nDownloaded feed is malformatted on', self._feed_next_page)
-                    return None, None
+                    return None
 
             # Parse the feed object for episodes and the next page
             linklist += self.parseFeedToLinks(self._feedobj)
@@ -263,12 +263,15 @@ class PodcastArchiver:
             return
 
         nlinks = len(linklist)
-        if nlinks > 0 and self.verbose > 0:
-            print("2. Downloading content ...")
+        if nlinks > 0:
+            if self.verbose == 1:
+                print("2. Downloading content ... ", end="")
+            elif self.verbose > 1:
+                print("2. Downloading content ...")
 
         for cnt, link in enumerate(linklist):
             if self.verbose == 1:
-                print("\r\t{0}/{1}"
+                print("\r2. Downloading content ... {0}/{1}"
                       .format(cnt + 1, nlinks), end="", flush=True)
             elif self.verbose > 1:
                 print("\n\tDownloading file no. {0}/{1}:\n\t{2}"
@@ -307,15 +310,15 @@ class PodcastArchiver:
 
                     with open(filename, 'wb') as outfile:
                         copyfileobj(response, outfile)
-                if self.verbose > 0:
+                if self.verbose > 1:
                     print("\t✓ Download successful.")
-
             except (urllib.error.HTTPError,
                     urllib.error.URLError) as error:
-                print("\t✗ Download failed. Query returned '%s'" % error)
+                if self.verbose > 1:
+                    print("\t✗ Download failed. Query returned '%s'" % error)
             except KeyboardInterrupt:
                 if self.verbose > 0:
-                    print("\t✗ Unexpected interruption. Deleting unfinished file.")
+                    print("\n\t✗ Unexpected interruption. Deleting unfinished file.")
 
                 remove(filename)
                 raise
@@ -359,6 +362,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         sys.exit('\nERROR: Interrupted by user')
     except FileNotFoundError as error:
-        sys.exit('\nERROR: Could not find %s' % error)
+        sys.exit('\nERROR: %s' % error)
     except ArgumentTypeError as error:
         sys.exit('\nERROR: Your config is invalid: %s' % error)
