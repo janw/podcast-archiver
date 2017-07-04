@@ -54,9 +54,13 @@ class PodcastArchiver:
 
     _feed_title = ''
     _feedobj = None
+    _feed_info_dict = {}
 
     _userAgent = 'Podcast-Archiver/0.4 (https://github.com/janwh/podcast-archiver)'
     _headers = {'User-Agent': _userAgent}
+    _global_info_keys = ['author', 'language', 'link', 'subtitle', 'title', ]
+    _episode_info_keys = ['author', 'link', 'subtitle', 'title', ]
+    _date_keys = ['published', ]
 
     savedir = ''
     verbose = 0
@@ -126,6 +130,17 @@ class PodcastArchiver:
         if self.verbose > 0:
             print("\nDone.")
 
+    def parseGlobalFeedInfo(self, feedobj=None):
+        if feedobj is None:
+            feedobj = self._feedobj
+
+        self._feed_info_dict = {}
+        if 'feed' in feedobj:
+            for key in self._global_info_keys:
+                self._feed_info_dict['feed_' + key] = feedobj['feed'].get(key, None)
+
+        return self._feed_info_dict
+
     def slugifyString(filename):
         filename = unicodedata.normalize('NFKD', filename).encode('ascii', 'ignore')
         filename = re.sub('[^\w\s\-\.]', '', filename.decode('ascii')).strip()
@@ -180,7 +195,7 @@ class PodcastArchiver:
         episodeList = feed.get('items', False) or feed.get('entries', False)
         if episodeList:
             linklist = [self.parseEpisode(episode) for episode in episodeList]
-            linklist = [link for link in linklist if link is not None]
+            linklist = [link for link in linklist if len(link) > 0]
         else:
             linklist = []
 
@@ -188,6 +203,7 @@ class PodcastArchiver:
 
     def parseEpisode(self, episode):
         url = None
+        episode_info = {}
         for link in episode['links']:
             if 'type' in link.keys():
                 if link['type'].startswith('audio'):
@@ -195,7 +211,12 @@ class PodcastArchiver:
                 elif link['type'].startswith('video'):
                     url = link['href']
 
-        return url
+                if url is not None:
+                    for key in self._episode_info_keys + self._date_keys:
+                        episode_info[key] = episode.get(key, None)
+                    episode_info['url'] = url
+
+        return episode_info
 
     def processPodcastLink(self, link):
         if self.verbose > 0:
@@ -203,6 +224,7 @@ class PodcastArchiver:
 
         self._feed_title = None
         self._feed_next_page = link
+        first_page = True
         linklist = []
         while self._feed_next_page is not None:
             if self.verbose > 0:
@@ -222,6 +244,10 @@ class PodcastArchiver:
                 if type(self._feedobj['bozo_exception']) is not feedparser.CharacterEncodingOverride:
                     print('\nDownloaded feed is malformatted on', self._feed_next_page)
                     return None
+
+            if first_page:
+                self.parseGlobalFeedInfo()
+                first_page = False
 
             # Parse the feed object for episodes and the next page
             linklist += self.parseFeedToLinks(self._feedobj)
@@ -255,6 +281,10 @@ class PodcastArchiver:
         if self.verbose > 0:
             print(" %d episodes" % numberOfLinks)
 
+        if self.verbose > 2:
+            import json
+            print('Feed info:\n%s\n' % json.dumps(self._feed_info_dict, indent=2))
+
         return linklist
 
 
@@ -269,13 +299,20 @@ class PodcastArchiver:
             elif self.verbose > 1:
                 print("2. Downloading content ...")
 
-        for cnt, link in enumerate(linklist):
+        for cnt, episode_dict in enumerate(linklist):
+            link = episode_dict['url']
             if self.verbose == 1:
                 print("\r2. Downloading content ... {0}/{1}"
                       .format(cnt + 1, nlinks), end="", flush=True)
             elif self.verbose > 1:
                 print("\n\tDownloading file no. {0}/{1}:\n\t{2}"
                       .format(cnt + 1, nlinks, link))
+
+                if self.verbose > 2:
+                    import json
+                    print('\tEpisode info:')
+                    for key in episode_dict.keys():
+                        print("\t * %10s: %s" % (key, episode_dict[key]))
 
             # Check existence once ...
             filename = self.linkToTargetFilename(link)
