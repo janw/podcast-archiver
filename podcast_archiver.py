@@ -24,7 +24,9 @@ THE SOFTWARE.
 """
 
 
+import sys
 import argparse
+from argparse import ArgumentTypeError
 import feedparser
 from urllib.request import urlopen, Request
 import urllib.error
@@ -36,306 +38,327 @@ import re
 import xml.etree.ElementTree as etree
 
 
-verbose = 1
-savedir = ''
-subdirs = False
-update = False
-maximumEpisodes = None
-
-userAgent = 'Podcast-Archiver/0.4 (https://github.com/janwh/podcast-archiver)'
-headers = {'User-Agent': userAgent}
-feedparser.USER_AGENT = userAgent
-
-
 class writeable_dir(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
         prospective_dir = values
         if not path.isdir(prospective_dir):
-            raise argparse.ArgumentTypeError("writeable_dir:{0} is not a valid path"
-                                             .format(prospective_dir))
+            raise ArgumentTypeError("%s is not a valid path" % prospective_dir)
         if access(prospective_dir, W_OK):
             setattr(namespace, self.dest, prospective_dir)
         else:
-            raise argparse.ArgumentTypeError("writeable_dir:{0} is not a writeable dir"
-                                             .format(prospective_dir))
+            raise ArgumentTypeError("%s is not a writeable dir" % prospective_dir)
 
 
-def slugifyString(filename):
-    filename = unicodedata.normalize('NFKD', filename).encode('ascii', 'ignore')
-    filename = re.sub('[^\w\s\-\.]', '', filename.decode('ascii')).strip()
-    filename = re.sub('[-\s]+', '-', filename)
+class PodcastArchiver:
 
-    return filename
+    _feed_title = ''
+    _feedobj = None
 
+    _userAgent = 'Podcast-Archiver/0.4 (https://github.com/janwh/podcast-archiver)'
+    _headers = {'User-Agent': _userAgent}
 
-def linkToTargetFilename(link, feedtitle):
-
-    # Remove HTTP GET parameters from filename by parsing URL properly
-    linkpath = urlparse(link).path
-    basename = path.basename(linkpath)
-
-    # If requested, slugify the filename
-    if slugify:
-        basename = slugifyString(basename)
-        feedtitle = slugifyString(feedtitle)
-    else:
-        basename.replace(path.pathsep, '_')
-        basename.replace(path.sep, '_')
-        feedtitle.replace(path.pathsep, '_')
-        feedtitle.replace(path.sep, '_')
-
-    # Generate local path and check for existence
-    if subdirs:
-        filename = path.join(savedir, feedtitle, basename)
-    else:
-        filename = path.join(savedir, basename)
-
-    return filename
-
-
-def parseFeedToNextPage(feedobj):
-
-    # Assuming there will only be one link declared as 'next'
-    nextPage = [link['href'] for link in feedobj['feed']['links'] if link['rel'] == 'next']
-    if len(nextPage) > 0:
-        nextPage = nextPage[0]
-    else:
-        nextPage = None
-
-    return nextPage
-
-
-def parseFeedToLinks(feedobj):
-
-    # Try different feed episode layouts: 'items' or 'entries'
-    episodeList = feedobj.get('items', False) or feedobj.get('entries', False)
-    if episodeList:
-        linklist = [parseEpisode(episode) for episode in episodeList]
-        linklist = [link for link in linklist if link is not None]
-    else:
-        linklist = []
-
-    return linklist
-
-
-def parseEpisode(episode):
-    url = None
-    for link in episode['links']:
-        if 'type' in link.keys():
-            if link['type'].startswith('audio'):
-                url = link['href']
-            elif link['type'].startswith('video'):
-                url = link['href']
-
-    return url
-
-
-def parseOpmlFile(opml):
-    with opml as file:
-        tree = etree.fromstringlist(file)
-
-        feedlist = [node.get('xmlUrl') for node
-                    in tree.findall("*/outline/[@type='rss']")
-                    if node.get('xmlUrl') is not None]
-
-        return feedlist
-
-
-def main():
-    global verbose
-    global savedir
-    global subdirs
-    global update
-    global slugify
-    global maximumEpisodes
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-o', '--opml', action='append', type=argparse.FileType('r'),
-                        help='''Provide an OPML file (as exported by many other podcatchers)
-                             containing your feeds. The parameter can be used multiple
-                             times, once for every OPML file.''')
-    parser.add_argument('-f', '--feed', action='append',
-                        help='''Add a feed URl to the archiver. The parameter can be used
-                             multiple times, once for every feed.''')
-    parser.add_argument('-d', '--dir', action=writeable_dir,
-                        help='''Set the output directory of the podcast archive.''')
-    parser.add_argument('-s', '--subdirs', action='store_true',
-                        help='''Place downloaded podcasts in separate subdirectories per
-                             podcast (named with their title).''')
-    parser.add_argument('-u', '--update', action='store_true',
-                        help='''Force the archiver to only update the feeds with newly added
-                             episodes. As soon as the first old episode found in the
-                             download directory, further downloading is interrupted.''')
-    parser.add_argument('-v', '--verbose', action='count',
-                        help='''Increase the level of verbosity while downloading.''')
-    parser.add_argument('-S', '--slugify', action='store_true',
-                        help='''Clean all folders and filename of potentially weird
-                             characters that might cause trouble with one or another
-                             target filesystem.''')
-    parser.add_argument('-m', '--max-episodes', type=int,
-                        help='''Only download the given number of episodes per podcast
-                             feed. Useful if you don't really need the entire backlog.''')
-
-    args = parser.parse_args()
-
-    verbose = args.verbose or 0
-    if verbose > 2:
-        print('Input arguments:', args)
+    savedir = ''
+    verbose = 0
+    subdirs = False
+    update = False
+    maximumEpisodes = None
 
     feedlist = []
-    for feed in (args.feed or []):
+
+    def __init__(self):
+
+        feedparser.USER_AGENT = self._userAgent
+
+    def addArguments(self, args):
+
+        # if type(args) is argparse.ArgumentParser:
+        #     args = parser.parse_args()
+
+        self.verbose = args.verbose or 0
+        if self.verbose > 2:
+            print('Input arguments:', args)
+
+        for feed in (args.feed or []):
+            self.addFeed(feed)
+
+        for opml in (args.opml or []):
+            self.parseOpmlFile(opml)
+
+        if args.dir:
+            self.savedir = args.dir
+
+        self.subdirs = args.subdirs
+        self.update = args.update
+        self.slugify = args.slugify
+        self.maximumEpisodes = args.max_episodes or None
+
+        if self.verbose > 1:
+            print("Verbose level: ", self.verbose)
+
+    def addFeed(self, feed):
         if path.isfile(feed):
-            feedlist += open(feed, 'r').read().strip().splitlines()
+            self.feedlist += open(feed, 'r').read().strip().splitlines()
         else:
-            feedlist.append(feed)
+            self.feedlist.append(feed)
 
-    for opml in (args.opml or []):
-        feedlist += parseOpmlFile(opml)
+    def parseOpmlFile(opml):
+        with opml as file:
+            tree = etree.fromstringlist(file)
 
-    savedir = args.dir or ''
-    subdirs = args.subdirs
-    update = args.update
-    slugify = args.slugify
-    maximumEpisodes = args.max_episodes or None
+        for feed in [node.get('xmlUrl') for node
+                     in tree.findall("*/outline/[@type='rss']")
+                     if node.get('xmlUrl') is not None]:
 
-    if verbose > 1:
-        print("Verbose level: ", verbose)
+            addFeed(feed)
 
-    if verbose > 0 and update:
-        print("Updating archive")
+    def processFeeds(self):
 
-    for feed in feedlist:
-        if verbose > 0:
-            print("\nDownloading archive for: " + feed)
-        linklist, feedtitle = processPodcastLink(feed)
-        downloadPodcastFiles(linklist, feedtitle)
+        if self.verbose > 0 and self.update:
+            print("Updating archive")
 
-    if verbose > 0:
-        print("\nDone.")
+        for feed in self.feedlist:
+            if self.verbose > 0:
+                print("\nDownloading archive for: " + feed)
+            linklist = self.processPodcastLink(feed)
+            self.downloadPodcastFiles(linklist)
 
-    return
+        if self.verbose > 0:
+            print("\nDone.")
 
+    def slugifyString(filename):
+        filename = unicodedata.normalize('NFKD', filename).encode('ascii', 'ignore')
+        filename = re.sub('[^\w\s\-\.]', '', filename.decode('ascii')).strip()
+        filename = re.sub('[-\s]+', '-', filename)
 
-def processPodcastLink(link):
-    if verbose > 0:
-        print("1. Gathering link list ..", end="")
+        return filename
 
-    feedtitle = None
-    nextPage = link
-    linklist = []
-    while nextPage is not None:
-        if verbose > 0:
-            print(".", end="", flush=True)
+    def linkToTargetFilename(self, link):
 
-        feedobj = feedparser.parse(nextPage)
+        # Remove HTTP GET parameters from filename by parsing URL properly
+        linkpath = urlparse(link).path
+        basename = path.basename(linkpath)
 
-        # Escape improper feed-URL
-        if 'status' in feedobj.keys() and feedobj['status'] >= 400:
-            print("\nQuery returned HTTP error", feedobj['status'])
-            return None, None
+        # If requested, slugify the filename
+        if self.slugify:
+            basename = PodcastArchiver.slugifyString(basename)
+            self._feed_title = PodcastArchiver.slugifyString(self._feed_title)
+        else:
+            basename.replace(path.pathsep, '_')
+            basename.replace(path.sep, '_')
+            self._feed_title.replace(path.pathsep, '_')
+            self._feed_title.replace(path.sep, '_')
 
-        # Escape malformatted XML
-        if feedobj['bozo'] == 1:
+        # Generate local path and check for existence
+        if self.subdirs:
+            filename = path.join(self.savedir, self._feed_title, basename)
+        else:
+            filename = path.join(self.savedir, basename)
 
-            # If the character encoding is wrong, we continue as long as the reparsing succeeded
-            if type(feedobj['bozo_exception']) is not feedparser.CharacterEncodingOverride:
-                print('\nDownloaded feed is malformatted on', nextPage)
+        return filename
+
+    def parseFeedToNextPage(self, feedobj=None):
+
+        if feedobj is None:
+            feedobj = self._feedobj
+
+        # Assuming there will only be one link declared as 'next'
+        self._feed_next_page = [link['href'] for link in feedobj['feed']['links'] if link['rel'] == 'next']
+        if len(self._feed_next_page) > 0:
+            self._feed_next_page = self._feed_next_page[0]
+        else:
+            self._feed_next_page = None
+
+        return self._feed_next_page
+
+    def parseFeedToLinks(self, feed=None):
+
+        if feed is None:
+            feed = self._feedobj
+
+        # Try different feed episode layouts: 'items' or 'entries'
+        episodeList = feed.get('items', False) or feed.get('entries', False)
+        if episodeList:
+            linklist = [self.parseEpisode(episode) for episode in episodeList]
+            linklist = [link for link in linklist if link is not None]
+        else:
+            linklist = []
+
+        return linklist
+
+    def parseEpisode(self, episode):
+        url = None
+        for link in episode['links']:
+            if 'type' in link.keys():
+                if link['type'].startswith('audio'):
+                    url = link['href']
+                elif link['type'].startswith('video'):
+                    url = link['href']
+
+        return url
+
+    def processPodcastLink(self, link):
+        if self.verbose > 0:
+            print("1. Gathering link list ..", end="")
+
+        self._feed_title = None
+        self._feed_next_page = link
+        linklist = []
+        while self._feed_next_page is not None:
+            if self.verbose > 0:
+                print(".", end="", flush=True)
+
+            self._feedobj = feedparser.parse(self._feed_next_page)
+
+            # Escape improper feed-URL
+            if 'status' in self._feedobj.keys() and self._feedobj['status'] >= 400:
+                print("\nQuery returned HTTP error", self._feedobj['status'])
                 return None, None
 
-        # Parse the feed object for episodes and the next page
-        linklist += parseFeedToLinks(feedobj)
-        nextPage = parseFeedToNextPage(feedobj)
+            # Escape malformatted XML
+            if self._feedobj['bozo'] == 1:
 
-        if feedtitle is None:
-            feedtitle = feedobj['feed']['title']
+                # If the character encoding is wrong, we continue as long as the reparsing succeeded
+                if type(self._feedobj['bozo_exception']) is not feedparser.CharacterEncodingOverride:
+                    print('\nDownloaded feed is malformatted on', self._feed_next_page)
+                    return None, None
 
-        numberOfLinks = len(linklist)
+            # Parse the feed object for episodes and the next page
+            linklist += self.parseFeedToLinks(self._feedobj)
+            self._feed_next_page = self.parseFeedToNextPage(self._feedobj)
 
-        # On given option, run an update, break at first existing episode
-        if update:
-            for index, link in enumerate(linklist):
-                filename = linkToTargetFilename(link, feedtitle)
+            if self._feed_title is None:
+                self._feed_title = self._feedobj['feed']['title']
 
-                if path.isfile(filename):
-                    del(linklist[index:])
-                    break
             numberOfLinks = len(linklist)
 
-        # On given option, crop linklist to maximum number of episodes
-        if maximumEpisodes is not None and maximumEpisodes < numberOfLinks:
-            linklist = linklist[0:maximumEpisodes]
-            numberOfLinks = maximumEpisodes
+            # On given option, run an update, break at first existing episode
+            if self.update:
+                for index, link in enumerate(linklist):
+                    filename = self.linkToTargetFilename(link)
 
-        if maximumEpisodes is not None or update:
-            break
+                    if path.isfile(filename):
+                        del(linklist[index:])
+                        break
+                numberOfLinks = len(linklist)
 
-    linklist.reverse()
+            # On given option, crop linklist to maximum number of episodes
+            if self.maximumEpisodes is not None and self.maximumEpisodes < numberOfLinks:
+                linklist = linklist[0:self.maximumEpisodes]
+                numberOfLinks = self.maximumEpisodes
 
-    if verbose > 0:
-        print(" %d episodes" % numberOfLinks)
+            if self.maximumEpisodes is not None or self.update:
+                break
 
-    return linklist, feedtitle
+        linklist.reverse()
+
+        if self.verbose > 0:
+            print(" %d episodes" % numberOfLinks)
+
+        return linklist
 
 
-def downloadPodcastFiles(linklist, feedtitle):
-    if linklist is None or feedtitle is None:
-        return
+    def downloadPodcastFiles(self, linklist):
+        if linklist is None or self._feed_title is None:
+            return
 
-    nlinks = len(linklist)
-    if nlinks > 0 and verbose > 0:
-        print("2. Downloading content ...")
+        nlinks = len(linklist)
+        if nlinks > 0 and self.verbose > 0:
+            print("2. Downloading content ...")
 
-    for cnt, link in enumerate(linklist):
-        if verbose == 1:
-            print("\r\t{0}/{1}"
-                  .format(cnt + 1, nlinks), end="", flush=True)
-        elif verbose > 1:
-            print("\n\tDownloading file no. {0}/{1}:\n\t{2}"
-                  .format(cnt + 1, nlinks, link))
+        for cnt, link in enumerate(linklist):
+            if self.verbose == 1:
+                print("\r\t{0}/{1}"
+                      .format(cnt + 1, nlinks), end="", flush=True)
+            elif self.verbose > 1:
+                print("\n\tDownloading file no. {0}/{1}:\n\t{2}"
+                      .format(cnt + 1, nlinks, link))
 
-        # Check existence once ...
-        filename = linkToTargetFilename(link, feedtitle)
+            # Check existence once ...
+            filename = self.linkToTargetFilename(link)
 
-        if verbose > 1:
-            print("\tLocal filename:", filename)
+            if self.verbose > 1:
+                print("\tLocal filename:", filename)
 
-        if path.isfile(filename):
-            if verbose > 1:
-                print("\t✓ Already exists.")
-            continue
+            if path.isfile(filename):
+                if self.verbose > 1:
+                    print("\t✓ Already exists.")
+                continue
 
-        # Begin downloading
-        prepared_request = Request(link, headers=headers)
-        try:
-            with urlopen(prepared_request) as response:
+            # Begin downloading
+            prepared_request = Request(link, headers=self._headers)
+            try:
+                with urlopen(prepared_request) as response:
 
-                # Check existence another time, with resolved link
-                link = response.geturl()
-                filename = linkToTargetFilename(link, feedtitle)
+                    # Check existence another time, with resolved link
+                    link = response.geturl()
+                    filename = self.linkToTargetFilename(link)
 
-                if verbose > 1:
-                    print("\tLocal filename:", filename)
+                    if self.verbose > 1:
+                        print("\tLocal filename:", filename)
 
-                if path.isfile(filename):
-                    if verbose > 1:
-                        print("\t✓ Already exists.")
-                    continue
+                    if path.isfile(filename):
+                        if self.verbose > 1:
+                            print("\t✓ Already exists.")
+                        continue
 
-                # Create the subdir, if it does not exist
-                makedirs(path.dirname(filename), exist_ok=True)
+                    # Create the subdir, if it does not exist
+                    makedirs(path.dirname(filename), exist_ok=True)
 
-                with open(filename, 'wb') as outfile:
-                    copyfileobj(response, outfile)
-            print("\t✓ Download successful.")
-        except (urllib.error.HTTPError,
-                urllib.error.URLError) as error:
-            print("\t✗ Download failed. Query returned '%s'" % error)
-        except KeyboardInterrupt as error:
-            print("\t✗ Unexpected interruption. Deleting unfinished file.")
-            remove(filename)
-            raise
+                    with open(filename, 'wb') as outfile:
+                        copyfileobj(response, outfile)
+                if self.verbose > 0:
+                    print("\t✓ Download successful.")
+
+            except (urllib.error.HTTPError,
+                    urllib.error.URLError) as error:
+                print("\t✗ Download failed. Query returned '%s'" % error)
+            except KeyboardInterrupt:
+                if self.verbose > 0:
+                    print("\t✗ Unexpected interruption. Deleting unfinished file.")
+
+                remove(filename)
+                raise
 
 
 if __name__ == "__main__":
-    main()
+    try:
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-o', '--opml', action='append', type=argparse.FileType('r'),
+                            help='''Provide an OPML file (as exported by many other podcatchers)
+                                 containing your feeds. The parameter can be used multiple
+                                 times, once for every OPML file.''')
+        parser.add_argument('-f', '--feed', action='append',
+                            help='''Add a feed URl to the archiver. The parameter can be used
+                                 multiple times, once for every feed.''')
+        parser.add_argument('-d', '--dir', action=writeable_dir,
+                            help='''Set the output directory of the podcast archive.''')
+        parser.add_argument('-s', '--subdirs', action='store_true',
+                            help='''Place downloaded podcasts in separate subdirectories per
+                                 podcast (named with their title).''')
+        parser.add_argument('-u', '--update', action='store_true',
+                            help='''Force the archiver to only update the feeds with newly added
+                                 episodes. As soon as the first old episode found in the
+                                 download directory, further downloading is interrupted.''')
+        parser.add_argument('-v', '--verbose', action='count',
+                            help='''Increase the level of verbosity while downloading.''')
+        parser.add_argument('-S', '--slugify', action='store_true',
+                            help='''Clean all folders and filename of potentially weird
+                                 characters that might cause trouble with one or another
+                                 target filesystem.''')
+        parser.add_argument('-m', '--max-episodes', type=int,
+                            help='''Only download the given number of episodes per podcast
+                                 feed. Useful if you don't really need the entire backlog.''')
+
+        args = parser.parse_args()
+
+        pa = PodcastArchiver()
+        pa.addArguments(args)
+        pa.processFeeds()
+    except KeyboardInterrupt:
+        sys.exit('\nERROR: Interrupted by user')
+    except FileNotFoundError as error:
+        sys.exit('\nERROR: Could not find %s' % error)
+    except ArgumentTypeError as error:
+        sys.exit('\nERROR: Your config is invalid: %s' % error)
