@@ -106,7 +106,7 @@ class PodcastArchiver:
         else:
             self.feedlist.append(feed)
 
-    def parseOpmlFile(opml):
+    def parseOpmlFile(self, opml):
         with opml as file:
             tree = etree.fromstringlist(file)
 
@@ -114,7 +114,7 @@ class PodcastArchiver:
                      in tree.findall("*/outline/[@type='rss']")
                      if node.get('xmlUrl') is not None]:
 
-            addFeed(feed)
+            self.addFeed(feed)
 
     def processFeeds(self):
 
