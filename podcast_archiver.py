@@ -28,6 +28,7 @@ import sys
 import argparse
 from argparse import ArgumentTypeError
 import feedparser
+from feedparser import CharacterEncodingOverride
 from urllib.request import urlopen, Request
 import urllib.error
 from shutil import copyfileobj
@@ -178,7 +179,9 @@ class PodcastArchiver:
             feedobj = self._feedobj
 
         # Assuming there will only be one link declared as 'next'
-        self._feed_next_page = [link['href'] for link in feedobj['feed']['links'] if link['rel'] == 'next']
+        self._feed_next_page = [link['href'] for link in feedobj['feed']['links']
+                                if link['rel'] == 'next']
+
         if len(self._feed_next_page) > 0:
             self._feed_next_page = self._feed_next_page[0]
         else:
@@ -241,7 +244,7 @@ class PodcastArchiver:
             if self._feedobj['bozo'] == 1:
 
                 # If the character encoding is wrong, we continue as long as the reparsing succeeded
-                if type(self._feedobj['bozo_exception']) is not feedparser.CharacterEncodingOverride:
+                if type(self._feedobj['bozo_exception']) is not CharacterEncodingOverride:
                     print('\nDownloaded feed is malformatted on', self._feed_next_page)
                     return None
 
