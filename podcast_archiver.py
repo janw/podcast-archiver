@@ -199,7 +199,7 @@ class PodcastArchiver:
 
     def processPodcastLink(self, link):
         if self.verbose > 0:
-            print("1. Gathering link list ..", end="")
+            print("1. Gathering link list ...", end="", flush=True)
 
         self._feed_title = None
         self._feed_next_page = link
