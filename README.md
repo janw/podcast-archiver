@@ -15,7 +15,7 @@ Before downloading any episode the function first fetches all available pages of
 
 ## Requirements
 
-`podcast_archiver.py` requires Python 3+ and the `feedparser` library (among others, which are installed with Python by default).
+`podcast_archiver.py` requires Python 3 (tested with 3.6), the [feedparser](https://github.com/kurtmckee/feedparser) library, and [tqdm](https://github.com/tqdm/tqdm) progress bar.
 
 ## Usage
 
@@ -27,7 +27,8 @@ Before downloading any episode the function first fetches all available pages of
 * `-d <path>` / `--dir=<path`: Specify the output directory for the archive, denoted by `<path>`. If omitted, the files are written to the current directory.
 * `-s` / `--subdirs`: Create subdirectories for the provided feeds. This option enables reading the title of the feed and saving the episodes to a subdir of that title (of course invalid characters are removed first).
 * `-u` / `--update.`: Only update the archive. Meaning: The fetching of the feed pages (which can be slow at time) is interrupted when the first episode is detected that already has an audio file present in the archive. This option might be used, if you already have created an archive and just want to add the most recent (not yet downloaded) episode(s).
-* `-v` / `--verbose`: Increase verbose level. In level 1 for example all download paths are shown. By default, `podcast_archiver` shows basic output on how many episodes are downloaded and shows the progress on those. Multiple `v`'s each increase the verbosity (currently only level 1 is used)
+* `-v` / `--verbose`: Increase verbose level. In level 1 for example all download paths are shown. By default, `podcast_archiver` shows basic output on how many episodes are downloaded and shows the progress on those. Multiple `v`'s each increase the verbosity. By default the Archiver has no outputs at all, except for errors (perfect for cronjobs). Some approximate numbers on how talkative the Archiver gets by adding `v`s: Level 1 uses about 4 lines per entered podcast feed, Level 2 adds about 5 lines per episode, and Level 3 adds 2-10 lines per episode containing additional metadata.
+* `-p` / `--progress`: Show a progress bar for episode downloads. Can be used in conjunction with `--verbose` (see above).
 * `-S` / `--slugify`: Clean all folders and filename of potentially weird characters that might cause trouble with one or another target filesystem. The character set boils down to about: alphanumeric characters (both upper and lower case), dashes, and underscores, with unicode characters being normalized according to [Compatibility Decomposition](#excursion-unicode-normalization-in-slugify).
 * '`-m <number_of_episodes>`', `--max-episodes=<number_of_episodes>`: Only download the given `<number_of_episodes>` per podcast feed. Useful if you don't really need the entire backlog. Keep in mind that with subsequent executions with new episodes appearing, Podcast Archiver will currently *not* remove previous episodes. Therefore the number of episodes on disk will increase (actually by a maximum of `<number_of_episodes>`) when new episodes start coming up in the feed, and the Archiver is run again.
 
