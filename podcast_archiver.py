@@ -67,6 +67,7 @@ class PodcastArchiver:
     verbose = 0
     subdirs = False
     update = False
+    progress = False
     maximumEpisodes = None
 
     feedlist = []
@@ -95,6 +96,7 @@ class PodcastArchiver:
 
         self.subdirs = args.subdirs
         self.update = args.update
+        self.progress = args.progress
         self.slugify = args.slugify
         self.maximumEpisodes = args.max_episodes or None
 
@@ -336,6 +338,7 @@ class PodcastArchiver:
 
                     # Check existence another time, with resolved link
                     link = response.geturl()
+                    total_size = int(response.getheader('content-length', '0'))
                     old_filename = filename
                     filename = self.linkToTargetFilename(link)
 
@@ -351,8 +354,18 @@ class PodcastArchiver:
                     # Create the subdir, if it does not exist
                     makedirs(path.dirname(filename), exist_ok=True)
 
-                    with open(filename, 'wb') as outfile:
-                        copyfileobj(response, outfile)
+                    if self.progress and total_size > 0:
+                        from tqdm import tqdm
+                        with tqdm(total=total_size, unit='B',
+                                  unit_scale=True, unit_divisor=1024) as progress_bar:
+
+                            with open(filename, 'wb') as outfile:
+                                self.prettyCopyfileobj(response, outfile,
+                                                       callback=progress_bar.update)
+                    else:
+                        with open(filename, 'wb') as outfile:
+                            copyfileobj(response, outfile)
+
                 if self.verbose > 1:
                     print("\t✓ Download successful.")
             except (urllib.error.HTTPError,
@@ -365,6 +378,14 @@ class PodcastArchiver:
 
                 remove(filename)
                 raise
+
+    def prettyCopyfileobj(self, fsrc, fdst, callback, block_size=8 * 1024):
+        while True:
+            buf = fsrc.read(block_size)
+            if not buf:
+                break
+            fdst.write(buf)
+            callback(len(buf))
 
 
 if __name__ == "__main__":
@@ -389,6 +410,8 @@ if __name__ == "__main__":
                                  download directory, further downloading is interrupted.''')
         parser.add_argument('-v', '--verbose', action='count',
                             help='''Increase the level of verbosity while downloading.''')
+        parser.add_argument('-p', '--progress', action='store_true',
+                            help='''Show progress bars while downloading episodes.''')
         parser.add_argument('-S', '--slugify', action='store_true',
                             help='''Clean all folders and filename of potentially weird
                                  characters that might cause trouble with one or another
