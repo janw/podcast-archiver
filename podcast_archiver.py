@@ -336,15 +336,17 @@ class PodcastArchiver:
 
                     # Check existence another time, with resolved link
                     link = response.geturl()
+                    old_filename = filename
                     filename = self.linkToTargetFilename(link)
 
-                    if self.verbose > 1:
-                        print("\tResolved filename:", filename)
-
-                    if path.isfile(filename):
+                    if old_filename != filename:
                         if self.verbose > 1:
-                            print("\t✓ Already exists.")
-                        continue
+                            print("\tResolved filename:", filename)
+
+                        if path.isfile(filename):
+                            if self.verbose > 1:
+                                print("\t✓ Already exists.")
+                            continue
 
                     # Create the subdir, if it does not exist
                     makedirs(path.dirname(filename), exist_ok=True)
