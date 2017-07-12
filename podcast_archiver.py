@@ -339,7 +339,7 @@ class PodcastArchiver:
                     filename = self.linkToTargetFilename(link)
 
                     if self.verbose > 1:
-                        print("\tLocal filename:", filename)
+                        print("\tResolved filename:", filename)
 
                     if path.isfile(filename):
                         if self.verbose > 1:
