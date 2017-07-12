@@ -263,7 +263,8 @@ class PodcastArchiver:
 
             # On given option, run an update, break at first existing episode
             if self.update:
-                for index, link in enumerate(linklist):
+                for index, episode_dict in enumerate(linklist):
+                    link = episode_dict['url']
                     filename = self.linkToTargetFilename(link)
 
                     if path.isfile(filename):
