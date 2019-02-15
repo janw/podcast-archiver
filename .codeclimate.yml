@@ -1,19 +1,8 @@
 ---
-engines:
-  duplication:
-    enabled: true
-    config:
-      languages:
-      - python
-
+plugins:
   fixme:
     enabled: true
-
-  radon:
+  sonar-python:
     enabled: true
-    config: 
-      python_version: 3
-          
-ratings:
-  paths:
-  - "**.py"
+  markdownlint:
+    enabled: true
