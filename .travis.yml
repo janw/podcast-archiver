@@ -28,4 +28,3 @@ matrix:
     - name: "3.7"
     - name: "3.8-dev"
       python: "3.8-dev"
-python: 3.8-dev
