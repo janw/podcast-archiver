@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Podcast Archiver v0.3: Feed parser for local podcast archive creation
+Podcast Archiver — Feed parser for local podcast archive creation.
 
-Copyright (c) 2014-2017 Jan Willhaus
+Copyright (c) 2014-2019 Jan Willhaus
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,10 @@ import xml.etree.ElementTree as etree
 
 
 class writeable_dir(argparse.Action):
+    """Argparse action to check if a directory is writeable."""
+
     def __call__(self, parser, namespace, values, option_string=None):
+        """Check the given directory."""
         prospective_dir = values
         if not path.isdir(prospective_dir):
             raise ArgumentTypeError("%s is not a valid path" % prospective_dir)
@@ -51,6 +54,7 @@ class writeable_dir(argparse.Action):
 
 
 class PodcastArchiver:
+    """Podcast Archiver main processing class."""
 
     _feed_title = ""
     _feedobj = None
@@ -72,14 +76,11 @@ class PodcastArchiver:
     feedlist = []
 
     def __init__(self):
-
+        """Instatiate an archiver object, assign own user agent to feedparser object."""
         feedparser.USER_AGENT = self._userAgent
 
     def addArguments(self, args):
-
-        # if type(args) is argparse.ArgumentParser:
-        #     args = parser.parse_args()
-
+        """Add parsed input arguments to the class settings."""
         self.verbose = args.verbose or 0
         if self.verbose > 2:
             print("Input arguments:", args)
@@ -103,12 +104,14 @@ class PodcastArchiver:
             print("Verbose level: ", self.verbose)
 
     def addFeed(self, feed):
+        """Add a feed to the feedlist."""
         if path.isfile(feed):
             self.feedlist += open(feed, "r").read().strip().splitlines()
         else:
             self.feedlist.append(feed)
 
     def parseOpmlFile(self, opml):
+        """Parse and add feeds from an OPML file."""
         with opml as file:
             tree = etree.fromstringlist(file)
 
@@ -121,7 +124,7 @@ class PodcastArchiver:
             self.addFeed(feed)
 
     def processFeeds(self):
-
+        """Iterate over feedlist and download/update podcast archive files."""
         if self.verbose > 0 and self.update:
             print("Updating archive")
 
@@ -135,6 +138,7 @@ class PodcastArchiver:
             print("\nDone.")
 
     def parseGlobalFeedInfo(self, feedobj=None):
+        """Parse the feed-global properties like title, etc. for use in file naming."""
         if feedobj is None:
             feedobj = self._feedobj
 
@@ -146,6 +150,7 @@ class PodcastArchiver:
         return self._feed_info_dict
 
     def slugifyString(filename):
+        """Slugify a filename to be all-ASCII for increased filesystem support."""
         filename = unicodedata.normalize("NFKD", filename).encode("ascii", "ignore")
         filename = re.sub(r"[^\w\s\-\.]", "", filename.decode("ascii")).strip()
         filename = re.sub(r"[-\s]+", "-", filename)
@@ -153,7 +158,7 @@ class PodcastArchiver:
         return filename
 
     def linkToTargetFilename(self, link):
-
+        """Follow HTTP redirects to get the real filename for downloads."""
         # Remove HTTP GET parameters from filename by parsing URL properly
         linkpath = urlparse(link).path
         basename = path.basename(linkpath)
@@ -177,7 +182,7 @@ class PodcastArchiver:
         return filename
 
     def parseFeedToNextPage(self, feedobj=None):
-
+        """Iterate over feed pages to extract all episodes from them."""
         if feedobj is None:
             feedobj = self._feedobj
 
@@ -194,7 +199,7 @@ class PodcastArchiver:
         return self._feed_next_page
 
     def parseFeedToLinks(self, feed=None):
-
+        """Create a linklist from episodes in a feed for downloading."""
         if feed is None:
             feed = self._feedobj
 
@@ -209,6 +214,7 @@ class PodcastArchiver:
         return linklist
 
     def parseEpisode(self, episode):
+        """Extract enclosure (file) from links in episode object."""
         url = None
         episode_info = {}
         for link in episode["links"]:
@@ -226,6 +232,7 @@ class PodcastArchiver:
         return episode_info
 
     def processPodcastLink(self, link):
+        """Process podcast link into feed object and link list."""
         if self.verbose > 0:
             print("1. Gathering link list ...", end="", flush=True)
 
@@ -303,6 +310,7 @@ class PodcastArchiver:
         return linklist
 
     def downloadPodcastFiles(self, linklist):
+        """Download files from link list for one particular podcast."""
         if linklist is None or self._feed_title is None:
             return
 
@@ -329,8 +337,6 @@ class PodcastArchiver:
                 )
 
                 if self.verbose > 2:
-                    import json
-
                     print("\tEpisode info:")
                     for key in episode_dict.keys():
                         print("\t * %10s: %s" % (key, episode_dict[key]))
@@ -400,6 +406,7 @@ class PodcastArchiver:
                 raise
 
     def prettyCopyfileobj(self, fsrc, fdst, callback, block_size=8 * 1024):
+        """Version of copyfile that has a progress callback."""
         while True:
             buf = fsrc.read(block_size)
             if not buf:
