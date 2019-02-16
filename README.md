@@ -1,7 +1,8 @@
 # Podcast Archiver
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/b61b77e71403353cdfc6/maintainability)](https://codeclimate.com/github/janw/podcast-archiver/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/b61b77e71403353cdfc6/test_coverage)](https://codeclimate.com/github/janw/podcast-archiver/test_coverage)
+[![Coverage Status](https://coveralls.io/repos/github/janw/podcast-archiver/badge.svg?branch=master)](https://coveralls.io/github/janw/podcast-archiver?branch=master)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 This python script takes the feed URL of your favorite podcast and downloads all available episodes to your computer. Even those files "hidden" in a paged feed will be tapped, so you'll have an entire backup of the series.
 
