@@ -1,0 +1,31 @@
+language: python
+python: "3.7"
+
+install:
+  - pip install -U poetry black coverage coveralls \
+    flake8 flake8-bugbear flake8-docstrings flake8-todo flake8-eradicate
+  - poetry install
+
+env:
+- TEST_CMD="coverage run tests/test_*.py"
+
+script:
+- $TEST_CMD
+
+after_success:
+- coveralls
+
+matrix:
+  include:
+    - name: "black"
+      env:
+        - TEST_CMD="black --check --verbose ."
+    - name: "flake8"
+      env:
+        - TEST_CMD="flake8 podcast_archiver.py tests/test_*.py"
+    - name: "3.6"
+      python: 3.6
+    - name: "3.7"
+    - name: "3.8-dev"
+      python: "3.8-dev"
+python: 3.8-dev
