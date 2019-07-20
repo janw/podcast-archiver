@@ -14,3 +14,10 @@ plugins:
       - python
   fixme:
     enabled: true
+  sonar-python:
+    enabled: true
+    config:
+      tests_patterns:
+        - tests/**
+  markdownlint:
+    enabled: true

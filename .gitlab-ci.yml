@@ -27,7 +27,7 @@ pytest:
   artifacts:
     reports:
       junit: pytest.xml
-  coverage: '/^TOTAL\s+\d+\s+\d+\s+(\d+\%)$/'
+  coverage: '/^TOTAL\s+\d+\s+\d+\s+([\d\.]+\%)$/'
 
 flake8:
   allow_failure: true
