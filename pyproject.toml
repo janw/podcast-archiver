@@ -11,6 +11,9 @@ feedparser = "^5.2"
 
 [tool.poetry.dev-dependencies]
 
+[tool.poetry.scripts]
+podcast-archiver = 'podcast_archiver.__main__:main'
+
 [tool.black]
 line-length = 88
 target-version = ['py36', 'py37', 'py38']
