@@ -1,19 +1,16 @@
----
-engines:
+version: "2"
+checks:
+  complex-logic:
+    config:
+      threshold: 8
+  method-complexity:
+    config:
+      threshold: 8
+plugins:
   duplication:
     enabled: true
     config:
       languages:
       - python
-
   fixme:
     enabled: true
-
-  radon:
-    enabled: true
-    config:
-      python_version: 3
-
-ratings:
-  paths:
-  - "podcast_archiver/**.py"
