@@ -1,15 +1,28 @@
 [tool.poetry]
 name = "podcast-archiver"
-version = "1.0.0-alpha"
-description = "Feed parser and download client for local podcast archival"
+version = "1.0.0-alpha.1"
+description = "Podcast download client for local podcast archival"
 authors = ["Jan Willhaus <mail@janwillhaus.de>"]
 license = "Apache-2.0"
+readme = "README.md"
+homepage = "https://github.com/janw/podcast-archiver"
+repository = "https://github.com/janw/podcast-archiver"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Topic :: Internet :: WWW/HTTP :: Dynamic Content :: News/Diary",
+  "Topic :: Multimedia :: Sound/Audio :: Capture/Recording",
+  "Topic :: Utilities"
+]
 
 [tool.poetry.dependencies]
 python = "^3.7"
 feedparser = "^5.2"
 
 [tool.poetry.dev-dependencies]
+pytest = "^5.0"
+pytest-cov = "^2.7"
+pytest-mock = "^1.10"
+pytest-vcr = "^1.0"
 
 [tool.poetry.scripts]
 podcast-archiver = 'podcast_archiver.__main__:main'

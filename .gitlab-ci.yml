@@ -34,6 +34,8 @@ pytest:
 
 flake8:
   extends: .python
+  before_script:
+    - pip install -U flake8 flake8-bugbear
   script:
     - flake8 --format=junit-xml --output-file flake8.xml
   artifacts:
@@ -42,17 +44,10 @@ flake8:
 
 black:
   extends: .python
-  cache:
-    key: black-cache
-    paths:
-    - .cache/pip
-  variables:
-    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   before_script:
     - pip install -U black
   script:
     - black --check --verbose .
-  artifacts: {}
 
 .docker:
   image: docker:stable
