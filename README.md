@@ -12,6 +12,9 @@
 [![Dependency management: poetry](https://img.shields.io/badge/deps-poetry-blueviolet.svg)](https://poetry.eustace.io/docs/)
 [![Development Status](https://img.shields.io/badge/status-beta-yellow.svg)](https:///github.com/janw/podcast-archiver/issues)
 
+![PyPI](https://img.shields.io/pypi/v/podcast-archiver.svg)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/podcast-archiver.svg)
+
 </div>
 
 This python tool takes the feed URL of your favorite podcast and downloads all available episodes to your computer. Even those files "hidden" in a paged feed will be tapped, so you'll have an entire backup of the series.
