@@ -23,6 +23,7 @@ pytest = "^5.0"
 pytest-cov = "^2.7"
 pytest-mock = "^1.10"
 pytest-vcr = "^1.0"
+coveralls = "^1.8"
 
 [tool.poetry.scripts]
 podcast-archiver = 'podcast_archiver.__main__:main'

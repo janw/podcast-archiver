@@ -4,26 +4,26 @@ stages:
   - tag
 
 .python:
-  image: python:3.7
+  image: registry.gitlab.com/janw/python-poetry:3.7
   stage: test
   cache:
     key: pip-cache-$CI_JOB_NAME
     paths:
       - .cache/pip
+      - .cache/poetry
       - .pytest_cache
   variables:
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   before_script:
-    - pip install poetry
-    - poetry debug:info
-    - poetry config settings.virtualenvs.create false
+    - poetry config settings.virtualenvs.create true
+    - poetry config settings.virtualenvs.path $CI_PROJECT_DIR/.cache/poetry
     - poetry --no-interaction install
 
 pytest:
   extends: .python
   script:
-    - pytest --junitxml=pytest.xml --vcr-record=none || if [ $? -eq 5 ]; then exit 0; fi
-    - coveralls
+    - poetry run pytest --junitxml=pytest.xml --vcr-record=none || if [ $? -eq 5 ]; then exit 0; fi
+    - poetry run coveralls
   artifacts:
     reports:
       junit: pytest.xml
