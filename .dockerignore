@@ -1,0 +1,6 @@
+*.ompl
+*.txt
+*.yml
+.vscode
+README.md
+LICENSE

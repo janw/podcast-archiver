@@ -1,0 +1,8 @@
+{
+    "python.pythonPath": "${env:HOME}/Library/Caches/pypoetry/virtualenvs/podcast-archiver-py3.7",
+    "editor.formatOnSave": true,
+    "python.formatting.provider": "black",
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+}

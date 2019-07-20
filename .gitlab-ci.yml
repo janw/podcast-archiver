@@ -1,0 +1,87 @@
+stages:
+  - test
+  - build
+  - tag
+
+include:
+  - template: Code-Quality.gitlab-ci.yml
+
+.python:
+  image: python:3.7
+  stage: test
+  cache:
+    key: pip-cache-$CI_JOB_STAGE
+    paths:
+      - .cache/pip
+      - .pytest_cache
+  variables:
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  before_script:
+    - pip install poetry
+    - poetry debug:info
+    - poetry config settings.virtualenvs.create false
+    - poetry --no-interaction install
+
+pytest:
+  extends: .python
+  script:
+    - pytest --junitxml=pytest.xml --vcr-record=none
+    - coveralls
+  artifacts:
+    reports:
+      junit: pytest.xml
+  coverage: '/^TOTAL\s+\d+\s+\d+\s+(\d+\%)$/'
+
+flake8:
+  extends: .python
+  script:
+    - flake8 --format=junit-xml --output-file flake8.xml
+  artifacts:
+    reports:
+      junit: flake8.xml
+
+black:
+  extends: .python
+  cache:
+    key: black-cache
+    paths:
+    - .cache/pip
+  variables:
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  before_script:
+    - pip install -U black
+  script:
+    - black --check --verbose .
+  artifacts: {}
+
+.docker:
+  image: docker:stable
+  stage: build
+  variables:
+    DOCKER_DRIVER: overlay2
+  before_script:
+    - |
+      if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
+        export DOCKER_HOST='tcp://localhost:2375'
+      fi
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+build:
+  extends: .docker
+  script:
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - docker build
+      --cache-from $CI_REGISTRY_IMAGE:latest
+      --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG .
+    - if [[ "$CI_COMMIT_REF_SLUG" == master ]]; then docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG $CI_REGISTRY_IMAGE:master-$CI_COMMIT_SHORT_SHA; fi
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+
+tag latest:
+  extends: .docker
+  stage: tag
+  script:
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG $CI_REGISTRY_IMAGE:latest
+    - docker push $CI_REGISTRY_IMAGE:latest
+  only:
+    - master

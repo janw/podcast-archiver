@@ -1,11 +1,19 @@
 # Podcast Archiver
 
-[![Code Health](https://landscape.io/github/janwh/Podcast-Archiver/master/landscape.svg?style=flat)](https://landscape.io/github/janwh/Podcast-Archiver/master)
-[![Code Climate](https://codeclimate.com/github/janwh/Podcast-Archiver/badges/gpa.svg)](https://codeclimate.com/github/janwh/Podcast-Archiver)
-[![Issue Count](https://codeclimate.com/github/janwh/Podcast-Archiver/badges/issue_count.svg)](https://codeclimate.com/github/janwh/Podcast-Archiver)
-[![Test Coverage](https://codeclimate.com/github/janwh/Podcast-Archiver/badges/coverage.svg)](https://codeclimate.com/github/janwh/Podcast-Archiver/coverage)
+<!-- markdownlint-disable MD033 -->
+<div align="center">
 
-This python script takes the feed URL of your favorite podcast and downloads all available episodes to your computer. Even those files "hidden" in a paged feed will be tapped, so you'll have an entire backup of the series.
+[![pipeline status](https://gitlab.com/janw/podcast-archiver/badges/master/pipeline.svg)](https://gitlab.com/janw/podcast-archiver/commits/master)
+[![Coverage Status](https://coveralls.io/repos/github/janw/podcast-archiver/badge.svg?branch=master)](https://coveralls.io/github/janw/podcast-archiver?branch=master)
+[![Maintainability](https://img.shields.io/codeclimate/maintainability/janw/podcast-archiver.svg)](https://codeclimate.com/github/janw/podcast-archiver)
+
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
+[![Dependency management: poetry](https://img.shields.io/badge/deps-poetry-blueviolet.svg)](https://poetry.eustace.io/docs/)
+[![Development Status](https://img.shields.io/badge/status-beta-yellow.svg)](https:///github.com/janw/podcast-archiver/issues)
+
+</div>
+
+This python tool takes the feed URL of your favorite podcast and downloads all available episodes to your computer. Even those files "hidden" in a paged feed will be tapped, so you'll have an entire backup of the series.
 
 ## Outline
 
@@ -15,11 +23,11 @@ Before downloading any episode the function first fetches all available pages of
 
 ## Requirements
 
-`podcast_archiver.py` requires Python 3 (tested with 3.6), the [feedparser](https://github.com/kurtmckee/feedparser) library, and [tqdm](https://github.com/tqdm/tqdm) progress bar.
+`podcast_archiver` requires Python 3 (tested with 3.6), the [feedparser](https://github.com/kurtmckee/feedparser) library, and [tqdm](https://github.com/tqdm/tqdm) progress bar.
 
 ## Usage
 
-`podcast_archiver.py` takes command line arguments, containing for example the feeds that are supposed to be archived:
+`podcast_archiver` takes command line arguments, containing for example the feeds that are supposed to be archived:
 
 * `-f <url>` / `--feed=<url>`: Provide a feed-url that is to be archived. `-f` can be used multiple times, so you may hand over more than one feed to archive. To keep everything neat and tidy, see the `-s` option down below.
 * `-f <filename>` / `--feed=<filename>`: Provide one or multiple feed urls by providing a simple text file, containing one feed url per line. To keep everything neat and tidy, see the `-s` option down below.
@@ -34,7 +42,7 @@ Before downloading any episode the function first fetches all available pages of
 
 ### Full-fledged example
 ```
-python3 podcast_archiver.py -d /Users/janwillhaus/Music/Podcasts -s \
+python3 podcast_archiver -d /Users/janwillhaus/Music/Podcasts -s \
     -f http://freakshow.fm/feed/m4a/ \
     -f http://alternativlos.org/alternativlos.rss \
     -f http://logbuch-netzpolitik.de/feed/m4a \

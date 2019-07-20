@@ -11,9 +11,9 @@ engines:
 
   radon:
     enabled: true
-    config: 
+    config:
       python_version: 3
-          
+
 ratings:
   paths:
-  - "**.py"
+  - "podcast_archiver/**.py"
