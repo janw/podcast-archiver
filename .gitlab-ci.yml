@@ -10,7 +10,7 @@ include:
   image: python:3.7
   stage: test
   cache:
-    key: pip-cache-$CI_JOB_STAGE
+    key: pip-cache-$CI_JOB_NAME
     paths:
       - .cache/pip
       - .pytest_cache
@@ -25,7 +25,7 @@ include:
 pytest:
   extends: .python
   script:
-    - pytest --junitxml=pytest.xml --vcr-record=none
+    - pytest --junitxml=pytest.xml --vcr-record=none || if [ $? -eq 5 ]; then exit 0; fi
     - coveralls
   artifacts:
     reports:
@@ -33,11 +33,12 @@ pytest:
   coverage: '/^TOTAL\s+\d+\s+\d+\s+(\d+\%)$/'
 
 flake8:
+  allow_failure: true
   extends: .python
   before_script:
-    - pip install -U flake8 flake8-bugbear
+    - pip install -U flake8 flake8-bugbear flake8-formatter-junit-xml
   script:
-    - flake8 --format=junit-xml --output-file flake8.xml
+    - flake8 --format=junit-xml --tee --output-file flake8.xml
   artifacts:
     reports:
       junit: flake8.xml
