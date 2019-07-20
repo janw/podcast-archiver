@@ -82,7 +82,7 @@ If you have a larger list of podcasts and/or want to update the archive on a cro
 podcast-archiver -d ~/Music/Podcasts -s -u -f feedlist.txt
 ```
 
-where `feedlist.txt` contains the URLs as if entered into the command line:
+where the `feedlist.txt` file contains the URLs, each on a new line:
 
 ```bash
 cat <<EOF > feedlist.txt
