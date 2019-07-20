@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0">
+<head>
+	<title>Abonnierte iTunes-Feeds</title>
+	<dateCreated>Thu, 29 Oct 2015 12:40:49 GMT</dateCreated>
+	<dateModified>Thu, 29 Oct 2015 12:40:49 GMT</dateModified>
+</head>
+<body>
+	<outline text="Alternativlos" type="rss" xmlUrl="http://alternativlos.org/alternativlos.rss" htmlUrl="http://www.alternativlos.org/" />
+	<outline text="anyca.st" type="rss" xmlUrl="http://anyca.st/feed/aac/" htmlUrl="http://anyca.st" />
+	<outline text="Apple Keynotes (HD)" type="rss" xmlUrl="http://podcasts.apple.com/apple_keynotes_hd/apple_keynotes_hd.xml" htmlUrl="http://www.apple.com/" />
+	<outline text="c't uplink (Video)" type="rss" xmlUrl="http://www.heise.de/ct/uplink/ctuplinkvideo.rss" htmlUrl="http://www.heise.de/ct/uplink/ctuplinkvideo.rss" />
+	<outline text="Chaosradio" type="rss" xmlUrl="http://chaosradio.ccc.de/chaosradio-latest.rss" htmlUrl="http://chaosradio.ccc.de/chaosradio.html" />
+	<outline text="Computer und Kommunikation (komplette Sendung) - Deutschlandfunk" type="rss" xmlUrl="http://www.deutschlandfunk.de/podcast-computer-und-kommunikation-komplette-sendung.416.de.podcast" htmlUrl="http://www.deutschlandfunk.de/" />
+	<outline text="CRE: Technik, Kultur, Gesellschaft" type="rss" xmlUrl="http://cre.fm/feed/m4a" htmlUrl="http://cre.fm" />
+	<outline text="das ARD radiofeature" type="rss" xmlUrl="http://www.ard.de/static/radio/radiofeature/rss/podcast.xml" htmlUrl="http://radiofeature.ard.de" />
+	<outline text="Datenschau (mp3)" type="rss" xmlUrl="http://feeds.feedburner.com/Datenschau-Audio" htmlUrl="http://www.kuechenstud.io/datenschau" />
+	<outline text="Der Lautsprecher" type="rss" xmlUrl="http://feedpress.me/der-lautsprecher-m4a" htmlUrl="http://der-lautsprecher.de" />
+	<outline text="Forschergeist" type="rss" xmlUrl="http://forschergeist.de/feed/m4a/" htmlUrl="http://forschergeist.de" />
+	<outline text="Forschung aktuell (komplette Sendung) - Deutschlandfunk" type="rss" xmlUrl="http://www.deutschlandfunk.de/podcast-forschung-aktuell-komplette-sendung.417.de.podcast.xml" htmlUrl="http://www.deutschlandfunk.de/" />
+	<outline text="Freak Show" type="rss" xmlUrl="http://freakshow.fm/feed/m4a" htmlUrl="http://freakshow.fm" />
+	<outline text="Logbuch:Netzpolitik" type="rss" xmlUrl="http://logbuch-netzpolitik.de/feed/m4a" htmlUrl="http://logbuch-netzpolitik.de" />
+	<outline text="Methodisch inkorrekt" type="rss" xmlUrl="http://feeds.feedburner.com/methodischinkorrekt" htmlUrl="http://minkorrekt.de" />
+	<outline text="Not Safe For Work" type="rss" xmlUrl="http://not-safe-for-work.de/feed/m4a/" htmlUrl="http://not-safe-for-work.de" />
+	<outline text="Quarks &#38; Co - zum Mitnehmen" type="rss" xmlUrl="http://podcast.wdr.de/quarks.xml" htmlUrl="http://www.quarks.de" />
+	<outline text="Raumzeit" type="rss" xmlUrl="http://raumzeit-podcast.de/feed/m4a/" htmlUrl="http://raumzeit-podcast.de" />
+	<outline text="Sanft &#38; Sorgfältig | radioeins" type="rss" xmlUrl="http://www.radioeins.de/archiv/podcast/zwei_alte_hasen.feed.podcast.xml" htmlUrl="http://www.radioeins.de/archiv/podcast/zwei_alte_hasen.html" />
+	<outline text="Tagesthemen (1280x720)" type="rss" xmlUrl="http://www.tagesschau.de/export/video-podcast/webxl/tagesthemen/" htmlUrl="http://www.tagesschau.de" />
+	<outline text="ZDF - &#34;Die Anstalt&#34;" type="rss" xmlUrl="http://www.zdf.de/ZDFmediathek/podcast/2085930?view=podcast" htmlUrl="http://www.zdf.de/ZDFmediathek/podcast/2085930?view=podcast" />
+	<outline text="ZDF - &#34;Pelzig hält sich&#34;" type="rss" xmlUrl="http://www.zdf.de/ZDFmediathek/podcast/1261146?view=podcast" htmlUrl="http://www.zdf.de/ZDFmediathek/podcast/1261146?view=podcast" />
+	<outline text="ZDFneo - &#34;NEO MAGAZIN ROYALE&#34;" type="rss" xmlUrl="http://www.zdf.de/ZDFmediathek/podcast/2012868?view=podcast" htmlUrl="http://www.zdf.de/ZDFmediathek/podcast/2012868?view=podcast" />
+</body>
+</opml>
