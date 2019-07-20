@@ -1,4 +1,4 @@
-# Podcast Archiver
+# Podcast Archiver — download client for local podcast archival
 
 <!-- markdownlint-disable MD033 -->
 <div align="center">
@@ -18,13 +18,13 @@ This python tool takes the feed URL of your favorite podcast and downloads all a
 
 ## Outline
 
-In my experience, very few full-fledged podcast clients are able to access a paged feed (following IETF RFC5005), so only the last few episodes of a podcast will be available to download. When you discover a podcast that has been around for quite a while, you'll have a hard time to follow the "gentle listener's duty" and listen to the whole archive. The script in this repository is supposed to help you acquiring every last episode of your new listening pleasure.
+In my experience, very few full-fledged podcast clients are able to access a paged feed (following [RFC5005](https://www.ietf.org/rfc/rfc5005)), so only the last few episodes of a podcast will be available to download. When you discover a podcast that has been around for quite a while, you'll have a hard time to follow the "gentle listener's duty" and listen to the whole archive. The script in this repository is supposed to help you acquiring every last episode of your new listening pleasure.
 
 Before downloading any episode the function first fetches all available pages of the feed and prepares a list. That way, you will never miss any episode.
 
 ## Setup
 
-`podcast_archiver` requires Python 3.7 and can be installed/used via two ways:
+Podcast Archiver requires Python 3.7 and can be installed/used via two ways:
 
 1. As a pip package:
 
@@ -45,7 +45,7 @@ Before downloading any episode the function first fetches all available pages of
 
 ## Usage
 
-`podcast_archiver` takes command line arguments, containing for example the feeds that are supposed to be archived:
+Podcast Archiver takes command line arguments, containing for example the feeds that are supposed to be archived:
 
 * `-f <url>` / `--feed=<url>`: Provide a feed-url that is to be archived. `-f` can be used multiple times, so you may hand over more than one feed to archive. To keep everything neat and tidy, see the `-s` option down below.
 * `-f <filename>` / `--feed=<filename>`: Provide one or multiple feed urls by providing a simple text file, containing one feed url per line. To keep everything neat and tidy, see the `-s` option down below.
