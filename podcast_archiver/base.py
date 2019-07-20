@@ -7,7 +7,6 @@ from os import path, remove, makedirs
 from urllib.parse import urlparse
 import unicodedata
 import re
-import xml.etree.ElementTree as etree
 
 __version__ = "1.0.0-alpha"
 
@@ -34,8 +33,8 @@ class PodcastArchiver:
 
     feedlist = []
 
-    def __init__(self):
-
+    def __init__(self, feeds):
+        self.feedlist = feeds
         feedparser.USER_AGENT = self._userAgent
 
     def addArguments(self, args):
@@ -43,12 +42,6 @@ class PodcastArchiver:
         self.verbose = args.verbose or 0
         if self.verbose > 2:
             print("Input arguments:", args)
-
-        for feed in args.feed or []:
-            self.addFeed(feed)
-
-        for opml in args.opml or []:
-            self.parseOpmlFile(opml)
 
         if args.dir:
             self.savedir = args.dir
@@ -61,24 +54,6 @@ class PodcastArchiver:
 
         if self.verbose > 1:
             print("Verbose level: ", self.verbose)
-
-    def addFeed(self, feed):
-        if path.isfile(feed):
-            self.feedlist += open(feed, "r").read().strip().splitlines()
-        else:
-            self.feedlist.append(feed)
-
-    def parseOpmlFile(self, opml):
-        with opml as file:
-            tree = etree.fromstringlist(file)
-
-        for feed in [
-            node.get("xmlUrl")
-            for node in tree.findall("*/outline/[@type='rss']")
-            if node.get("xmlUrl") is not None
-        ]:
-
-            self.addFeed(feed)
 
     def processFeeds(self):
 
@@ -359,5 +334,5 @@ class PodcastArchiver:
             fdst.write(buf)
             callback(len(buf))
 
-    def __str__():
-        return "Podcast-Archiver"
+    def __repr__(self):
+        return f"<podcast-archiver ({len(self.feedlist)} feeds)>"
