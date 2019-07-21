@@ -1,24 +1,26 @@
+from os import path
 import re
 import logging
+from urllib.parse import urlparse
+from urllib.request import Request
+from urllib.request import urlopen
+
+from podcast_archiver.config import config
+from podcast_archiver.utils import slugify
+from podcast_archiver.mixins import InfoKeyMixin
 
 logger = logging.getLogger(__name__)
 
 re_linktype = re.compile(r"^(audio|video).*")
 
 
-class Episode:
+class Episode(InfoKeyMixin):
     INFO_KEYS = ["author", "link", "subtitle", "title", "published"]
-
-    url = ""
+    url = None
 
     def __init__(self, url, **kwargs):
+        super().__init__(**kwargs)
         self.url = url
-
-        for key, datum in kwargs.items():
-            if key not in self.INFO_KEYS:
-                raise ValueError(f"Got unexpected metadatum {key}")
-
-            setattr(self, key, datum)
 
     @classmethod
     def from_feedentry(cls, episode):
@@ -40,6 +42,22 @@ class Episode:
         print("\tEpisode info:")
         for key in self.INFO_KEYS:
             print("\t * %10s: %s" % (key, getattr(self, key)))
+
+    @property
+    def filename(self):
+
+        # Remove HTTP GET parameters from filename by parsing URL properly
+        linkpath = urlparse(self.url).path
+        basename = path.basename(linkpath)
+
+        # If requested, slugify the filename
+        if config.slugify:
+            basename = slugify(basename)
+        else:
+            basename.replace(path.pathsep, "_")
+            basename.replace(path.sep, "_")
+
+        return basename
 
 
 class EpisodeList(list):

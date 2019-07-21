@@ -1,7 +1,8 @@
+import logging
 import sys
 from argparse import ArgumentTypeError
 
-from podcast_archiver import PodcastArchiver
+from podcast_archiver.base import PodcastArchiver
 from podcast_archiver.argparser import parser
 from podcast_archiver.feedlist import add_feeds_from_feedsfile
 from podcast_archiver.feedlist import add_feeds_from_opml
@@ -9,6 +10,7 @@ from podcast_archiver.feedlist import add_feeds_from_opml
 
 def main():
     try:
+        logging.basicConfig(level=logging.DEBUG)
 
         args = parser.parse_args()
 

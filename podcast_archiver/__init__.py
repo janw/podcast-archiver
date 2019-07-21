@@ -1,2 +1,1 @@
-from podcast_archiver.base import __version__
-from podcast_archiver.base import PodcastArchiver
+from podcast_archiver.constants import __version__

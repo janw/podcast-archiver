@@ -2,10 +2,10 @@ version: "2"
 checks:
   complex-logic:
     config:
-      threshold: 8
+      threshold: 10
   method-complexity:
     config:
-      threshold: 8
+      threshold: 10
 plugins:
   duplication:
     enabled: true
