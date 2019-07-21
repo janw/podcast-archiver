@@ -17,6 +17,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.7"
 feedparser = "^5.2"
+requests = "^2.22"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.0"

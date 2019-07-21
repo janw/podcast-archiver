@@ -1,7 +1,6 @@
 import logging
 
 from podcast_archiver.podcast import Podcast
-from podcast_archiver.downloader import PodcastDownloader
 
 logger = logging.getLogger(__name__)
 
@@ -42,9 +41,7 @@ class PodcastArchiver:
 
         for feed in self.feedlist:
             logger.info(f"Feed {feed}")
-            podcast = Podcast.from_link(feed)
-            downloader = PodcastDownloader(podcast)
-            downloader.download()
+            Podcast.from_link(feed).download(self.savedir)
 
         logger.info("Done!")
 

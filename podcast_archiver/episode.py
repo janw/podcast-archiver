@@ -1,11 +1,12 @@
-from os import path
+from os import path, makedirs, remove
 import re
 import logging
 from urllib.parse import urlparse
-from urllib.request import Request
-from urllib.request import urlopen
+
+from requests import RequestException
 
 from podcast_archiver.config import config
+from podcast_archiver.session import session
 from podcast_archiver.utils import slugify
 from podcast_archiver.mixins import InfoKeyMixin
 
@@ -17,6 +18,7 @@ re_linktype = re.compile(r"^(audio|video).*")
 class Episode(InfoKeyMixin):
     INFO_KEYS = ["author", "link", "subtitle", "title", "published"]
     url = None
+    url_resolved = None
 
     def __init__(self, url, **kwargs):
         super().__init__(**kwargs)
@@ -45,19 +47,54 @@ class Episode(InfoKeyMixin):
 
     @property
     def filename(self):
+        return self.url_to_filename(self.url)
+
+    @property
+    def filename_resolved(self):
+        return self.url_to_filename(self.url_resolved)
+
+    @staticmethod
+    def url_to_filename(url):
+        if url is None:
+            return None
 
         # Remove HTTP GET parameters from filename by parsing URL properly
-        linkpath = urlparse(self.url).path
-        basename = path.basename(linkpath)
+        linkpath = urlparse(url).path
+        filename = path.basename(linkpath)
 
         # If requested, slugify the filename
         if config.slugify:
-            basename = slugify(basename)
+            filename = slugify(filename)
         else:
-            basename.replace(path.pathsep, "_")
-            basename.replace(path.sep, "_")
+            filename.replace(path.pathsep, "_")
+            filename.replace(path.sep, "_")
 
-        return basename
+        return filename
+
+    def download(self, destination):
+        makedirs(destination, exist_ok=True)
+        filename = path.join(destination, self.filename)
+        logger.debug(f"Downloading {self.filename} from {self.url}")
+
+        try:
+            with session as s:
+                response = s.get(self.url, stream=True)
+
+                self.url_resolved = response.url
+                if self.url_resolved != self.url:
+                    logger.debug(f"Resolved URL to {self.url_resolved}")
+
+                with open(filename, "wb") as outfile:
+                    for chunk in response.iter_content(chunk_size=128):
+                        outfile.write(chunk)
+
+            logger.debug("Download successful")
+        except RequestException as exc:
+            logger.warning(f"Download failed for {filename}. Query returned {exc}")
+        except KeyboardInterrupt:
+            logger.error(f"Unexpected interruption. Deleting unfinished file.")
+            remove(filename)
+            raise
 
 
 class EpisodeList(list):

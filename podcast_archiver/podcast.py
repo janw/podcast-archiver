@@ -1,10 +1,13 @@
+import logging
+from os import path
+
 import feedparser
 from feedparser import CharacterEncodingOverride
-import logging
 
-from podcast_archiver.constants import USER_AGENT
+from podcast_archiver.session import session
 from podcast_archiver.episode import EpisodeList
 from podcast_archiver.mixins import InfoKeyMixin
+from podcast_archiver.utils import slugify
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +20,6 @@ class Podcast(InfoKeyMixin):
         super().__init__(**kwargs)
         self.episodes = episodes
 
-        feedparser.USER_AGENT = USER_AGENT
-
     def __len__(self):
         return len(self.episodes)
 
@@ -27,7 +28,9 @@ class Podcast(InfoKeyMixin):
 
     @staticmethod
     def get_feed_page(feedpage):
-        feedobj = feedparser.parse(feedpage)
+        with session as s:
+            response = s.get(feedpage)
+        feedobj = feedparser.parse(response.content)
 
         # Check for download errors
         if "status" in feedobj.keys() and feedobj["status"] >= 400:
@@ -83,3 +86,10 @@ class Podcast(InfoKeyMixin):
         logger.debug(f"Gathered {len(episodes)} episodes for podcast")
 
         return cls(episodes, **metadata)
+
+    def download(self, destination):
+        destination = path.join(destination, slugify(self.title), "")
+
+        logger.debug(f"Downloading episodes to {destination}")
+        for episode in self:
+            episode.download(destination)
