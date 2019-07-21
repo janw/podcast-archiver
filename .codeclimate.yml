@@ -19,5 +19,3 @@ plugins:
     config:
       tests_patterns:
         - tests/**
-  markdownlint:
-    enabled: true
