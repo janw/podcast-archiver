@@ -2,8 +2,9 @@ from io import StringIO
 
 import pytest
 
+from podcast_archiver.feedlist import add_feeds_from_feedsfile
+from podcast_archiver.feedlist import add_feeds_from_opml
 from tests import fixturefile
-from podcast_archiver.feedlist import add_feeds_from_feedsfile, add_feeds_from_opml
 
 TEST_FEEDS = [
     "http://alternativlos.org/alternativlos.rss",
