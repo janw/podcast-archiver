@@ -2,7 +2,8 @@
 
 <!-- markdownlint-disable MD033 MD013 -->
 <div align="center">
-<img src="assets/icon.png" alt="Podcast Archiver Logo" /><br />
+
+![Podcast Archiver Logo](assets/icon.png)
 
 [![pipeline status](https://gitlab.com/janw/podcast-archiver/badges/master/pipeline.svg)](https://gitlab.com/janw/podcast-archiver/commits/master)
 [![Coverage Status](https://coveralls.io/repos/github/janw/podcast-archiver/badge.svg?branch=master)](https://coveralls.io/github/janw/podcast-archiver?branch=master)

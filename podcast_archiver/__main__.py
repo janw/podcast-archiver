@@ -23,7 +23,6 @@ def main():
         pa.processFeeds()
 
     except KeyboardInterrupt:
-        # TODO: Add clean-up logic for interruption during download (partial file)
         sys.exit("\nERROR: Interrupted by user")
     except FileNotFoundError as error:
         sys.exit("\nERROR: %s" % error)
