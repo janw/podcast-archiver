@@ -1,6 +1,9 @@
-from os import path, W_OK, access
 import argparse
-from argparse import Action, ArgumentTypeError
+from argparse import Action
+from argparse import ArgumentTypeError
+from os import access
+from os import path
+from os import W_OK
 
 
 class writeable_dir(Action):

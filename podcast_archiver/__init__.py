@@ -1,1 +1,2 @@
-from podcast_archiver.base import PodcastArchiver, __version__  # noqa: F401
+from podcast_archiver.base import __version__
+from podcast_archiver.base import PodcastArchiver

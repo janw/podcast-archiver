@@ -1,12 +1,18 @@
+import re
+import unicodedata
+import urllib.error
+from os import makedirs
+from os import path
+from os import remove
+from shutil import copyfileobj
+from urllib.parse import urlparse
+from urllib.request import Request
+from urllib.request import urlopen
+
 import feedparser
 from feedparser import CharacterEncodingOverride
-from urllib.request import urlopen, Request
-import urllib.error
-from shutil import copyfileobj
-from os import path, remove, makedirs
-from urllib.parse import urlparse
-import unicodedata
-import re
+
+from podcast_archiver.episode import EpisodeList
 
 __version__ = "1.0.0-alpha"
 
@@ -21,7 +27,6 @@ class PodcastArchiver:
     )
     _headers = {"User-Agent": _userAgent}
     _global_info_keys = ["author", "language", "link", "subtitle", "title"]
-    _episode_info_keys = ["author", "link", "subtitle", "title"]
     _date_keys = ["published"]
 
     savedir = ""
@@ -128,38 +133,6 @@ class PodcastArchiver:
 
         return self._feed_next_page
 
-    def parseFeedToLinks(self, feed=None):
-
-        if feed is None:
-            feed = self._feedobj
-
-        # Try different feed episode layouts: 'items' or 'entries'
-        episodeList = feed.get("items", False) or feed.get("entries", False)
-        if episodeList:
-            linklist = [self.parseEpisode(episode) for episode in episodeList]
-            linklist = [link for link in linklist if len(link) > 0]
-        else:
-            linklist = []
-
-        return linklist
-
-    def parseEpisode(self, episode):
-        url = None
-        episode_info = {}
-        for link in episode["links"]:
-            if "type" in link.keys():
-                if link["type"].startswith("audio"):
-                    url = link["href"]
-                elif link["type"].startswith("video"):
-                    url = link["href"]
-
-                if url is not None:
-                    for key in self._episode_info_keys + self._date_keys:
-                        episode_info[key] = episode.get(key, None)
-                    episode_info["url"] = url
-
-        return episode_info
-
     def processPodcastLink(self, link, first_page_only=False):
         if self.verbose > 0:
             print("1. Gathering link list ...", end="", flush=True)
@@ -196,7 +169,7 @@ class PodcastArchiver:
                 first_page = False
 
             # Parse the feed object for episodes and the next page
-            linklist += self.parseFeedToLinks(self._feedobj)
+            linklist += EpisodeList.from_feedpage(self._feedobj)
             self._feed_next_page = self.parseFeedToNextPage(self._feedobj)
 
             if self._feed_title is None:
@@ -252,8 +225,8 @@ class PodcastArchiver:
             elif self.verbose > 1:
                 print("2. Downloading content ...")
 
-        for cnt, episode_dict in enumerate(linklist):
-            link = episode_dict["url"]
+        for cnt, episode in enumerate(linklist):
+            link = episode.url
             if self.verbose == 1:
                 print(
                     "\r2. Downloading content ... {0}/{1}".format(cnt + 1, nlinks),
@@ -268,10 +241,7 @@ class PodcastArchiver:
                 )
 
                 if self.verbose > 2:
-                    print("\tEpisode info:")
-                    for key in episode_dict.keys():
-                        print("\t * %10s: %s" % (key, episode_dict[key]))
-
+                    episode.print_info()
             # Check existence once ...
             filename = self.linkToTargetFilename(link)
 
