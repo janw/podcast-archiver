@@ -1,6 +1,9 @@
+import re
 import logging
 
 logger = logging.getLogger(__name__)
+
+re_linktype = re.compile(r"^(audio|video).*")
 
 
 class Episode:
@@ -26,12 +29,10 @@ class Episode:
 
     @staticmethod
     def extract_content_url(episode):
-        for link in episode["links"]:
-            if "type" in link.keys():
-                if link["type"].startswith("audio"):
-                    return link["href"]
-                elif link["type"].startswith("video"):
-                    return link["href"]
+        for link in episode.get("links", []):
+            link_type = link.get("type", "")
+            if re_linktype.match(link_type):
+                return link["href"]
 
         raise ValueError("Could not extract usable link from Episode")
 

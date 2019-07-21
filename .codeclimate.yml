@@ -19,3 +19,9 @@ plugins:
     config:
       tests_patterns:
         - tests/**
+
+exclude_patterns:
+  - htmlcov/*
+  - dist/*
+  - assets/*
+  - "*.egg-info/*"
