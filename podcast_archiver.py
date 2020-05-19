@@ -151,11 +151,15 @@ class PodcastArchiver:
 
         return filename
 
-    def linkToTargetFilename(self, link):
+    def linkToTargetFilename(self, link, must_have_ext=False):
 
         # Remove HTTP GET parameters from filename by parsing URL properly
         linkpath = urlparse(link).path
         basename = path.basename(linkpath)
+
+        _, ext = path.splitext(basename)
+        if must_have_ext and not ext:
+            return None
 
         # If requested, slugify the filename
         if self.slugify:
@@ -339,10 +343,10 @@ class PodcastArchiver:
                     # Check existence another time, with resolved link
                     link = response.geturl()
                     total_size = int(response.getheader('content-length', '0'))
-                    old_filename = filename
-                    filename = self.linkToTargetFilename(link)
+                    new_filename = self.linkToTargetFilename(link, must_have_ext=True)
 
-                    if old_filename != filename:
+                    if new_filename and new_filename != filename:
+                        filename = new_filename
                         if self.verbose > 1:
                             print("\tResolved filename:", filename)
 
