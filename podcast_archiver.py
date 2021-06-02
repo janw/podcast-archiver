@@ -99,6 +99,7 @@ class PodcastArchiver:
         self.progress = args.progress
         self.slugify = args.slugify
         self.maximumEpisodes = args.max_episodes or None
+        self.nameEpisodes = args.name_episodes or False
 
         if self.verbose > 1:
             print("Verbose level: ", self.verbose)
@@ -224,7 +225,15 @@ class PodcastArchiver:
                     for key in self._episode_info_keys + self._date_keys:
                         episode_info[key] = episode.get(key, None)
                     episode_info['url'] = url
+        
+        #Create Episode Filename
+        basename = path.basename(url)
+        _, ext = path.splitext(basename)
 
+        if self._feedobj['feed']['title']:
+            episode_info['filename'] = f"{self._feedobj['feed']['title']} - [{episode['title']}]{ext}"
+        else:
+            episode_info['filename'] = basename
         return episode_info
 
     def processPodcastLink(self, link):
@@ -271,7 +280,10 @@ class PodcastArchiver:
             if self.update:
                 for index, episode_dict in enumerate(linklist):
                     link = episode_dict['url']
-                    filename = self.linkToTargetFilename(link)
+                    if self.nameEpisodes is not None:
+                        filename = self.linkToTargetFilename(episode_dict['filename'])
+                    else:
+                        filename = self.linkToTargetFilename(link)
 
                     if path.isfile(filename):
                         del(linklist[index:])
@@ -325,7 +337,10 @@ class PodcastArchiver:
                         print("\t * %10s: %s" % (key, episode_dict[key]))
 
             # Check existence once ...
-            filename = self.linkToTargetFilename(link)
+            if self.nameEpisodes is not None:
+                filename = self.linkToTargetFilename(episode_dict['filename'])
+            else:
+                filename = self.linkToTargetFilename(link)
 
             if self.verbose > 1:
                 print("\tLocal filename:", filename)
@@ -343,7 +358,10 @@ class PodcastArchiver:
                     # Check existence another time, with resolved link
                     link = response.geturl()
                     total_size = int(response.getheader('content-length', '0'))
-                    new_filename = self.linkToTargetFilename(link, must_have_ext=True)
+                    if self.nameEpisodes is not None:
+                        new_filename = self.linkToTargetFilename(episode_dict['filename'], must_have_ext=True)
+                    else:
+                        new_filename = self.linkToTargetFilename(link, must_have_ext=True)
 
                     if new_filename and new_filename != filename:
                         filename = new_filename
@@ -423,6 +441,9 @@ if __name__ == "__main__":
         parser.add_argument('-m', '--max-episodes', type=int,
                             help='''Only download the given number of episodes per podcast
                                  feed. Useful if you don't really need the entire backlog.''')
+        parser.add_argument('-n', '--name-episodes', action='store_true',
+                            help='''Adds Podcats and Episodes names to the downloaded files.
+                                   Following the format: Podcast_Name - [Episode_Name]''')
 
         args = parser.parse_args()
 
