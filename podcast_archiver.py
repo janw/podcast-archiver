@@ -37,7 +37,9 @@ from urllib.parse import urlparse
 import unicodedata
 import re
 import xml.etree.ElementTree as etree
-
+import time
+from datetime import datetime as dt
+import datetime
 
 class writeable_dir(argparse.Action):
 
@@ -50,6 +52,27 @@ class writeable_dir(argparse.Action):
         else:
             raise ArgumentTypeError("%s is not a writeable dir" % prospective_dir)
 
+class scheduler:
+    """Pooler scheduler"""
+
+    def __init__(self, interval):
+        self.interval = interval
+        self.timeIsUp = True
+        self._tick = time.time()
+        self.nextRun = None
+
+    def __call__(self):
+        return self._isItTime()
+
+    def _isItTime(self):
+        self.nextRun  = dt.fromtimestamp(time.time() + self.interval).strftime('%Y-%m-%d %H:%M:%S')
+        if (self.timeIsUp) or (time.time() - self.interval > self._tick):
+            self._tick =  time.time()
+            self.timeIsUp = False
+            return True
+
+    def sleeper(self):
+        time.sleep(int(self.interval) - ((time.time() - self._tick) % int(self.interval)))
 
 class PodcastArchiver:
 
@@ -72,11 +95,15 @@ class PodcastArchiver:
 
     feedlist = []
 
-    def __init__(self):
+    def __init__(self,args):
 
         feedparser.USER_AGENT = self._userAgent
+        self._addArguments(args)
 
-    def addArguments(self, args):
+        if self.scheduler:
+            self.scheduler = scheduler(self.scheduler)
+
+    def _addArguments(self, args):
 
         # if type(args) is argparse.ArgumentParser:
         #     args = parser.parse_args()
@@ -100,6 +127,7 @@ class PodcastArchiver:
         self.slugify = args.slugify
         self.maximumEpisodes = args.max_episodes or None
         self.nameEpisodes = args.name_episodes or False
+        self.scheduler = args.loop or False
 
         if self.verbose > 1:
             print("Verbose level: ", self.verbose)
@@ -155,8 +183,11 @@ class PodcastArchiver:
     def linkToTargetFilename(self, link, must_have_ext=False):
 
         # Remove HTTP GET parameters from filename by parsing URL properly
-        linkpath = urlparse(link).path
-        basename = path.basename(linkpath)
+        if self.nameEpisodes:
+            basename = link
+        else:
+            linkpath = urlparse(link).path
+            basename = path.basename(linkpath)
 
         _, ext = path.splitext(basename)
         if must_have_ext and not ext:
@@ -280,7 +311,7 @@ class PodcastArchiver:
             if self.update:
                 for index, episode_dict in enumerate(linklist):
                     link = episode_dict['url']
-                    if self.nameEpisodes is not None:
+                    if self.nameEpisodes is not False:
                         filename = self.linkToTargetFilename(episode_dict['filename'])
                     else:
                         filename = self.linkToTargetFilename(link)
@@ -309,7 +340,6 @@ class PodcastArchiver:
 
         return linklist
 
-
     def downloadPodcastFiles(self, linklist):
         if linklist is None or self._feed_title is None:
             return
@@ -337,7 +367,7 @@ class PodcastArchiver:
                         print("\t * %10s: %s" % (key, episode_dict[key]))
 
             # Check existence once ...
-            if self.nameEpisodes is not None:
+            if self.nameEpisodes:
                 filename = self.linkToTargetFilename(episode_dict['filename'])
             else:
                 filename = self.linkToTargetFilename(link)
@@ -358,7 +388,7 @@ class PodcastArchiver:
                     # Check existence another time, with resolved link
                     link = response.geturl()
                     total_size = int(response.getheader('content-length', '0'))
-                    if self.nameEpisodes is not None:
+                    if self.nameEpisodes:
                         new_filename = self.linkToTargetFilename(episode_dict['filename'], must_have_ext=True)
                     else:
                         new_filename = self.linkToTargetFilename(link, must_have_ext=True)
@@ -444,12 +474,24 @@ if __name__ == "__main__":
         parser.add_argument('-n', '--name-episodes', action='store_true',
                             help='''Adds Podcats and Episodes names to the downloaded files.
                                    Following the format: Podcast_Name - [Episode_Name]''')
+        parser.add_argument('-l', '--loop', type=int,
+                            help='''Runs on infinite loop checking for new episodes ever X seconds. Iex.: -l 300
+                            would check for new episodes every 5 minutes.''')
 
         args = parser.parse_args()
+        pa = PodcastArchiver(args)
+    
+        if pa.scheduler:
+            print('\n### Podcast Archiver ############################################################')
+            while True:
+                if pa.scheduler():
+                    pa.processFeeds()
+                else:
+                    print(f"\n*** Next Run: --> {pa.scheduler.nextRun}, sleeping for {datetime.timedelta(seconds=pa.scheduler.interval)} #####################")
+                    pa.scheduler.sleeper()
+        else:
+            pa.processFeeds()
 
-        pa = PodcastArchiver()
-        pa.addArguments(args)
-        pa.processFeeds()
     except KeyboardInterrupt:
         sys.exit('\nERROR: Interrupted by user')
     except FileNotFoundError as error:
