@@ -31,6 +31,9 @@ Before downloading any episode the function first fetches all available pages of
 * `-p` / `--progress`: Show a progress bar for episode downloads. Can be used in conjunction with `--verbose` (see above).
 * `-S` / `--slugify`: Clean all folders and filename of potentially weird characters that might cause trouble with one or another target filesystem. The character set boils down to about: alphanumeric characters (both upper and lower case), dashes, and underscores, with unicode characters being normalized according to [Compatibility Decomposition](#excursion-unicode-normalization-in-slugify).
 * '`-m <number_of_episodes>`', `--max-episodes=<number_of_episodes>`: Only download the given `<number_of_episodes>` per podcast feed. Useful if you don't really need the entire backlog. Keep in mind that with subsequent executions with new episodes appearing, Podcast Archiver will currently *not* remove previous episodes. Therefore the number of episodes on disk will increase (actually by a maximum of `<number_of_episodes>`) when new episodes start coming up in the feed, and the Archiver is run again.
+* '`-n <name_of_episodes>`', `--name-episodes`: Adds Podcats and Episodes names to the downloaded files. Following the format: Podcast_Name - [Episode_Name]. *Attention* when used in conjunction with -S(slugify) argument it will remove [ ] from episode name.
+* '`-l <interval_in_seconds>`', `--loop`: Runs on infinite loop checking for new episodes ever X seconds. iex.: -l 300 would check for new episodes every 5 minutes.
+
 
 ### Full-fledged example
 ```
