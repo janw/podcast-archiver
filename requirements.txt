@@ -1,2 +1,2 @@
-feedparser>=5.2.1,<5.3
+feedparser=6.0.8
 tqdm>=4.14,<5.0
