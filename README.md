@@ -5,8 +5,8 @@
 
 ![Podcast Archiver Logo](assets/icon.png)
 
-![PyPI](https://img.shields.io/pypi/v/podcast-archiver.svg)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/podcast-archiver.svg)
+[![PyPI](https://img.shields.io/pypi/v/podcast-archiver.svg)](https://pypi.org/project/podcast-archiver/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/podcast-archiver.svg)](https://pypi.org/project/podcast-archiver/)
 
 [![Code Quality](https://app.codacy.com/project/badge/Grade/d0c31899a9964ccc82fa4080717d45a6)](https://app.codacy.com/gh/janw/podcast-archiver/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
