@@ -1,9 +1,20 @@
 # Podcast Archiver
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/b61b77e71403353cdfc6/maintainability)](https://codeclimate.com/github/janw/podcast-archiver/maintainability)
+<!-- markdownlint-disable MD033 MD013 -->
+<div align="center">
 
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v1.json)](https://github.com/charliermarsh/ruff)
+![Podcast Archiver Logo](assets/icon.png)
+
+![PyPI](https://img.shields.io/pypi/v/podcast-archiver.svg)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/podcast-archiver.svg)
+
+[![Code Quality](https://app.codacy.com/project/badge/Grade/d0c31899a9964ccc82fa4080717d45a6)](https://app.codacy.com/gh/janw/podcast-archiver/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+
+[![Linter: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v1.json)](https://github.com/charliermarsh/ruff)
 [![Code style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
+[![Dependency management: poetry](https://img.shields.io/badge/deps-poetry-blueviolet.svg)](https://poetry.eustace.io/docs/)
+
+</div>
 
 Archive all episodes from your favorite podcasts.
 
