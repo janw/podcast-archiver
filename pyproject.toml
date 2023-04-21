@@ -14,6 +14,7 @@ podcast-archiver = 'podcast_archiver:main'
 python = "^3.9"
 python-dateutil = "^2.8.2"
 feedparser = "^6.0.10"
+tqdm = "^4.65.0"
 
 
 [tool.poetry.group.dev.dependencies]

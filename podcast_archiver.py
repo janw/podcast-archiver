@@ -316,6 +316,8 @@ class PodcastArchiver:
         if self.progress and total_size > 0:
             from tqdm import tqdm
 
+            if self.verbose < 2:
+                print(f"\nDownloading {filename}")
             with (
                 tqdm(total=total_size, unit="B", unit_scale=True, unit_divisor=1024) as progress_bar,
                 open(filename, "wb") as outfile,
@@ -353,7 +355,7 @@ class PodcastArchiver:
             self.logDownloadHeader(link, episode_dict, index=cnt, total=nlinks)
             self.downloadEpisode(link, feed_info=feed_info, episode_dict=episode_dict)
 
-    def prettyCopyfileobj(self, fsrc, fdst, callback, block_size=8 * 1024):
+    def prettyCopyfileobj(self, fsrc, fdst, callback, block_size=128 * 1024):
         while True:
             buf = fsrc.read(block_size)
             if not buf:
