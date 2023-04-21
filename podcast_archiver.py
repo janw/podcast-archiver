@@ -206,7 +206,7 @@ class PodcastArchiver:
             return None
 
         # Escape malformatted XML; If the character encoding is wrong, continue as long as the reparsing succeeded
-        if feedobj["bozo"] == 1 and type(feedobj["bozo_exception"]) is not CharacterEncodingOverride:
+        if feedobj["bozo"] == 1 and not isinstance(feedobj["bozo_exception"], CharacterEncodingOverride):
             print("\nDownloaded feed is malformatted on", feed_url)
             return None
 
