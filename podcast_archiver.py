@@ -21,11 +21,11 @@ class writeable_dir(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         prospective_dir = values
         if not path.isdir(prospective_dir):
-            raise ArgumentTypeError("%s is not a valid path" % prospective_dir)
+            raise ArgumentTypeError(f"{prospective_dir} does not exist")
         if access(prospective_dir, W_OK):
             setattr(namespace, self.dest, prospective_dir)
         else:
-            raise ArgumentTypeError("%s is not a writeable dir" % prospective_dir)
+            raise ArgumentTypeError(f"{prospective_dir} is not writeable")
 
 
 class PodcastArchiver:
@@ -427,12 +427,11 @@ def main():
         ),
     )
 
-    args = parser.parse_args()
-    if not (args.opml or args.feed):
-        parser.print_help()
-        sys.exit("\nERROR: Must provide at least one of --feed or --opml")
-
     try:
+        args = parser.parse_args()
+        if not (args.opml or args.feed):
+            parser.error("Must provide at least one of --feed or --opml")
+
         pa = PodcastArchiver()
         pa.addArguments(args)
         pa.processFeeds()
@@ -441,7 +440,7 @@ def main():
     except FileNotFoundError as error:
         sys.exit("\nERROR: %s" % error)
     except ArgumentTypeError as error:
-        sys.exit("\nERROR: Your config is invalid: %s" % error)
+        parser.error(str(error))
 
 
 if __name__ == "__main__":
