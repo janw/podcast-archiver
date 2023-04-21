@@ -29,10 +29,6 @@ class writeable_dir(argparse.Action):
 
 
 class PodcastArchiver:
-    _feed_title = ""
-    _feedobj = None
-    _feed_info_dict = {}
-
     _userAgent = "Podcast-Archiver/0.4 (https://github.com/janwh/podcast-archiver)"
     _headers = {"User-Agent": _userAgent}
     _global_info_keys = [
@@ -65,9 +61,6 @@ class PodcastArchiver:
         feedparser.USER_AGENT = self._userAgent
 
     def addArguments(self, args):
-        # if type(args) is argparse.ArgumentParser:
-        #     args = parser.parse_args()
-
         self.verbose = args.verbose or 0
         if self.verbose > 2:
             print("Input arguments:", args)
@@ -107,29 +100,33 @@ class PodcastArchiver:
         ]:
             self.addFeed(feed)
 
+    def processFeed(self, feed_url):
+        if self.verbose > 0:
+            print(f"\nDownloading archive for: {feed_url}\n1. Gathering link list ...", end="", flush=True)
+
+        linklist, feed_info = self.processPodcastLink(feed_url)
+        if self.verbose == 1:
+            print("%d episodes to process" % len(linklist))
+        if self.verbose > 2:
+            print("\n\tFeed info:")
+            for key, value in feed_info.items():
+                print("\t * %10s: %s" % (key, value))
+            print()
+        if not linklist:
+            return
+        if self.verbose == 1:
+            print("2. Downloading content ... ", end="")
+        elif self.verbose > 1:
+            print("2. Downloading content ...")
+        self.downloadEpisodes(linklist, feed_info)
+
     def processFeeds(self):
         if self.verbose > 0 and self.update:
             print("Updating archive")
-
-        for feed in self.feedlist:
-            if self.verbose > 0:
-                print("\nDownloading archive for: " + feed)
-            linklist = self.processPodcastLink(feed)
-            self.downloadPodcastFiles(linklist)
-
+        for feed_url in self.feedlist:
+            self.processFeed(feed_url)
         if self.verbose > 0:
             print("\nDone.")
-
-    def parseGlobalFeedInfo(self, feedobj=None):
-        if feedobj is None:
-            feedobj = self._feedobj
-
-        self._feed_info_dict = {}
-        if "feed" in feedobj:
-            for key in self._global_info_keys:
-                self._feed_info_dict["feed_" + key] = feedobj["feed"].get(key, None)
-
-        return self._feed_info_dict
 
     def slugifyString(filename):
         filename = unicodedata.normalize("NFKD", filename).encode("ascii", "ignore")
@@ -138,10 +135,10 @@ class PodcastArchiver:
 
         return filename
 
-    def linkToTargetFilename(self, link, must_have_ext=False, episode_info=None):
-        # Remove HTTP GET parameters from filename by parsing URL properly
+    def linkToTargetFilename(self, link, feed_info, must_have_ext=False, episode_info=None):
         linkpath = urlparse(link).path
         basename = path.basename(linkpath)
+        feed_title = feed_info["title"]
 
         if self.prefix_with_date and episode_info:
             date_str = dateparse(episode_info["published"]).strftime("%Y-%m-%d")
@@ -151,44 +148,31 @@ class PodcastArchiver:
         if must_have_ext and not ext:
             return None
 
-        # If requested, slugify the filename
         if self.slugify:
-            basename = PodcastArchiver.slugifyString(basename)
-            self._feed_title = PodcastArchiver.slugifyString(self._feed_title)
+            basename = self.slugifyString(basename)
+            feed_title = self.slugifyString(feed_title)
         else:
             basename.replace(path.pathsep, "_")
             basename.replace(path.sep, "_")
-            self._feed_title.replace(path.pathsep, "_")
-            self._feed_title.replace(path.sep, "_")
+            feed_title.replace(path.pathsep, "_")
+            feed_title.replace(path.sep, "_")
 
-        # Generate local path and check for existence
         if self.subdirs:
-            filename = path.join(self.savedir, self._feed_title, basename)
+            filename = path.join(self.savedir, feed_title, basename)
         else:
             filename = path.join(self.savedir, basename)
 
         return filename
 
-    def parseFeedToNextPage(self, feedobj=None):
-        if feedobj is None:
-            feedobj = self._feedobj
-
+    def parseFeedToNextPage(self, feedobj):
         # Assuming there will only be one link declared as 'next'
-        self._feed_next_page = [link["href"] for link in feedobj["feed"]["links"] if link["rel"] == "next"]
+        feed_next_page = [link["href"] for link in feedobj["feed"]["links"] if link["rel"] == "next"]
+        if len(feed_next_page) > 0:
+            return feed_next_page[0]
 
-        if len(self._feed_next_page) > 0:
-            self._feed_next_page = self._feed_next_page[0]
-        else:
-            self._feed_next_page = None
-
-        return self._feed_next_page
-
-    def parseFeedToLinks(self, feed=None):
-        if feed is None:
-            feed = self._feedobj
-
+    def parseFeedToLinks(self, feedobj):
         # Try different feed episode layouts: 'items' or 'entries'
-        episodeList = feed.get("items", False) or feed.get("entries", False)
+        episodeList = feedobj.get("items", False) or feedobj.get("entries", False)
         if episodeList:
             linklist = [self.parseEpisode(episode) for episode in episodeList]
             linklist = [link for link in linklist if len(link) > 0]
@@ -212,152 +196,161 @@ class PodcastArchiver:
 
         return episode_info
 
-    def processPodcastLink(self, link):
-        if self.verbose > 0:
-            print("1. Gathering link list ...", end="", flush=True)
+    def getFeedObj(self, feed_url):
+        feedobj = feedparser.parse(feed_url)
 
-        self._feed_title = None
-        self._feed_next_page = link
-        first_page = True
+        # Escape improper feed-URL
+        if "status" in feedobj and feedobj["status"] >= 400:
+            print("\nQuery returned HTTP error", feedobj["status"])
+            return None
+
+        # Escape malformatted XML; If the character encoding is wrong, continue as long as the reparsing succeeded
+        if feedobj["bozo"] == 1 and type(feedobj["bozo_exception"]) is not CharacterEncodingOverride:
+            print("\nDownloaded feed is malformatted on", feed_url)
+            return None
+
+        return feedobj
+
+    def truncateLinkList(self, linklist, feed_info):
+        # On given option, run an update, break at first existing episode
+        if self.update:
+            for index, episode_dict in enumerate(linklist):
+                link = episode_dict["url"]
+                filename = self.linkToTargetFilename(link, feed_info)
+
+                if path.isfile(filename):
+                    del linklist[index:]
+                    if self.verbose > 1:
+                        print(f" found existing episodes, {len(linklist)} new to process")
+                    return True, linklist
+
+        # On given option, crop linklist to maximum number of episodes
+        if self.maximumEpisodes is not None and self.maximumEpisodes < len(linklist):
+            linklist = linklist[0 : self.maximumEpisodes]
+            if self.verbose > 1:
+                print(f" reached maximum episode count of {self.maximumEpisodes}")
+            return True, linklist
+
+        return False, linklist
+
+    def parseFeedInfo(self, feedobj):
+        feed_header = feedobj.get("feed", {})
+        feed_info = {key: feed_header.get(key, None) for key in self._global_info_keys}
+        if feed_info.get("title"):
+            return feed_info
+
+        print("✗ Feed is missing title information.")
+        return None
+
+    def processPodcastLink(self, feed_next_page):
+        feed_info = None
         linklist = []
-        while self._feed_next_page is not None:
+        while True:
+            if not (feedobj := self.getFeedObj(feed_next_page)):
+                break
+
+            if not feed_info:
+                feed_info = self.parseFeedInfo(feedobj)
+                if not feed_info:
+                    return [], {}
+
+            # Parse the feed object for episodes and the next page
+            linklist += self.parseFeedToLinks(feedobj)
+            feed_next_page = self.parseFeedToNextPage(feedobj)
+            was_truncated, linklist = self.truncateLinkList(linklist, feed_info)
+
+            if not feed_next_page or was_truncated:
+                break
+
             if self.verbose > 0:
                 print(".", end="", flush=True)
 
-            self._feedobj = feedparser.parse(self._feed_next_page)
-
-            # Escape improper feed-URL
-            if "status" in self._feedobj and self._feedobj["status"] >= 400:
-                print("\nQuery returned HTTP error", self._feedobj["status"])
-                return None
-
-            # Escape malformatted XML; If the character encoding is wrong, continue as long as the reparsing succeeded
-            if self._feedobj["bozo"] == 1 and type(self._feedobj["bozo_exception"]) is not CharacterEncodingOverride:
-                print("\nDownloaded feed is malformatted on", self._feed_next_page)
-                return None
-
-            if first_page:
-                self.parseGlobalFeedInfo()
-                first_page = False
-
-            # Parse the feed object for episodes and the next page
-            linklist += self.parseFeedToLinks(self._feedobj)
-            self._feed_next_page = self.parseFeedToNextPage(self._feedobj)
-
-            if self._feed_title is None:
-                self._feed_title = self._feedobj["feed"]["title"]
-
-            numberOfLinks = len(linklist)
-
-            # On given option, run an update, break at first existing episode
-            if self.update:
-                for index, episode_dict in enumerate(linklist):
-                    link = episode_dict["url"]
-                    filename = self.linkToTargetFilename(link)
-
-                    if path.isfile(filename):
-                        del linklist[index:]
-                        break
-                numberOfLinks = len(linklist)
-
-            # On given option, crop linklist to maximum number of episodes
-            if self.maximumEpisodes is not None and self.maximumEpisodes < numberOfLinks:
-                linklist = linklist[0 : self.maximumEpisodes]
-                numberOfLinks = self.maximumEpisodes
-
-            if self.maximumEpisodes is not None or self.update:
-                break
-
+        if self.verbose == 1:
+            print(" ", end="", flush=True)
         linklist.reverse()
+        return linklist, feed_info
 
-        if self.verbose > 0:
-            print(" %d episodes" % numberOfLinks)
+    def checkEpisodeExistsPreflight(self, link, *, feed_info, episode_dict):
+        # Check existence once ...
+        filename = self.linkToTargetFilename(link, feed_info=feed_info, episode_info=episode_dict)
 
-        if self.verbose > 2:
-            import json
+        if self.verbose > 1:
+            print("\tLocal filename:", filename)
 
-            print("Feed info:\n%s\n" % json.dumps(self._feed_info_dict, indent=2))
-
-        return linklist
-
-    def downloadPodcastFiles(self, linklist):
-        if linklist is None or self._feed_title is None:
-            return
-
-        nlinks = len(linklist)
-        if nlinks > 0:
-            if self.verbose == 1:
-                print("2. Downloading content ... ", end="")
-            elif self.verbose > 1:
-                print("2. Downloading content ...")
-
-        for cnt, episode_dict in enumerate(linklist):
-            link = episode_dict["url"]
-            if self.verbose == 1:
-                print("\r2. Downloading content ... {0}/{1}".format(cnt + 1, nlinks), end="", flush=True)
-            elif self.verbose > 1:
-                print("\n\tDownloading file no. {0}/{1}:\n\t{2}".format(cnt + 1, nlinks, link))
-
-                if self.verbose > 2:
-                    print("\tEpisode info:")
-                    for key in episode_dict:
-                        print("\t * %10s: %s" % (key, episode_dict[key]))
-
-            # Check existence once ...
-            filename = self.linkToTargetFilename(link, episode_info=episode_dict)
-
+        if path.isfile(filename):
             if self.verbose > 1:
-                print("\tLocal filename:", filename)
+                print("\t✓ Already exists.")
+            return None
+
+        return filename
+
+    def logDownloadHeader(self, link, episode_dict, *, index, total):
+        if self.verbose == 1:
+            print("\r2. Downloading episodes ... {0}/{1}".format(index + 1, total), end="", flush=True)
+        elif self.verbose > 1:
+            print("\n\tDownloading episode no. {0}/{1}:\n\t{2}".format(index + 1, total, link))
+        if self.verbose > 2:
+            print("\tEpisode info:")
+            for key, value in episode_dict.items():
+                print("\t * %10s: %s" % (key, value))
+
+    def processResponse(self, response, *, filename, feed_info, episode_dict):
+        # Check existence another time, with resolved link
+        link = response.geturl()
+        total_size = int(response.getheader("content-length", "0"))
+        new_filename = self.linkToTargetFilename(link, feed_info, must_have_ext=True, episode_info=episode_dict)
+
+        if new_filename and new_filename != filename:
+            filename = new_filename
+            if self.verbose > 1:
+                print("\tResolved filename:", filename)
 
             if path.isfile(filename):
                 if self.verbose > 1:
                     print("\t✓ Already exists.")
-                continue
+                return
 
-            # Begin downloading
-            prepared_request = Request(link, headers=self._headers)
-            try:
-                with urlopen(prepared_request) as response:
-                    # Check existence another time, with resolved link
-                    link = response.geturl()
-                    total_size = int(response.getheader("content-length", "0"))
-                    new_filename = self.linkToTargetFilename(link, must_have_ext=True, episode_info=episode_dict)
+        # Create the subdir, if it does not exist
+        makedirs(path.dirname(filename), exist_ok=True)
 
-                    if new_filename and new_filename != filename:
-                        filename = new_filename
-                        if self.verbose > 1:
-                            print("\tResolved filename:", filename)
+        if self.progress and total_size > 0:
+            from tqdm import tqdm
 
-                        if path.isfile(filename):
-                            if self.verbose > 1:
-                                print("\t✓ Already exists.")
-                            continue
+            with tqdm(total=total_size, unit="B", unit_scale=True, unit_divisor=1024) as progress_bar, open(
+                filename, "wb"
+            ) as outfile:
+                self.prettyCopyfileobj(response, outfile, callback=progress_bar.update)
+        else:
+            with open(filename, "wb") as outfile:
+                copyfileobj(response, outfile)
 
-                    # Create the subdir, if it does not exist
-                    makedirs(path.dirname(filename), exist_ok=True)
+    def downloadEpisode(self, link, *, feed_info, episode_dict):
+        filename = self.checkEpisodeExistsPreflight(link, feed_info=feed_info, episode_dict=episode_dict)
+        if not filename:
+            return
+        prepared_request = Request(link, headers=self._headers)
+        try:
+            with urlopen(prepared_request) as response:
+                self.processResponse(response, filename=filename, feed_info=feed_info, episode_dict=episode_dict)
+            if self.verbose > 1:
+                print("\t✓ Download successful.")
+        except (urllib.error.HTTPError, urllib.error.URLError) as error:
+            if self.verbose > 1:
+                print("\t✗ Download failed. Query returned '%s'" % error)
+        except KeyboardInterrupt:
+            if self.verbose > 0:
+                print("\n\t✗ Unexpected interruption. Deleting unfinished file.")
 
-                    if self.progress and total_size > 0:
-                        from tqdm import tqdm
+            remove(filename)
+            raise
 
-                        with tqdm(total=total_size, unit="B", unit_scale=True, unit_divisor=1024) as progress_bar, open(
-                            filename, "wb"
-                        ) as outfile:
-                            self.prettyCopyfileobj(response, outfile, callback=progress_bar.update)
-                    else:
-                        with open(filename, "wb") as outfile:
-                            copyfileobj(response, outfile)
+    def downloadEpisodes(self, linklist, feed_info):
+        nlinks = len(linklist)
+        for cnt, episode_dict in enumerate(linklist):
+            link = episode_dict["url"]
 
-                if self.verbose > 1:
-                    print("\t✓ Download successful.")
-            except (urllib.error.HTTPError, urllib.error.URLError) as error:
-                if self.verbose > 1:
-                    print("\t✗ Download failed. Query returned '%s'" % error)
-            except KeyboardInterrupt:
-                if self.verbose > 0:
-                    print("\n\t✗ Unexpected interruption. Deleting unfinished file.")
-
-                remove(filename)
-                raise
+            self.logDownloadHeader(link, episode_dict, index=cnt, total=nlinks)
+            self.downloadEpisode(link, feed_info=feed_info, episode_dict=episode_dict)
 
     def prettyCopyfileobj(self, fsrc, fdst, callback, block_size=8 * 1024):
         while True:

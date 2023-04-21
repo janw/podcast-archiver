@@ -30,10 +30,18 @@ extend-select = [
     "TID", # tidy-imports
     "C4",  # comprehensions
     "SIM", # simplify
+    "C90", # mccabe
 ]
 unfixable = [
     "B", # bugbear
 ]
+ignore = [
+    "SIM108", # if-else-block-instead-of-if-exp
+]
+
+[tool.ruff.mccabe]
+max-complexity = 8
+
 
 [tool.black]
 line-length = 120
