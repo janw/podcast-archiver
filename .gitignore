@@ -1,2 +1,5 @@
 *.opml
 *.txt
+
+archive/
+.ruff_cache/
