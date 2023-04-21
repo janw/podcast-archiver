@@ -1,0 +1,27 @@
+name: Linters
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+  gitlint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up python environment
+        uses: actions/setup-python@v4
+        with:
+          cache: 'pip'
+
+      - run: pip install gitlint
+
+      # NOTE: first commit using conventional-commits: 8115756
+      - run: gitlint --fail-without-commits --commits 8115756..HEAD
