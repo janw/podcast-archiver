@@ -42,7 +42,6 @@ from feedparser import CharacterEncodingOverride
 
 
 class writeable_dir(argparse.Action):
-
     def __call__(self, parser, namespace, values, option_string=None):
         prospective_dir = values
         if not path.isdir(prospective_dir):
@@ -54,16 +53,28 @@ class writeable_dir(argparse.Action):
 
 
 class PodcastArchiver:
-
     _feed_title = ""
     _feedobj = None
     _feed_info_dict = {}
 
     _userAgent = "Podcast-Archiver/0.4 (https://github.com/janwh/podcast-archiver)"
     _headers = {"User-Agent": _userAgent}
-    _global_info_keys = ["author", "language", "link", "subtitle", "title", ]
-    _episode_info_keys = ["author", "link", "subtitle", "title", ]
-    _date_keys = ["published", ]
+    _global_info_keys = [
+        "author",
+        "language",
+        "link",
+        "subtitle",
+        "title",
+    ]
+    _episode_info_keys = [
+        "author",
+        "link",
+        "subtitle",
+        "title",
+    ]
+    _date_keys = [
+        "published",
+    ]
 
     savedir = ""
     verbose = 0
@@ -75,11 +86,9 @@ class PodcastArchiver:
     feedlist = []
 
     def __init__(self):
-
         feedparser.USER_AGENT = self._userAgent
 
     def addArguments(self, args):
-
         # if type(args) is argparse.ArgumentParser:
         #     args = parser.parse_args()
 
@@ -87,10 +96,10 @@ class PodcastArchiver:
         if self.verbose > 2:
             print("Input arguments:", args)
 
-        for feed in (args.feed or []):
+        for feed in args.feed or []:
             self.addFeed(feed)
 
-        for opml in (args.opml or []):
+        for opml in args.opml or []:
             self.parseOpmlFile(opml)
 
         if args.dir:
@@ -117,14 +126,12 @@ class PodcastArchiver:
         with opml as file:
             tree = etree.fromstringlist(file)
 
-        for feed in [node.get("xmlUrl") for node
-                     in tree.findall("*/outline/[@type='rss']")
-                     if node.get("xmlUrl") is not None]:
-
+        for feed in [
+            node.get("xmlUrl") for node in tree.findall("*/outline/[@type='rss']") if node.get("xmlUrl") is not None
+        ]:
             self.addFeed(feed)
 
     def processFeeds(self):
-
         if self.verbose > 0 and self.update:
             print("Updating archive")
 
@@ -156,11 +163,9 @@ class PodcastArchiver:
         return filename
 
     def linkToTargetFilename(self, link, must_have_ext=False, episode_info=None):
-
         # Remove HTTP GET parameters from filename by parsing URL properly
         linkpath = urlparse(link).path
         basename = path.basename(linkpath)
-
 
         if self.prefix_with_date and episode_info:
             date_str = dateparse(episode_info["published"]).strftime("%Y-%m-%d")
@@ -189,13 +194,11 @@ class PodcastArchiver:
         return filename
 
     def parseFeedToNextPage(self, feedobj=None):
-
         if feedobj is None:
             feedobj = self._feedobj
 
         # Assuming there will only be one link declared as 'next'
-        self._feed_next_page = [link["href"] for link in feedobj["feed"]["links"]
-                                if link["rel"] == "next"]
+        self._feed_next_page = [link["href"] for link in feedobj["feed"]["links"] if link["rel"] == "next"]
 
         if len(self._feed_next_page) > 0:
             self._feed_next_page = self._feed_next_page[0]
@@ -205,7 +208,6 @@ class PodcastArchiver:
         return self._feed_next_page
 
     def parseFeedToLinks(self, feed=None):
-
         if feed is None:
             feed = self._feedobj
 
@@ -278,13 +280,13 @@ class PodcastArchiver:
                     filename = self.linkToTargetFilename(link)
 
                     if path.isfile(filename):
-                        del(linklist[index:])
+                        del linklist[index:]
                         break
                 numberOfLinks = len(linklist)
 
             # On given option, crop linklist to maximum number of episodes
             if self.maximumEpisodes is not None and self.maximumEpisodes < numberOfLinks:
-                linklist = linklist[0:self.maximumEpisodes]
+                linklist = linklist[0 : self.maximumEpisodes]
                 numberOfLinks = self.maximumEpisodes
 
             if self.maximumEpisodes is not None or self.update:
@@ -297,10 +299,10 @@ class PodcastArchiver:
 
         if self.verbose > 2:
             import json
+
             print("Feed info:\n%s\n" % json.dumps(self._feed_info_dict, indent=2))
 
         return linklist
-
 
     def downloadPodcastFiles(self, linklist):
         if linklist is None or self._feed_title is None:
@@ -316,11 +318,9 @@ class PodcastArchiver:
         for cnt, episode_dict in enumerate(linklist):
             link = episode_dict["url"]
             if self.verbose == 1:
-                print("\r2. Downloading content ... {0}/{1}"
-                      .format(cnt + 1, nlinks), end="", flush=True)
+                print("\r2. Downloading content ... {0}/{1}".format(cnt + 1, nlinks), end="", flush=True)
             elif self.verbose > 1:
-                print("\n\tDownloading file no. {0}/{1}:\n\t{2}"
-                      .format(cnt + 1, nlinks, link))
+                print("\n\tDownloading file no. {0}/{1}:\n\t{2}".format(cnt + 1, nlinks, link))
 
                 if self.verbose > 2:
                     print("\tEpisode info:")
@@ -342,7 +342,6 @@ class PodcastArchiver:
             prepared_request = Request(link, headers=self._headers)
             try:
                 with urlopen(prepared_request) as response:
-
                     # Check existence another time, with resolved link
                     link = response.geturl()
                     total_size = int(response.getheader("content-length", "0"))
@@ -363,18 +362,18 @@ class PodcastArchiver:
 
                     if self.progress and total_size > 0:
                         from tqdm import tqdm
-                        with tqdm(total=total_size, unit="B",
-                                  unit_scale=True, unit_divisor=1024) as progress_bar, open(filename, "wb") as outfile:
-                            self.prettyCopyfileobj(response, outfile,
-                                                   callback=progress_bar.update)
+
+                        with tqdm(total=total_size, unit="B", unit_scale=True, unit_divisor=1024) as progress_bar, open(
+                            filename, "wb"
+                        ) as outfile:
+                            self.prettyCopyfileobj(response, outfile, callback=progress_bar.update)
                     else:
                         with open(filename, "wb") as outfile:
                             copyfileobj(response, outfile)
 
                 if self.verbose > 1:
                     print("\t✓ Download successful.")
-            except (urllib.error.HTTPError,
-                    urllib.error.URLError) as error:
+            except (urllib.error.HTTPError, urllib.error.URLError) as error:
                 if self.verbose > 1:
                     print("\t✗ Download failed. Query returned '%s'" % error)
             except KeyboardInterrupt:
@@ -395,38 +394,68 @@ class PodcastArchiver:
 
 if __name__ == "__main__":
     try:
-
         parser = argparse.ArgumentParser()
-        parser.add_argument("-o", "--opml", action="append", type=argparse.FileType("r"),
-                            help="""Provide an OPML file (as exported by many other podcatchers)
+        parser.add_argument(
+            "-o",
+            "--opml",
+            action="append",
+            type=argparse.FileType("r"),
+            help="""Provide an OPML file (as exported by many other podcatchers)
                                  containing your feeds. The parameter can be used multiple
-                                 times, once for every OPML file.""")
-        parser.add_argument("-f", "--feed", action="append",
-                            help="""Add a feed URl to the archiver. The parameter can be used
-                                 multiple times, once for every feed.""")
-        parser.add_argument("-d", "--dir", action=writeable_dir,
-                            help="""Set the output directory of the podcast archive.""")
-        parser.add_argument("-s", "--subdirs", action="store_true",
-                            help="""Place downloaded podcasts in separate subdirectories per
-                                 podcast (named with their title).""")
-        parser.add_argument("-u", "--update", action="store_true",
-                            help="""Force the archiver to only update the feeds with newly added
+                                 times, once for every OPML file.""",
+        )
+        parser.add_argument(
+            "-f",
+            "--feed",
+            action="append",
+            help="""Add a feed URl to the archiver. The parameter can be used
+                                 multiple times, once for every feed.""",
+        )
+        parser.add_argument(
+            "-d", "--dir", action=writeable_dir, help="""Set the output directory of the podcast archive."""
+        )
+        parser.add_argument(
+            "-s",
+            "--subdirs",
+            action="store_true",
+            help="""Place downloaded podcasts in separate subdirectories per
+                                 podcast (named with their title).""",
+        )
+        parser.add_argument(
+            "-u",
+            "--update",
+            action="store_true",
+            help="""Force the archiver to only update the feeds with newly added
                                  episodes. As soon as the first old episode found in the
-                                 download directory, further downloading is interrupted.""")
-        parser.add_argument("-v", "--verbose", action="count",
-                            help="""Increase the level of verbosity while downloading.""")
-        parser.add_argument("-p", "--progress", action="store_true",
-                            help="""Show progress bars while downloading episodes.""")
-        parser.add_argument("-S", "--slugify", action="store_true",
-                            help="""Clean all folders and filename of potentially weird
+                                 download directory, further downloading is interrupted.""",
+        )
+        parser.add_argument(
+            "-v", "--verbose", action="count", help="""Increase the level of verbosity while downloading."""
+        )
+        parser.add_argument(
+            "-p", "--progress", action="store_true", help="""Show progress bars while downloading episodes."""
+        )
+        parser.add_argument(
+            "-S",
+            "--slugify",
+            action="store_true",
+            help="""Clean all folders and filename of potentially weird
                                  characters that might cause trouble with one or another
-                                 target filesystem.""")
-        parser.add_argument("-m", "--max-episodes", type=int,
-                            help="""Only download the given number of episodes per podcast
-                                 feed. Useful if you don't really need the entire backlog.""")
-        parser.add_argument("--date-prefix", action="store_true",
-                            help="""Prefix all episodes with an ISO8602 formatted date of when
-                                 they were published. Useful to ensure chronological ordering.""")
+                                 target filesystem.""",
+        )
+        parser.add_argument(
+            "-m",
+            "--max-episodes",
+            type=int,
+            help="""Only download the given number of episodes per podcast
+                                 feed. Useful if you don't really need the entire backlog.""",
+        )
+        parser.add_argument(
+            "--date-prefix",
+            action="store_true",
+            help="""Prefix all episodes with an ISO8602 formatted date of when
+                                 they were published. Useful to ensure chronological ordering.""",
+        )
 
         args = parser.parse_args()
 
