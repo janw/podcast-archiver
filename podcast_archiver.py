@@ -128,6 +128,7 @@ class PodcastArchiver:
         if self.verbose > 0:
             print("\nDone.")
 
+    @staticmethod
     def slugifyString(filename):
         filename = unicodedata.normalize("NFKD", filename).encode("ascii", "ignore")
         filename = re.sub("[^\w\s\-\.]", "", filename.decode("ascii")).strip()
