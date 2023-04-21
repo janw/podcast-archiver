@@ -37,6 +37,7 @@ from urllib.parse import urlparse
 import unicodedata
 import re
 import xml.etree.ElementTree as etree
+from dateutil.parser import parse as dateparse
 
 
 class writeable_dir(argparse.Action):
@@ -99,6 +100,7 @@ class PodcastArchiver:
         self.progress = args.progress
         self.slugify = args.slugify
         self.maximumEpisodes = args.max_episodes or None
+        self.prefix_with_date = args.date_prefix or None
 
         if self.verbose > 1:
             print("Verbose level: ", self.verbose)
@@ -151,11 +153,16 @@ class PodcastArchiver:
 
         return filename
 
-    def linkToTargetFilename(self, link, must_have_ext=False):
+    def linkToTargetFilename(self, link, must_have_ext=False, episode_info=None):
 
         # Remove HTTP GET parameters from filename by parsing URL properly
         linkpath = urlparse(link).path
         basename = path.basename(linkpath)
+
+
+        if self.prefix_with_date and episode_info:
+            date_str = dateparse(episode_info['published']).strftime("%Y-%m-%d")
+            basename = f"{date_str} {basename}"
 
         _, ext = path.splitext(basename)
         if must_have_ext and not ext:
@@ -325,7 +332,7 @@ class PodcastArchiver:
                         print("\t * %10s: %s" % (key, episode_dict[key]))
 
             # Check existence once ...
-            filename = self.linkToTargetFilename(link)
+            filename = self.linkToTargetFilename(link, episode_info=episode_dict)
 
             if self.verbose > 1:
                 print("\tLocal filename:", filename)
@@ -343,7 +350,7 @@ class PodcastArchiver:
                     # Check existence another time, with resolved link
                     link = response.geturl()
                     total_size = int(response.getheader('content-length', '0'))
-                    new_filename = self.linkToTargetFilename(link, must_have_ext=True)
+                    new_filename = self.linkToTargetFilename(link, must_have_ext=True, episode_info=episode_dict)
 
                     if new_filename and new_filename != filename:
                         filename = new_filename
@@ -423,6 +430,9 @@ if __name__ == "__main__":
         parser.add_argument('-m', '--max-episodes', type=int,
                             help='''Only download the given number of episodes per podcast
                                  feed. Useful if you don't really need the entire backlog.''')
+        parser.add_argument('--date-prefix', action='store_true',
+                            help='''Prefix all episodes with an ISO8602 formatted date of when
+                                 they were published. Useful to ensure chronological ordering.''')
 
         args = parser.parse_args()
 
