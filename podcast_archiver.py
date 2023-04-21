@@ -108,7 +108,8 @@ class PodcastArchiver:
 
     def addFeed(self, feed):
         if path.isfile(feed):
-            self.feedlist += open(feed, "r").read().strip().splitlines()
+            with open(feed, "r") as fp:
+                self.feedlist += fp.read().strip().splitlines()
         else:
             self.feedlist.append(feed)
 
@@ -222,10 +223,8 @@ class PodcastArchiver:
         url = None
         episode_info = {}
         for link in episode["links"]:
-            if "type" in link.keys():
-                if link["type"].startswith("audio"):
-                    url = link["href"]
-                elif link["type"].startswith("video"):
+            if "type" in link:
+                if link["type"].startswith("audio") or link["type"].startswith("video"):
                     url = link["href"]
 
                 if url is not None:
@@ -250,17 +249,14 @@ class PodcastArchiver:
             self._feedobj = feedparser.parse(self._feed_next_page)
 
             # Escape improper feed-URL
-            if "status" in self._feedobj.keys() and self._feedobj["status"] >= 400:
+            if "status" in self._feedobj and self._feedobj["status"] >= 400:
                 print("\nQuery returned HTTP error", self._feedobj["status"])
                 return None
 
-            # Escape malformatted XML
-            if self._feedobj["bozo"] == 1:
-
-                # If the character encoding is wrong, we continue as long as the reparsing succeeded
-                if type(self._feedobj["bozo_exception"]) is not CharacterEncodingOverride:
-                    print("\nDownloaded feed is malformatted on", self._feed_next_page)
-                    return None
+            # Escape malformatted XML; If the character encoding is wrong, continue as long as the reparsing succeeded
+            if self._feedobj["bozo"] == 1 and type(self._feedobj["bozo_exception"]) is not CharacterEncodingOverride:
+                print("\nDownloaded feed is malformatted on", self._feed_next_page)
+                return None
 
             if first_page:
                 self.parseGlobalFeedInfo()
@@ -328,7 +324,7 @@ class PodcastArchiver:
 
                 if self.verbose > 2:
                     print("\tEpisode info:")
-                    for key in episode_dict.keys():
+                    for key in episode_dict:
                         print("\t * %10s: %s" % (key, episode_dict[key]))
 
             # Check existence once ...
@@ -368,11 +364,9 @@ class PodcastArchiver:
                     if self.progress and total_size > 0:
                         from tqdm import tqdm
                         with tqdm(total=total_size, unit="B",
-                                  unit_scale=True, unit_divisor=1024) as progress_bar:
-
-                            with open(filename, "wb") as outfile:
-                                self.prettyCopyfileobj(response, outfile,
-                                                       callback=progress_bar.update)
+                                  unit_scale=True, unit_divisor=1024) as progress_bar, open(filename, "wb") as outfile:
+                            self.prettyCopyfileobj(response, outfile,
+                                                   callback=progress_bar.update)
                     else:
                         with open(filename, "wb") as outfile:
                             copyfileobj(response, outfile)

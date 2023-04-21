@@ -27,6 +27,9 @@ extend-select = [
     "A",   # builtins
     "ISC", # implicit-str-concat
     "Q",   # quotes
+    "TID", # tidy-imports
+    "C4",  # comprehensions
+    "SIM", # simplify
 ]
 unfixable = [
     "B", # bugbear
