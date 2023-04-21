@@ -21,7 +21,15 @@ black = "^23.3.0"
 [tool.ruff]
 line-length = 120
 target-version = "py39"
-
+extend-select = [
+    "I",   # isort
+    "B",   # bugbear
+    "A",   # builtins
+    "ISC", # implicit-str-concat
+]
+unfixable = [
+    "B", # bugbear
+]
 
 [tool.black]
 line-length = 120

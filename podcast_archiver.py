@@ -24,20 +24,21 @@ THE SOFTWARE.
 """
 
 
-import sys
 import argparse
-from argparse import ArgumentTypeError
-import feedparser
-from feedparser import CharacterEncodingOverride
-from urllib.request import urlopen, Request
-import urllib.error
-from shutil import copyfileobj
-from os import path, remove, makedirs, access, W_OK
-from urllib.parse import urlparse
-import unicodedata
 import re
+import sys
+import unicodedata
+import urllib.error
 import xml.etree.ElementTree as etree
+from argparse import ArgumentTypeError
+from os import W_OK, access, makedirs, path, remove
+from shutil import copyfileobj
+from urllib.parse import urlparse
+from urllib.request import Request, urlopen
+
+import feedparser
 from dateutil.parser import parse as dateparse
+from feedparser import CharacterEncodingOverride
 
 
 class writeable_dir(argparse.Action):
@@ -326,7 +327,6 @@ class PodcastArchiver:
                       .format(cnt + 1, nlinks, link))
 
                 if self.verbose > 2:
-                    import json
                     print('\tEpisode info:')
                     for key in episode_dict.keys():
                         print("\t * %10s: %s" % (key, episode_dict[key]))
