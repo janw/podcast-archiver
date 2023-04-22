@@ -25,3 +25,14 @@ jobs:
 
       # NOTE: first commit using conventional-commits: 8115756
       - run: gitlint --fail-without-commits --commits 8115756..HEAD
+
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - name: Set up python environment
+        uses: actions/setup-python@v4
+
+      - uses: pre-commit/action@v3.0.0
