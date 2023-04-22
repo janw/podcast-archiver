@@ -28,14 +28,28 @@ Before downloading any episode the function first fetches all available pages of
 
 ## Setup
 
+### Python package
+
 `podcast-archiver` is Python 3.9+ compatible.
 
 ```bash
-# Latest published versions on PyPI:
+# Latest tagged/published version on PyPI:
 pip install podcast-archiver
 
 # Latest master from GitHub:
 pip install git+https://github.com/janw/podcast-archiver.git
+```
+
+### Docker image
+
+Alternatively `podcast-archiver` is available as a docker image as well:
+
+```bash
+# Latest tagged/published version, same as on PyPI:
+docker run --rm ghcr.io/janw/podcast-archiver:latest
+
+# Latest master from GitHub:
+docker run --rm ghcr.io/janw/podcast-archiver:edge
 ```
 
 ## Usage
