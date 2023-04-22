@@ -16,6 +16,8 @@ import feedparser
 from dateutil.parser import parse as dateparse
 from feedparser import CharacterEncodingOverride
 
+__version__ = "0.0.0"
+
 
 class writeable_dir(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
