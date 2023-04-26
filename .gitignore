@@ -3,6 +3,7 @@
 *.mp4
 *.mp3
 *.m4a
+*.yaml
 
 archive/
 .ruff_cache/

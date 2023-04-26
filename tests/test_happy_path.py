@@ -1,12 +1,12 @@
 from pathlib import Path
 
 from podcast_archiver.base import PodcastArchiver
+from podcast_archiver.config import Settings
 
 
 def test_happy_path(tmp_path: Path, feed_lautsprecher):
-    pa = PodcastArchiver()
-    pa.savedir = tmp_path
-    pa.addFeed(feed_lautsprecher)
+    settings = Settings(archive_directory=tmp_path, feeds=[feed_lautsprecher])
+    pa = PodcastArchiver(settings)
 
     pa.run()
 
@@ -15,11 +15,10 @@ def test_happy_path(tmp_path: Path, feed_lautsprecher):
 
 
 def test_happy_path_max_episodes(tmp_path: Path, feed_lautsprecher):
-    pa = PodcastArchiver()
-    pa.savedir = tmp_path
+    settings = Settings(archive_directory=tmp_path, feeds=[feed_lautsprecher], maximum_episode_count=2)
+    pa = PodcastArchiver(settings)
     pa.addFeed(feed_lautsprecher)
 
-    pa.maximumEpisodes = 2
     pa.run()
 
     files = list(tmp_path.glob("*.m4a"))
@@ -28,9 +27,8 @@ def test_happy_path_max_episodes(tmp_path: Path, feed_lautsprecher):
 
 def test_happy_path_files_exist(tmp_path: Path, feed_lautsprecher):
     (tmp_path / "ls017-podcastverzeichnisse.m4a").touch()
-    pa = PodcastArchiver()
-    pa.savedir = tmp_path
-    pa.addFeed(feed_lautsprecher)
+    settings = Settings(archive_directory=tmp_path, feeds=[feed_lautsprecher])
+    pa = PodcastArchiver(settings)
 
     pa.run()
 
@@ -40,11 +38,9 @@ def test_happy_path_files_exist(tmp_path: Path, feed_lautsprecher):
 
 def test_happy_path_update(tmp_path: Path, feed_lautsprecher):
     (tmp_path / "ls017-podcastverzeichnisse.m4a").touch()
-    pa = PodcastArchiver()
-    pa.savedir = tmp_path
-    pa.addFeed(feed_lautsprecher)
+    settings = Settings(archive_directory=tmp_path, feeds=[feed_lautsprecher], update_archive=True)
+    pa = PodcastArchiver(settings)
 
-    pa.update = True
     pa.run()
 
     files = list(tmp_path.glob("*.m4a"))
@@ -54,11 +50,9 @@ def test_happy_path_update(tmp_path: Path, feed_lautsprecher):
 
 
 def test_happy_path_empty_feed(tmp_path: Path, feed_lautsprecher_empty):
-    pa = PodcastArchiver()
-    pa.savedir = tmp_path
-    pa.addFeed(feed_lautsprecher_empty)
+    settings = Settings(archive_directory=tmp_path, feeds=[feed_lautsprecher_empty], update_archive=True)
+    pa = PodcastArchiver(settings)
 
-    pa.update = True
     pa.run()
 
     files = list(tmp_path.glob("*.m4a"))
