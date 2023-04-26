@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -27,6 +28,24 @@ def feed_lautsprecher(responses):
 
 
 @pytest.fixture
+def feed_lautsprecher_notconsumed(responses):
+    return FEED_URL
+
+
+@pytest.fixture
+def feed_lautsprecher_onlyfeed(responses):
+    responses.add(responses.GET, FEED_URL, FEED_CONTENT)
+    return FEED_URL
+
+
+@pytest.fixture
 def feed_lautsprecher_empty(responses):
     responses.add(responses.GET, FEED_URL, FEED_CONTENT_EMPTY)
     return FEED_URL
+
+
+@pytest.fixture
+def tmp_path_cd(request, tmp_path):
+    os.chdir(tmp_path)
+    yield tmp_path
+    os.chdir(request.config.invocation_params.dir)

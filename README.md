@@ -88,6 +88,20 @@ where `feedlist.txt` contains the URLs as if entered into the command line:
 
 This way, you can easily add and remove feeds to the list and let the archiver fetch the newest episodes for example by adding it to your crontab.
 
+### Using a config file
+
+Command line arguments can be replaced with entries in a YAML configuration file. An example config can be generated with
+
+```bash
+podcast-archiver --config-generate path/to/config.yaml
+```
+
+After modifying the settings to your liking, `podcast-archiver` can be run with
+
+```bash
+podcast-archiver --config path/to/config.yaml
+```
+
 ## Excursion: Unicode Normalization in Slugify
 
 The `--slugify` option removes all ambiguous characters from folders and filenames used in the archiving process. The removal includes unicode normalization according to [Compatibility Decomposition](http://unicode.org/reports/tr15/tr15-18.html#Decomposition). What? Yeah, me too. I figured this is best seen in an example, so here's a fictitious episode name, and how it would be translated to an target filename using the Archiver:

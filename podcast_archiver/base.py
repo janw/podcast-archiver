@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import re
 import unicodedata
 import urllib.error
 import xml.etree.ElementTree as etree
 from contextlib import nullcontext
 from os import makedirs, path, remove
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 import feedparser
@@ -13,6 +16,9 @@ from feedparser import CharacterEncodingOverride
 from tqdm import tqdm
 
 from podcast_archiver import constants
+
+if TYPE_CHECKING:
+    from podcast_archiver.config import Settings
 
 
 class PodcastArchiver:
@@ -33,55 +39,36 @@ class PodcastArchiver:
         "published",
     ]
 
-    savedir = ""
-    verbose = 0
-    subdirs = False
-    update = False
-    progress = False
-    maximumEpisodes = 0
-    prefix_with_date = False
-    slugify = False
+    settings: Settings
+    feedlist: set
+    verbose: int = 0
 
-    feedlist: list[str]
-
-    def __init__(self):
-        self.feedlist = []
-        self.session = requests.Session()
-        self.session.headers.update({"user-agent": constants.USER_AGENT})
-
-    def addArguments(self, args):
-        self.verbose = args.verbose or 0
+    def __init__(self, settings: Settings):
+        self.settings = settings
+        self.verbose = settings.verbose
+        if self.verbose > 1:
+            print(f"Verbosity level: {self.verbose}")
         if self.verbose > 2:
-            print("Input arguments:", args)
+            print(f"Settings: {settings}")
 
-        for feed in args.feed or []:
+        self.feedlist = set()
+        for feed in self.settings.feeds or []:
             self.addFeed(feed)
-
-        for opml in args.opml or []:
+        for opml in self.settings.opml_files or []:
             self.parseOpmlFile(opml)
 
-        if args.dir:
-            self.savedir = args.dir
-
-        self.subdirs = args.subdirs
-        self.update = args.update
-        self.progress = args.progress
-        self.slugify = args.slugify
-        self.maximumEpisodes = args.max_episodes or 0
-        self.prefix_with_date = args.date_prefix or False
-
-        if self.verbose > 1:
-            print("Verbose level: ", self.verbose)
+        self.session = requests.Session()
+        self.session.headers.update({"user-agent": constants.USER_AGENT})
 
     def addFeed(self, feed):
         if path.isfile(feed):
             with open(feed, "r") as fp:
-                self.feedlist += fp.read().strip().splitlines()
+                self.feedlist.union(set(fp.read().strip().splitlines()))
         else:
-            self.feedlist.append(feed)
+            self.feedlist.add(feed)
 
     def parseOpmlFile(self, opml):
-        with opml as file:
+        with opml.open("r") as file:
             tree = etree.fromstringlist(file)
 
         for feed in [
@@ -110,7 +97,7 @@ class PodcastArchiver:
         self.downloadEpisodes(linklist, feed_info)
 
     def run(self):
-        if self.verbose > 0 and self.update:
+        if self.verbose > 0 and self.settings.update_archive:
             print("Updating archive")
         for feed_url in self.feedlist:
             self.processFeed(feed_url)
@@ -130,7 +117,7 @@ class PodcastArchiver:
         basename = path.basename(linkpath)
         feed_title = feed_info["title"]
 
-        if self.prefix_with_date and episode_info:
+        if self.settings.add_date_prefix and episode_info:
             date_str = dateparse(episode_info["published"]).strftime("%Y-%m-%d")
             basename = f"{date_str} {basename}"
 
@@ -138,7 +125,7 @@ class PodcastArchiver:
         if must_have_ext and not ext:
             return None
 
-        if self.slugify:
+        if self.settings.slugify_paths:
             basename = self.slugifyString(basename)
             feed_title = self.slugifyString(feed_title)
         else:
@@ -147,10 +134,10 @@ class PodcastArchiver:
             feed_title.replace(path.pathsep, "_")
             feed_title.replace(path.sep, "_")
 
-        if self.subdirs:
-            filename = path.join(self.savedir, feed_title, basename)
+        if self.settings.create_subdirectories:
+            filename = path.join(self.settings.archive_directory, feed_title, basename)
         else:
-            filename = path.join(self.savedir, basename)
+            filename = path.join(self.settings.archive_directory, basename)
 
         return filename
 
@@ -204,7 +191,7 @@ class PodcastArchiver:
 
     def truncateLinkList(self, linklist, feed_info):
         # On given option, run an update, break at first existing episode
-        if self.update:
+        if self.settings.update_archive:
             for index, episode_dict in enumerate(linklist):
                 link = episode_dict["url"]
                 filename = self.linkToTargetFilename(link, feed_info)
@@ -216,10 +203,10 @@ class PodcastArchiver:
                     return True, linklist
 
         # On given option, crop linklist to maximum number of episodes
-        if self.maximumEpisodes > 0 and self.maximumEpisodes < len(linklist):
-            linklist = linklist[0 : self.maximumEpisodes]
+        if (max_count := self.settings.maximum_episode_count) > 0 and max_count < len(linklist):
+            linklist = linklist[0:max_count]
             if self.verbose > 1:
-                print(f" reached maximum episode count of {self.maximumEpisodes}")
+                print(f" reached maximum episode count of {max_count}")
             return True, linklist
 
         return False, linklist
@@ -303,7 +290,7 @@ class PodcastArchiver:
         if target_dir := path.dirname(filename):
             makedirs(target_dir, exist_ok=True)
 
-        if self.progress:
+        if self.settings.show_progress_bars:
             if self.verbose < 2:
                 print(f"\nDownloading {filename}")
             total_size = int(response.headers.get("content-length", "0"))
