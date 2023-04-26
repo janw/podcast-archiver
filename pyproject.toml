@@ -26,7 +26,7 @@ style = "semver"
 strict = true
 
 [tool.poetry.scripts]
-podcast-archiver = 'podcast_archiver.base:main'
+podcast-archiver = 'podcast_archiver.__main__:main'
 
 [tool.poetry.dependencies]
 python = "^3.9"

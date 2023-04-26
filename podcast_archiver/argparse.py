@@ -74,3 +74,4 @@ parser.add_argument(
         " chronological ordering."
     ),
 )
+parser.add_argument("-V", "--version", action="store_true", help="Print version and exit.")
