@@ -13,7 +13,7 @@ RUN set -e; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
 
-COPY podcast_archiver.py /
+COPY ./podcast_archiver /podcast_archiver
 
-ENTRYPOINT [ "tini", "--", "python", "podcast_archiver.py"]
+ENTRYPOINT [ "tini", "--", "python", "-m", "podcast_archiver"]
 CMD [ "--help" ]

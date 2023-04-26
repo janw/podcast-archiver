@@ -368,7 +368,7 @@ class PodcastArchiver:
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(prog="podcast-archiver")
     parser.add_argument(
         "-o",
         "--opml",
