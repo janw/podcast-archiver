@@ -15,7 +15,7 @@ from podcast_archiver import __version__
 
 
 class PodcastArchiver:
-    _userAgent = f"Podcast-Archiver/{__version__} (https://github.com/janwh/podcast-archiver)"
+    _userAgent = f"podcast-archiver/{__version__} (https://github.com/janw/podcast-archiver)"
     _headers = {"User-Agent": _userAgent}
     _global_info_keys = [
         "author",
