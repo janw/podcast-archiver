@@ -22,5 +22,4 @@ def main():
         parser.error(str(error))
 
 
-if __name__ == "__main__":
-    main()
+main()
