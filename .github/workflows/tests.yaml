@@ -1,0 +1,45 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - "master"
+      - "main"
+    tags:
+      - "*"
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - "3.9"
+          - "3.10"
+          - "3.11"
+
+    name: pytest-${{ matrix.python-version }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Set up python environment
+        uses: actions/setup-python@v4
+        with:
+          cache: 'poetry'
+          python-version: ${{ matrix.python-version }}
+
+      - run: poetry install --no-root --with=tests --sync
+
+      - run: poetry run pytest --cov-report=xml
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          name: coverage-${{ matrix.python-version }}
