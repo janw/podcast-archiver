@@ -8,7 +8,8 @@
 [![PyPI](https://img.shields.io/pypi/v/podcast-archiver.svg)](https://pypi.org/project/podcast-archiver/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/podcast-archiver.svg)](https://pypi.org/project/podcast-archiver/)
 
-[![Code Quality](https://app.codacy.com/project/badge/Grade/d0c31899a9964ccc82fa4080717d45a6)](https://app.codacy.com/gh/janw/podcast-archiver/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+[![Code Quality](https://app.codacy.com/project/badge/Grade/d0c31899a9964ccc82fa4080717d45a6)](https://app.codacy.com/gh/janw/podcast-archiver/dashboard)
+[![codecov](https://codecov.io/gh/janw/podcast-archiver/branch/main/graph/badge.svg?token=G8WI2ZILRG)](https://codecov.io/gh/janw/podcast-archiver)
 
 [![Linter: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v1.json)](https://github.com/charliermarsh/ruff)
 [![Code style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
@@ -36,7 +37,7 @@ Before downloading any episode the function first fetches all available pages of
 # Latest tagged/published version on PyPI:
 pip install podcast-archiver
 
-# Latest master from GitHub:
+# Latest development version from main branch:
 pip install git+https://github.com/janw/podcast-archiver.git
 ```
 
@@ -48,7 +49,7 @@ Alternatively `podcast-archiver` is available as a docker image as well:
 # Latest tagged/published version, same as on PyPI:
 docker run --rm ghcr.io/janw/podcast-archiver:latest
 
-# Latest master from GitHub:
+# Latest development version from main branch:
 docker run --rm ghcr.io/janw/podcast-archiver:edge
 ```
 
