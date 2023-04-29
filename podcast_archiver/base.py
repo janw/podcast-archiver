@@ -38,7 +38,7 @@ class PodcastArchiver:
     subdirs = False
     update = False
     progress = False
-    maximumEpisodes = None
+    maximumEpisodes = 0
     prefix_with_date = False
     slugify = False
 

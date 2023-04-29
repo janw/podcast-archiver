@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:psc="http://podlove.org/simple-chapters" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:fh="http://purl.org/syndication/history/1.0" xmlns:podcast="https://podcastindex.org/namespace/1.0" xmlns:feedpress="https://feed.press/xmlns" xmlns:media="http://search.yahoo.com/mrss/" version="2.0">
+  <channel>
+    <feedpress:locale>en</feedpress:locale>
+    <title>Der Lautsprecher</title>
+    <link>https://der-lautsprecher.de</link>
+    <description><![CDATA[Ein Podcast über das Senden und Empfangen werden]]></description>
+    <lastBuildDate>Tue, 31 Aug 2021 13:55:27 +0000</lastBuildDate>
+    <image>
+      <url>https://media.metaebene.me/media/lautsprecher/der-lautsprecher-logo-1500x1500.jpg</url>
+      <title>Der Lautsprecher</title>
+      <link>https://der-lautsprecher.de</link>
+    </image>
+    <atom:link rel="self" type="application/rss+xml" title="Der Lautsprecher (AAC Audio)" href="https://feeds.metaebene.me/lautsprecher/m4a"/>
+    <atom:link rel="alternate" type="application/rss+xml" title="Der Lautsprecher (MP3 Audio)" href="https://der-lautsprecher.de/feed/mp3"/>
+    <atom:link rel="alternate" type="application/rss+xml" title="Der Lautsprecher (Ogg Vorbis Audio)" href="https://der-lautsprecher.de/feed/oga"/>
+    <atom:link rel="alternate" type="application/rss+xml" title="Der Lautsprecher (Ogg Opus Audio)" href="https://der-lautsprecher.de/feed/opus"/>
+    <atom:link rel="first" href="https://der-lautsprecher.de/feed/m4a"/>
+    <language>de-DE</language>
+    <atom:link rel="hub" href="http://metaebene.superfeedr.com"/>
+    <fyyd:verify xmlns:fyyd="https://fyyd.de/fyyd-ns/">8bks1uqxowujnm3g6gy5n6ofkmilf8wd1o8vP</fyyd:verify>
+    <atom:link rel="payment" title="Flattr this!" href="https://flattr.com/submit/auto?user_id=243&amp;url=https%3A%2F%2Fder-lautsprecher.de%2F&amp;language=de_DE&amp;category=audio&amp;title=Der+Lautsprecher&amp;description=Ein+Podcast+%C3%BCber+das+Senden+und+Empfangen+werden&amp;tags=podcast%2C+der+lautsprecher%2C+podcasting%2C+tim+pritlove%2C+metaebene" type="text/html"/>
+    <atom:contributor>
+      <atom:name>Tim Pritlove</atom:name>
+      <atom:uri>http://tim.pritlove.org/</atom:uri>
+    </atom:contributor>
+    <podcast:person img="https://der-lautsprecher.de/files/2022/01/Tim-Avatar-2020-300x300.jpeg">Tim Pritlove</podcast:person>
+    <generator>Podlove Podcast Publisher v3.8.6</generator>
+    <copyright>Metaebene Personal Media</copyright>
+    <itunes:author>Metaebene Personal Media</itunes:author>
+    <itunes:type>episodic</itunes:type>
+    <itunes:summary><![CDATA[Der Lautsprecher ist ein Forum für Podcaster und solche, die es vielleicht werden wollen. Tim Pritlove spricht mit ausgewählten Gästen über Technik, Kultur und Methoden des Podcastings.]]></itunes:summary>
+    <itunes:category text="Technology"/>
+    <itunes:owner>
+      <itunes:name>Tim Pritlove</itunes:name>
+      <itunes:email>tim@metaebene.me</itunes:email>
+    </itunes:owner>
+    <itunes:image href="https://media.metaebene.me/media/lautsprecher/der-lautsprecher-logo-1500x1500.jpg"/>
+    <itunes:subtitle>Ein Podcast über das Senden und Empfangen werden</itunes:subtitle>
+    <itunes:block>no</itunes:block>
+    <itunes:explicit>no</itunes:explicit>
+    <atom:link rel="me" href="https://podcasts.apple.com/podcast/id418533452"/>
+    <podcast:funding url="https://metaebene.me/spenden">Spenden für die Metaebene</podcast:funding>
+    <item>
+      <title>LS019 hr2 der Tag - ein Gespräch mit Florian Schwinn</title>
+      <link>https://der-lautsprecher.de/ls019-hr2-der-tag-ein-gespraech-mit-florian-schwinn</link>
+      <pubDate>Tue, 02 Apr 2019 16:03:22 +0000</pubDate>
+      <guid isPermaLink="false">podlove-2019-04-02t13:22:40+00:00-827d6a227051dd9</guid>
+      <description><![CDATA[Auf der diesjährigen SUBSCRIBE 10, die vom 22. bis 24. März in Köln in den Räumen des Deutschlandfunks stattfand, fand ich mich auf der Bühne mit Florian Schwinn zusammen. Florian Schwinn ist Moderator und Redakteur der Sendung "hr2 der Tag" des Hessischen Rundfunks und dort schon seit fast 40 Jahren aktiv. Wir sprechen über die Art und Weise, wie diese Radiosendung täglich entsteht, über die redaktionelle Arbeit und den Umgang mit Politik und Politikern. Als Beitrag zum Lautsprecher erschien mir diese Sendung gut geeignet zu sein.]]></description>
+      <atom:link rel="http://podlove.org/deep-link" href="https://der-lautsprecher.de/ls019-hr2-der-tag-ein-gespraech-mit-florian-schwinn#"/>
+      <enclosure url="https://der-lautsprecher.de/podlove/file/405/s/feed/c/m4a/ls019-hr2-der-tag-ein-gespraech-mit-florian-schwinn.m4a" length="22986119" type="audio/mp4"/>
+      <itunes:duration>00:57:33</itunes:duration>
+      <itunes:author>Metaebene Personal Media</itunes:author>
+      <itunes:subtitle>Über Radio, Podcasts und bullshitfreie Zonen</itunes:subtitle>
+      <itunes:episode>19</itunes:episode>
+      <itunes:episodeType>full</itunes:episodeType>
+      <itunes:summary><![CDATA[Auf der diesjährigen SUBSCRIBE 10, die vom 22. bis 24. März in Köln in den Räumen des Deutschlandfunks stattfand, fand ich mich auf der Bühne mit Florian Schwinn zusammen. Florian Schwinn ist Moderator und Redakteur der Sendung &quot;hr2 der Tag&quot; des Hessischen Rundfunks und dort schon seit fast 40 Jahren aktiv. Wir sprechen über die Art und Weise, wie diese Radiosendung täglich entsteht, über die redaktionelle Arbeit und den Umgang mit Politik und Politikern. Als Beitrag zum Lautsprecher erschien mir diese Sendung gut geeignet zu sein.]]></itunes:summary>
+      <content:encoded><![CDATA[<p></p><strong><em> Über Radio, Podcasts und bullshitfreie Zonen</em></strong></p>
+
+Auf der diesjährigen SUBSCRIBE 10, die vom 22. bis 24. März in Köln in den Räumen des Deutschlandfunks stattfand, fand ich mich auf der Bühne mit Florian Schwinn zusammen. Florian Schwinn ist Moderator und Redakteur der Sendung "hr2 der Tag" des Hessischen Rundfunks und dort schon seit fast 40 Jahren aktiv. Wir sprechen über die Art und Weise, wie diese Radiosendung täglich entsteht, über die redaktionelle Arbeit und den Umgang mit Politik und Politikern. Als Beitrag zum Lautsprecher erschien mir diese Sendung gut geeignet zu sein.
+
+
+
+
+<ul>
+<li>
+<strong>Tim Pritlove</strong>
+<ul>
+<li>
+<a href="https://twitter.com/timpritlove">Twitter</a>
+</li>
+<li>
+<a href="http://metaebene.me">Website</a>
+</li>
+<li>
+<a href="https://paypal.me/timpritlove">Paypal.me</a>
+</li>
+<li>
+<a href="http://amzn.to/2qHn6hS">Amazon Wishlist</a>
+</li>
+</ul>
+</li>
+<li>
+<strong>Florian Schwinn</strong>
+<ul>
+<li>
+<a href="https://twitter.com/Journaille">Twitter</a>
+</li>
+</ul>
+</li>
+</ul>
+
+
+
+[shownotes id="lg"]
+
+
+]]></content:encoded>
+      <psc:chapters xmlns:psc="http://podlove.org/simple-chapters" version="1.2">
+        <psc:chapter start="00:00:00.000" title="Vorrede"/>
+        <psc:chapter start="00:02:36.949" title="Begrüßung"/>
+        <psc:chapter start="00:03:48.940" title="Informationsdienst zur Verbreitung unterbliebener Nachrichten"/>
+        <psc:chapter start="00:06:50.406" title="Spontis und Radio Solidarność"/>
+        <psc:chapter start="00:12:02.243" title="Einstieg beim Hessischen Rundfunk"/>
+        <psc:chapter start="00:12:55.513" title="Entstehung und Rettung von Der Tag"/>
+        <psc:chapter start="00:20:26.575" title="Die bullshitfreie Zone"/>
+        <psc:chapter start="00:26:10.767" title="Themenauswahl"/>
+        <psc:chapter start="00:34:58.305" title="Themenplanung und Ansprechpartner"/>
+        <psc:chapter start="00:38:46.082" title="Moderation und Änderungen in Echtzeit"/>
+        <psc:chapter start="00:45:58.970" title="Ornamente"/>
+        <psc:chapter start="00:47:39.203" title="Podcasts und Geschichten"/>
+        <psc:chapter start="00:49:24.528" title="Danksagung"/>
+        <psc:chapter start="00:49:59.750" title="Q&amp;A: Finanzierung"/>
+        <psc:chapter start="00:52:17.198" title="Q&amp;A: Die Sendung als Podcast"/>
+        <psc:chapter start="00:53:18.381" title="Q&amp;A: Dauer der Interviews"/>
+        <psc:chapter start="00:55:30.144" title="Q&amp;A: Halbwertszeit der Sendungen"/>
+        <psc:chapter start="00:57:15.623" title="Ausklang"/>
+      </psc:chapters>
+      <atom:contributor>
+        <atom:name>Tim Pritlove</atom:name>
+        <atom:uri>http://tim.pritlove.org/</atom:uri>
+      </atom:contributor>
+      <atom:contributor>
+        <atom:name>Florian Schwinn</atom:name>
+      </atom:contributor>
+      <podcast:person img="https://der-lautsprecher.de/files/2022/01/Tim-Avatar-2020-300x300.jpeg">Tim Pritlove</podcast:person>
+      <podcast:person img="https://der-lautsprecher.de/files/2019/04/Hr2_Florian_Schwinn.jpg" role="guest">Florian Schwinn</podcast:person>
+    </item>
+    <item>
+      <title>LS018 Audioformate für Podcasts</title>
+      <link>https://der-lautsprecher.de/ls018-audioformate-fuer-podcasts</link>
+      <pubDate>Thu, 01 Sep 2016 18:42:31 +0000</pubDate>
+      <guid isPermaLink="false">podlove-2016-09-01t18:09:37+00:00-e94a19c2688d7c1</guid>
+      <description><![CDATA[Podcaster haben die Qual der Wahl: welches Audioformat soll man nehmen, mit welcher Samplingfrequenz, welcher Bitrate soll die Datei erstellt werden und welches Format bietet welche Features und welche Qualität? Gemeinsam mit Georg Holzmann von Auphonic spreche ich über die immer noch existierende Konfusion rund um die Formate, bei der es immer noch keinen klaren König zu geben scheint.]]></description>
+      <atom:link rel="http://podlove.org/deep-link" href="https://der-lautsprecher.de/ls018-audioformate-fuer-podcasts#"/>
+      <enclosure url="https://der-lautsprecher.de/podlove/file/310/s/feed/c/m4a/ls018-audioformate-fuer-podcasts.m4a" length="43440728" type="audio/mp4"/>
+      <itunes:duration>01:52:17</itunes:duration>
+      <itunes:author>Metaebene Personal Media</itunes:author>
+      <itunes:subtitle>Über Vor- und Nachteile von Audioformaten und den Problemen mit Playern und Verzeichnissen</itunes:subtitle>
+      <itunes:episodeType>full</itunes:episodeType>
+      <itunes:summary><![CDATA[Podcaster haben die Qual der Wahl: welches Audioformat soll man nehmen, mit welcher Samplingfrequenz, welcher Bitrate soll die Datei erstellt werden und welches Format bietet welche Features und welche Qualität? Gemeinsam mit Georg Holzmann von Auphonic spreche ich über die immer noch existierende Konfusion rund um die Formate, bei der es immer noch keinen klaren König zu geben scheint.]]></itunes:summary>
+      <content:encoded><![CDATA[<p></p><strong><em> Über Vor- und Nachteile von Audioformaten und den Problemen mit Playern und Verzeichnissen</em></strong></p>
+
+Podcaster haben die Qual der Wahl: welches Audioformat soll man nehmen, mit welcher Samplingfrequenz, welcher Bitrate soll die Datei erstellt werden und welches Format bietet welche Features und welche Qualität? Gemeinsam mit Georg Holzmann von Auphonic spreche ich über die immer noch existierende Konfusion rund um die Formate, bei der es immer noch keinen klaren König zu geben scheint.
+
+
+
+
+<ul>
+<li>
+<strong>Tim Pritlove</strong>
+<ul>
+<li>
+<a href="https://twitter.com/timpritlove">Twitter</a>
+</li>
+<li>
+<a href="http://metaebene.me">Website</a>
+</li>
+<li>
+<a href="https://paypal.me/timpritlove">Paypal.me</a>
+</li>
+<li>
+<a href="http://amzn.to/2qHn6hS">Amazon Wishlist</a>
+</li>
+</ul>
+</li>
+<li>
+<strong>Georg Holzmann</strong>
+<ul>
+<li>
+<a href="https://twitter.com/gholzmann">Twitter</a>
+</li>
+<li>
+<a href="http://auphonic.com/">Website</a>
+</li>
+</ul>
+</li>
+</ul>
+
+
+
+[shownotes id="lg"]
+
+
+<ul>
+<li><a href="http://id3.org/id3v2.4.0-frames">ID3 v2.4.0 Frames</a></li>
+<li><a href="http://id3.org/id3v2-chapters-1.0">ID3v2 Chapter Frame Addendum</a></li>
+<li><a href="http://eyed3.nicfit.net">EyeD3</a></li>
+<li><a href="http://id3.org/id3v2.4.0-frames">ID3 v2.4.0 Frames</a></li>
+<li><a href="http://id3.org/id3v2-chapters-1.0">ID3v2 Chapter Frame Addendum</a></li>
+<li><a href="http://eyed3.nicfit.net">EyeD3</a></li>
+<li>Wikipedia: <a href="https://de.wikipedia.org/wiki/MP3">MP3</a></li>
+<li>Auphonic: <a href="https://auphonic.com/blog/2012/01/17/podcast-comparison-part-2-mp3-metadata-id3-tags/">Podcast Comparison, Part 2: MP3 Metadata (ID3 Tags)</a></li>
+<li><a href="https://marco.org/2016/08/15/vbr-mp3-plea">Why don’t podcasts use VBR MP3s? Because iOS and macOS don’t accurately seek them</a></li>
+<li><a href="https://plus.google.com/117038174657625698320/posts/ca1TxQUhaDj">MP3 CBR encoding: Fraunhofer besser als LAME Hörbeispiele</a></li>
+<li><a href="http://wiki.hydrogenaud.io/index.php?title=Joint_stereo">Joint Stereo</a></li>
+<li><a href="https://sourceforge.net/p/lame/mailman/lame-dev/thread/5627DF76.8060900%40wp.pl/#msg34559439">Antwort zu Intensity Stereo auf LAME Liste</a></li>
+<li>Auphonic: <a href="https://auphonic.com/blog/2012/02/18/podcast-comparison-part-4-mpeg-4-itunes-style-metadata-aac-audio-m4a-mp4/">Podcast Comparison, Part 4: MPEG–4 iTunes-style Metadata (AAC Audio, M4A, MP4)</a></li>
+<li>Wikipedia: <a href="https://en.wikipedia.org/wiki/Advanced_Audio_Coding">Advanced Audio Coding (AAC)</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Spectral_band_replication">Spectral Band Replication (SBR)</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Parametric_Stereo">Parametric Stereo (PS)</a></li>
+<li>Auphonic: <a href="https://auphonic.com/blog/2012/09/26/opus-revolutionary-open-audio-codec-podcasts-and-internet-audio/">Opus, the revolutionary open audio codec for podcasts and internet audio</a></li>
+<li>Wikipedia: <a href="https://de.wikipedia.org/wiki/Constrained-Energy_Lapped_Transform">CELT</a></li>
+<li><a href="https://plus.google.com/117038174657625698320/posts/T6cC5i2gUtu">AAC vs MP3 vs Opus Listening Examples</a></li>
+<li>Wikipedia: <a href="https://de.wikipedia.org/wiki/Free_Lossless_Audio_Codec">FLAC</a></li>
+</ul>
+]]></content:encoded>
+      <psc:chapters xmlns:psc="http://podlove.org/simple-chapters" version="1.2">
+        <psc:chapter start="00:00:00.000" title="4 Jahre Auphonic"/>
+        <psc:chapter start="00:10:50.976" title="Medienformate"/>
+        <psc:chapter start="00:18:40.055" title="Digitale Audiowandlung"/>
+        <psc:chapter start="00:22:16.812" title="MP3"/>
+        <psc:chapter start="00:37:14.117" title="MP3 Kapitelmarken"/>
+        <psc:chapter start="00:43:50.478" title="MP3 Encoder"/>
+        <psc:chapter start="01:00:23.381" title="AAC"/>
+        <psc:chapter start="01:06:27.278" title="MP4 Kapitelmarken"/>
+        <psc:chapter start="01:16:02.452" title="Mehrere Formate in mehreren Feeds"/>
+        <psc:chapter start="01:27:51.029" title="Vorbis und Opus"/>
+        <psc:chapter start="01:35:25.876" title="Bitraten-Vergleiche"/>
+        <psc:chapter start="01:39:15.157" title="FLAC und ALAC"/>
+        <psc:chapter start="01:44:00.545" title="Fazit"/>
+      </psc:chapters>
+      <atom:contributor>
+        <atom:name>Tim Pritlove</atom:name>
+        <atom:uri>http://tim.pritlove.org/</atom:uri>
+      </atom:contributor>
+      <atom:contributor>
+        <atom:name>Georg Holzmann</atom:name>
+      </atom:contributor>
+      <podcast:person img="https://der-lautsprecher.de/files/2022/01/Tim-Avatar-2020-300x300.jpeg">Tim Pritlove</podcast:person>
+      <podcast:person img="http://meta.metaebene.me/media/metaebene/contributors/georg-holzmann.jpg" role="guest">Georg Holzmann</podcast:person>
+    </item>
+    <item>
+      <title>LS017 Podcastverzeichnisse</title>
+      <link>https://der-lautsprecher.de/ls017-podcastverzeichnisse</link>
+      <pubDate>Thu, 16 Jun 2016 10:46:01 +0000</pubDate>
+      <guid isPermaLink="false">podlove-2016-06-16t09:45:47+00:00-f3e60d10b83b5fc</guid>
+      <description><![CDATA[Christian Bednarek ist der deutschsprachigen Podcastlandschaft durch sein Projekt Hörsuppe wohlbekannt, mit dem er ein wenig das "Fernsehprogramm" für geübte Podcasthörerinnen und -hörer bereitstellte. Jetzt zieht er weiter und entwickelt ein umfangreicheres Podcastverzeichnis (fyyd), um neue Herausforderungen anzugehen und Möglichkeiten zu schaffen. Wir sprechen über seine Erfahrungen damit und welchen Bedarf das Podcasting an neuen Datenformaten und Strukturen hat.]]></description>
+      <atom:link rel="http://podlove.org/deep-link" href="https://der-lautsprecher.de/ls017-podcastverzeichnisse#"/>
+      <enclosure url="https://der-lautsprecher.de/podlove/file/293/s/feed/c/m4a/ls017-podcastverzeichnisse.m4a" length="49233943" type="audio/mp4"/>
+      <itunes:duration>02:07:53</itunes:duration>
+      <itunes:author>Metaebene Personal Media</itunes:author>
+      <itunes:subtitle>Ein Gespräch über Hörsuppen, Kuratierung und technische Herausforderungen</itunes:subtitle>
+      <itunes:episodeType>full</itunes:episodeType>
+      <itunes:summary><![CDATA[Christian Bednarek ist der deutschsprachigen Podcastlandschaft durch sein Projekt Hörsuppe wohlbekannt, mit dem er ein wenig das &quot;Fernsehprogramm&quot; für geübte Podcasthörerinnen und -hörer bereitstellte. Jetzt zieht er weiter und entwickelt ein umfangreicheres Podcastverzeichnis (fyyd), um neue Herausforderungen anzugehen und Möglichkeiten zu schaffen. Wir sprechen über seine Erfahrungen damit und welchen Bedarf das Podcasting an neuen Datenformaten und Strukturen hat.]]></itunes:summary>
+      <content:encoded><![CDATA[<p></p><strong><em> Ein Gespräch über Hörsuppen, Kuratierung und technische Herausforderungen</em></strong></p>
+
+Christian Bednarek ist der deutschsprachigen Podcastlandschaft durch sein Projekt Hörsuppe wohlbekannt, mit dem er ein wenig das "Fernsehprogramm" für geübte Podcasthörerinnen und -hörer bereitstellte. Jetzt zieht er weiter und entwickelt ein umfangreicheres Podcastverzeichnis (fyyd), um neue Herausforderungen anzugehen und Möglichkeiten zu schaffen. Wir sprechen über seine Erfahrungen damit und welchen Bedarf das Podcasting an neuen Datenformaten und Strukturen hat.
+
+
+
+
+<ul>
+<li>
+<strong>Tim Pritlove</strong>
+<ul>
+<li>
+<a href="https://twitter.com/timpritlove">Twitter</a>
+</li>
+<li>
+<a href="http://metaebene.me">Website</a>
+</li>
+<li>
+<a href="https://paypal.me/timpritlove">Paypal.me</a>
+</li>
+<li>
+<a href="http://amzn.to/2qHn6hS">Amazon Wishlist</a>
+</li>
+</ul>
+</li>
+<li>
+<strong>Christian Bednarek</strong>
+<ul>
+<li>
+<a href="https://twitter.com/eazyliving">Twitter</a>
+</li>
+<li>
+<a href="https://twitter.com/hoersuppe">Twitter</a>
+</li>
+<li>
+<a href="https://github.com/eazyliving">GitHub</a>
+</li>
+</ul>
+</li>
+</ul>
+
+
+
+[shownotes id="lg"]
+
+
+]]></content:encoded>
+      <psc:chapters xmlns:psc="http://podlove.org/simple-chapters" version="1.2">
+        <psc:chapter start="00:00:00.000" title="Begrüßung"/>
+        <psc:chapter start="00:01:37.956" title="Hörsuppe"/>
+        <psc:chapter start="00:06:43.232" title="Live-Programm"/>
+        <psc:chapter start="00:16:12.669" title="fyyd"/>
+        <psc:chapter start="00:26:27.237" title="Feeds einlesen"/>
+        <psc:chapter start="00:34:42.605" title="Feedqualität"/>
+        <psc:chapter start="01:03:02.838" title="Feedwünsche"/>
+        <psc:chapter start="01:33:36.302" title="Kuratieren"/>
+        <psc:chapter start="01:47:51.455" title="Podcast Syncing"/>
+        <psc:chapter start="01:59:53.235" title="Verzeichnis API"/>
+        <psc:chapter start="02:04:38.178" title="Ausklang"/>
+      </psc:chapters>
+      <atom:contributor>
+        <atom:name>Tim Pritlove</atom:name>
+        <atom:uri>http://tim.pritlove.org/</atom:uri>
+      </atom:contributor>
+      <atom:contributor>
+        <atom:name>Christian Bednarek</atom:name>
+      </atom:contributor>
+      <podcast:person img="https://der-lautsprecher.de/files/2022/01/Tim-Avatar-2020-300x300.jpeg">Tim Pritlove</podcast:person>
+      <podcast:person img="http://meta.metaebene.me/media/metaebene/contributors/christian-bednarek.jpg" role="guest">Christian Bednarek</podcast:person>
+    </item>
+    <item>
+      <title>LS016 Studio Link</title>
+      <link>https://der-lautsprecher.de/ls016-studio-link</link>
+      <pubDate>Wed, 13 Jan 2016 11:14:16 +0000</pubDate>
+      <guid isPermaLink="false">podlove-2016-01-13t10:01:03+00:00-e1bed3c5f82c2f5</guid>
+      <description><![CDATA[Nicht immer ist es möglich, alle Teilnehmer eines Podcasts an einen Tisch zu bekommen. Oft liegen große Distanzen dazwischen und oft wird auf Skype oder ähnliche Werkzeuge zurückgegriffen. Die Tonqualität ist dabei nicht ideal und die Zuverlässigkeit lässt zu wünschen übrig. Um diese Probleme neu anzugehen ist das Projekt Studio Link angetreten.
+
+Sebastian Reimers hat auf Basis von offener Hardware und Software eine Lösung geschaffen, mit einem kleinen Kästchen über das Internet in bester Audioqualität Studio und Gäste miteinander zu verbinden. Das Projekt wird aktiv weiterentwickelt und bietet jetzt auch bald eine reine Softwarelösung, was komplett neue Möglichkeiten bietet.  Sebastian ist natürlich in dieser Sendung auch nicht vor Ort und über Studio Link zugeschaltet.]]></description>
+      <atom:link rel="http://podlove.org/deep-link" href="https://der-lautsprecher.de/ls016-studio-link#"/>
+      <enclosure url="https://der-lautsprecher.de/podlove/file/280/s/feed/c/m4a/ls016-studio-link.m4a" length="36510397" type="audio/mp4"/>
+      <itunes:duration>01:33:37</itunes:duration>
+      <itunes:author>Metaebene Personal Media</itunes:author>
+      <itunes:subtitle>Podcasting aus der Ferne durch Open Source Hardware und Software</itunes:subtitle>
+      <itunes:episode>16</itunes:episode>
+      <itunes:episodeType>full</itunes:episodeType>
+      <itunes:summary><![CDATA[Nicht immer ist es möglich, alle Teilnehmer eines Podcasts an einen Tisch zu bekommen. Oft liegen große Distanzen dazwischen und oft wird auf Skype oder ähnliche Werkzeuge zurückgegriffen. Die Tonqualität ist dabei nicht ideal und die Zuverlässigkeit lässt zu wünschen übrig. Um diese Probleme neu anzugehen ist das Projekt Studio Link angetreten.
+
+Sebastian Reimers hat auf Basis von offener Hardware und Software eine Lösung geschaffen, mit einem kleinen Kästchen über das Internet in bester Audioqualität Studio und Gäste miteinander zu verbinden. Das Projekt wird aktiv weiterentwickelt und bietet jetzt auch bald eine reine Softwarelösung, was komplett neue Möglichkeiten bietet.  Sebastian ist natürlich in dieser Sendung auch nicht vor Ort und über Studio Link zugeschaltet.]]></itunes:summary>
+      <content:encoded><![CDATA[<p></p><strong><em> Podcasting aus der Ferne durch Open Source Hardware und Software</em></strong></p>
+
+Nicht immer ist es möglich, alle Teilnehmer eines Podcasts an einen Tisch zu bekommen. Oft liegen große Distanzen dazwischen und oft wird auf Skype oder ähnliche Werkzeuge zurückgegriffen. Die Tonqualität ist dabei nicht ideal und die Zuverlässigkeit lässt zu wünschen übrig. Um diese Probleme neu anzugehen ist das Projekt Studio Link angetreten.
+
+Sebastian Reimers hat auf Basis von offener Hardware und Software eine Lösung geschaffen, mit einem kleinen Kästchen über das Internet in bester Audioqualität Studio und Gäste miteinander zu verbinden. Das Projekt wird aktiv weiterentwickelt und bietet jetzt auch bald eine reine Softwarelösung, was komplett neue Möglichkeiten bietet.  Sebastian ist natürlich in dieser Sendung auch nicht vor Ort und über Studio Link zugeschaltet.
+
+
+
+
+<ul>
+<li>
+<strong>Tim Pritlove</strong>
+<ul>
+<li>
+<a href="https://twitter.com/timpritlove">Twitter</a>
+</li>
+<li>
+<a href="http://metaebene.me">Website</a>
+</li>
+<li>
+<a href="https://paypal.me/timpritlove">Paypal.me</a>
+</li>
+<li>
+<a href="http://amzn.to/2qHn6hS">Amazon Wishlist</a>
+</li>
+</ul>
+</li>
+<li>
+<strong>Sebastian Reimers</strong>
+<ul>
+<li>
+<a href="https://twitter.com/Studio_Link">Twitter</a>
+</li>
+<li>
+<a href="https://github.com/sreimers">GitHub</a>
+</li>
+<li>
+<a href="http://studio-link.de/">Website</a>
+</li>
+</ul>
+</li>
+</ul>
+
+
+
+[shownotes id="lg"]
+
+
+]]></content:encoded>
+      <psc:chapters xmlns:psc="http://podlove.org/simple-chapters" version="1.2">
+        <psc:chapter start="00:00:00.000" title="Intro"/>
+        <psc:chapter start="00:00:54.778" title="Sebastian Reimers"/>
+        <psc:chapter start="00:06:13.717" title="Das Projekt Studio Link"/>
+        <psc:chapter start="00:34:23.953" title="Studio Link Box"/>
+        <psc:chapter start="00:46:09.815" title="Studio Link Plugin"/>
+        <psc:chapter start="01:06:34.735" title="Backend"/>
+        <psc:chapter start="01:15:02.565" title="Finanzierungsmodell"/>
+        <psc:chapter start="01:19:46.532" title="Zukünftiges"/>
+        <psc:chapter start="01:32:21.227" title="Ausklang"/>
+      </psc:chapters>
+      <atom:contributor>
+        <atom:name>Tim Pritlove</atom:name>
+        <atom:uri>http://tim.pritlove.org/</atom:uri>
+      </atom:contributor>
+      <atom:contributor>
+        <atom:name>Sebastian Reimers</atom:name>
+      </atom:contributor>
+      <podcast:person img="https://der-lautsprecher.de/files/2022/01/Tim-Avatar-2020-300x300.jpeg">Tim Pritlove</podcast:person>
+      <podcast:person img="http://meta.metaebene.me/media/metaebene/contributors/sebastian-reimers.jpg" role="guest">Sebastian Reimers</podcast:person>
+    </item>
+    <item>
+      <title>LS015 Der Sender bin ich</title>
+      <link>https://der-lautsprecher.de/ls015-der-sender-bin-ich</link>
+      <pubDate>Fri, 23 Jan 2015 15:39:12 +0000</pubDate>
+      <guid isPermaLink="false">podlove-2015-01-23t14:23:43+00:00-a70b7fa2cc57856</guid>
+      <description><![CDATA[Philip Banse ist, wie man so schön sagt, Podcaster der ersten Stunde und ging mit seinem Projekt Küchenradio schon Anfang 2005 ans Netz. Jetzt erregt er gemeinsam mit Kollegen Aufmerksamkeit durch eine neue Idee, auf Basis eines Genossenschaftsmodells eine Infrastruktur für eine neue Sendeinfrastruktur in Berlin zu schaffen. Wir sprechen über seine (und gemeinsame) Aktivitäten der letzten zehn Jahre in der Podcast-Landschaft und über Erkenntnisse aus der (journalistischen) Arbeit mit  und für den öffentlich-rechtlichen Rundfunk.]]></description>
+      <atom:link rel="http://podlove.org/deep-link" href="https://der-lautsprecher.de/ls015-der-sender-bin-ich#"/>
+      <enclosure url="https://der-lautsprecher.de/podlove/file/259/s/feed/c/m4a/ls015-der-sender-bin-ich.m4a" length="31758691" type="audio/mp4"/>
+      <itunes:duration>01:24:15</itunes:duration>
+      <itunes:author>Metaebene Personal Media</itunes:author>
+      <itunes:subtitle>Eigene Senderstrukturen als Disruption der Medienlandschaft</itunes:subtitle>
+      <itunes:episodeType>full</itunes:episodeType>
+      <itunes:summary><![CDATA[Philip Banse ist, wie man so schön sagt, Podcaster der ersten Stunde und ging mit seinem Projekt Küchenradio schon Anfang 2005 ans Netz. Jetzt erregt er gemeinsam mit Kollegen Aufmerksamkeit durch eine neue Idee, auf Basis eines Genossenschaftsmodells eine Infrastruktur für eine neue Sendeinfrastruktur in Berlin zu schaffen. Wir sprechen über seine (und gemeinsame) Aktivitäten der letzten zehn Jahre in der Podcast-Landschaft und über Erkenntnisse aus der (journalistischen) Arbeit mit  und für den öffentlich-rechtlichen Rundfunk.]]></itunes:summary>
+      <content:encoded><![CDATA[<p></p><strong><em> Eigene Senderstrukturen als Disruption der Medienlandschaft</em></strong></p>
+
+Philip Banse ist, wie man so schön sagt, Podcaster der ersten Stunde und ging mit seinem Projekt Küchenradio schon Anfang 2005 ans Netz. Jetzt erregt er gemeinsam mit Kollegen Aufmerksamkeit durch eine neue Idee, auf Basis eines Genossenschaftsmodells eine Infrastruktur für eine neue Sendeinfrastruktur in Berlin zu schaffen. Wir sprechen über seine (und gemeinsame) Aktivitäten der letzten zehn Jahre in der Podcast-Landschaft und über Erkenntnisse aus der (journalistischen) Arbeit mit  und für den öffentlich-rechtlichen Rundfunk.
+
+
+
+
+<ul>
+<li>
+<strong>Tim Pritlove</strong>
+<ul>
+<li>
+<a href="https://twitter.com/timpritlove">Twitter</a>
+</li>
+<li>
+<a href="http://metaebene.me">Website</a>
+</li>
+<li>
+<a href="https://paypal.me/timpritlove">Paypal.me</a>
+</li>
+<li>
+<a href="http://amzn.to/2qHn6hS">Amazon Wishlist</a>
+</li>
+</ul>
+</li>
+<li>
+<strong>Philip Banse</strong>
+<ul>
+<li>
+<a href="https://twitter.com/philipbanse">Twitter</a>
+</li>
+<li>
+<a href="http://kuechenstud.io">Website</a>
+</li>
+</ul>
+</li>
+</ul>
+
+
+
+[shownotes id="lg"]
+
+
+]]></content:encoded>
+      <psc:chapters xmlns:psc="http://podlove.org/simple-chapters" version="1.2">
+        <psc:chapter start="00:00:00.000" title="Vorstellung"/>
+        <psc:chapter start="00:02:52.652" title="Erfahrungen mit Podcasting"/>
+        <psc:chapter start="00:12:35.193" title="Experimente mit neuen Formaten"/>
+        <psc:chapter start="00:20:10.464" title="Radiojournalismus"/>
+        <psc:chapter start="00:27:29.629" title="Kommunikation, CMS und Feedback"/>
+        <psc:chapter start="00:41:56.092" title="Der Sender"/>
+      </psc:chapters>
+      <atom:contributor>
+        <atom:name>Tim Pritlove</atom:name>
+        <atom:uri>http://tim.pritlove.org/</atom:uri>
+      </atom:contributor>
+      <atom:contributor>
+        <atom:name>Philip Banse</atom:name>
+      </atom:contributor>
+      <podcast:person img="https://der-lautsprecher.de/files/2022/01/Tim-Avatar-2020-300x300.jpeg">Tim Pritlove</podcast:person>
+      <podcast:person img="http://meta.metaebene.me/media/metaebene/contributors/philip-banse.jpg" role="guest">Philip Banse</podcast:person>
+    </item>
+  </channel>
+</rss>
