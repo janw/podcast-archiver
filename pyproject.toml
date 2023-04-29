@@ -34,11 +34,13 @@ python-dateutil = "^2.8.2"
 feedparser = "^6.0.10"
 tqdm = "^4.65.0"
 
-
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.0.262"
 black = "^23.3.0"
 
+[tool.poetry.group.tests.dependencies]
+pytest = "^7.3.1"
+pytest-cov = "^4.0.0"
 
 [tool.ruff]
 line-length = 120
@@ -64,11 +66,20 @@ ignore = [
 [tool.ruff.mccabe]
 max-complexity = 8
 
-
 [tool.black]
 line-length = 120
 target-version = ['py39', 'py310', 'py311']
 
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["tests",]
+addopts = "--cov podcast_archiver --cov-report term --no-cov-on-fail"
+
+[tool.coverage.run]
+omit = ["tests/*", "venv/*", ".venv/*"]
+
+[tool.coverage.report]
+precision = 1
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]

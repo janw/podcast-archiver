@@ -3,3 +3,6 @@
 
 archive/
 .ruff_cache/
+
+.coverage
+coverage.xml
