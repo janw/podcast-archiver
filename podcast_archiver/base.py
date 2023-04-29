@@ -2,21 +2,20 @@ import re
 import unicodedata
 import urllib.error
 import xml.etree.ElementTree as etree
+from contextlib import nullcontext
 from os import makedirs, path, remove
-from shutil import copyfileobj
 from urllib.parse import urlparse
-from urllib.request import Request, urlopen
 
 import feedparser
+import requests
 from dateutil.parser import parse as dateparse
 from feedparser import CharacterEncodingOverride
+from tqdm import tqdm
 
-from podcast_archiver import __version__
+from podcast_archiver import constants
 
 
 class PodcastArchiver:
-    _userAgent = f"podcast-archiver/{__version__} (https://github.com/janw/podcast-archiver)"
-    _headers = {"User-Agent": _userAgent}
     _global_info_keys = [
         "author",
         "language",
@@ -40,11 +39,15 @@ class PodcastArchiver:
     update = False
     progress = False
     maximumEpisodes = None
+    prefix_with_date = False
+    slugify = False
 
-    feedlist = []
+    feedlist: list[str]
 
     def __init__(self):
-        feedparser.USER_AGENT = self._userAgent
+        self.feedlist = []
+        self.session = requests.Session()
+        self.session.headers.update({"user-agent": constants.USER_AGENT})
 
     def addArguments(self, args):
         self.verbose = args.verbose or 0
@@ -64,8 +67,8 @@ class PodcastArchiver:
         self.update = args.update
         self.progress = args.progress
         self.slugify = args.slugify
-        self.maximumEpisodes = args.max_episodes or None
-        self.prefix_with_date = args.date_prefix or None
+        self.maximumEpisodes = args.max_episodes or 0
+        self.prefix_with_date = args.date_prefix or False
 
         if self.verbose > 1:
             print("Verbose level: ", self.verbose)
@@ -106,7 +109,7 @@ class PodcastArchiver:
             print("2. Downloading content ...")
         self.downloadEpisodes(linklist, feed_info)
 
-    def processFeeds(self):
+    def run(self):
         if self.verbose > 0 and self.update:
             print("Updating archive")
         for feed_url in self.feedlist:
@@ -184,13 +187,14 @@ class PodcastArchiver:
         return episode_info
 
     def getFeedObj(self, feed_url):
-        feedobj = feedparser.parse(feed_url)
+        response = self.session.get(feed_url, allow_redirects=True)
 
         # Escape improper feed-URL
-        if "status" in feedobj and feedobj["status"] >= 400:
-            print("\nQuery returned HTTP error", feedobj["status"])
+        if not response.ok:
+            print("\nQuery returned HTTP error", response.status_code)
             return None
 
+        feedobj = feedparser.parse(response.content)
         # Escape malformatted XML; If the character encoding is wrong, continue as long as the reparsing succeeded
         if feedobj["bozo"] == 1 and not isinstance(feedobj["bozo_exception"], CharacterEncodingOverride):
             print("\nDownloaded feed is malformatted on", feed_url)
@@ -212,7 +216,7 @@ class PodcastArchiver:
                     return True, linklist
 
         # On given option, crop linklist to maximum number of episodes
-        if self.maximumEpisodes is not None and self.maximumEpisodes < len(linklist):
+        if self.maximumEpisodes > 0 and self.maximumEpisodes < len(linklist):
             linklist = linklist[0 : self.maximumEpisodes]
             if self.verbose > 1:
                 print(f" reached maximum episode count of {self.maximumEpisodes}")
@@ -283,9 +287,7 @@ class PodcastArchiver:
 
     def processResponse(self, response, *, filename, feed_info, episode_dict):
         # Check existence another time, with resolved link
-        link = response.geturl()
-        total_size = int(response.getheader("content-length", "0"))
-        new_filename = self.linkToTargetFilename(link, feed_info, must_have_ext=True, episode_info=episode_dict)
+        new_filename = self.linkToTargetFilename(response.url, feed_info, must_have_ext=True, episode_info=episode_dict)
 
         if new_filename and new_filename != filename:
             filename = new_filename
@@ -298,30 +300,29 @@ class PodcastArchiver:
                 return
 
         # Create the subdir, if it does not exist
-        makedirs(path.dirname(filename), exist_ok=True)
+        if target_dir := path.dirname(filename):
+            makedirs(target_dir, exist_ok=True)
 
-        if self.progress and total_size > 0:
-            from tqdm import tqdm
-
+        if self.progress:
             if self.verbose < 2:
                 print(f"\nDownloading {filename}")
-            with (
-                tqdm(total=total_size, unit="B", unit_scale=True, unit_divisor=1024) as progress_bar,
-                open(filename, "wb") as outfile,
-            ):
-                self.prettyCopyfileobj(response, outfile, callback=progress_bar.update)
+            total_size = int(response.headers.get("content-length", "0"))
+            progress_bar = tqdm(total=total_size, unit="B", unit_scale=True, unit_divisor=1024)
+            callback = progress_bar.update
         else:
-            with open(filename, "wb") as outfile:
-                copyfileobj(response, outfile)
+            progress_bar = nullcontext()
+            callback = None
+
+        with progress_bar, open(filename, "wb") as outfile:
+            self.prettyCopyfileobj(response, outfile, callback=callback)
 
     def downloadEpisode(self, link, *, feed_info, episode_dict):
         filename = self.checkEpisodeExistsPreflight(link, feed_info=feed_info, episode_dict=episode_dict)
         if not filename:
             return
-        prepared_request = Request(link, headers=self._headers)
         try:
-            with urlopen(prepared_request) as response:
-                self.processResponse(response, filename=filename, feed_info=feed_info, episode_dict=episode_dict)
+            response = self.session.get(link, stream=True, allow_redirects=True)
+            self.processResponse(response, filename=filename, feed_info=feed_info, episode_dict=episode_dict)
             if self.verbose > 1:
                 print("\t✓ Download successful.")
         except (urllib.error.HTTPError, urllib.error.URLError) as error:
@@ -342,10 +343,8 @@ class PodcastArchiver:
             self.logDownloadHeader(link, episode_dict, index=cnt, total=nlinks)
             self.downloadEpisode(link, feed_info=feed_info, episode_dict=episode_dict)
 
-    def prettyCopyfileobj(self, fsrc, fdst, callback, block_size=128 * 1024):
-        while True:
-            buf = fsrc.read(block_size)
-            if not buf:
-                break
-            fdst.write(buf)
-            callback(len(buf))
+    def prettyCopyfileobj(self, fsrc, fdst, callback, block_size=512 * 1024):
+        for chunk in fsrc.iter_content(block_size):
+            fdst.write(chunk)
+            if callback:
+                callback(len(chunk))

@@ -1,5 +1,8 @@
 *.opml
 *.txt
+*.mp4
+*.mp3
+*.m4a
 
 archive/
 .ruff_cache/

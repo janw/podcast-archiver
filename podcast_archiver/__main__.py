@@ -17,7 +17,7 @@ def main():
 
         pa = PodcastArchiver()
         pa.addArguments(args)
-        pa.processFeeds()
+        pa.run()
     except KeyboardInterrupt:
         sys.exit("\nERROR: Interrupted by user")
     except FileNotFoundError as error:
