@@ -28,7 +28,20 @@ jobs:
       - name: Check out
         uses: actions/checkout@v3
 
+      - name: Install poetry
+        run: pipx install poetry
+
       - name: Set up python environment
         uses: actions/setup-python@v4
+        with:
+          cache: 'poetry'
 
-      - uses: pre-commit/action@v3.0.0
+      - run: poetry install --no-root --with=dev --sync
+
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-3|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
+
+      - run: poetry run pre-commit run --show-diff-on-failure --color=always --all-files
+        shell: bash

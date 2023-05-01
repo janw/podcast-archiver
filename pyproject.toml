@@ -38,11 +38,16 @@ pydantic = "^1.10.7"
 platformdirs = "^3.4.0"
 pyyaml = "^6.0"
 
-
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.0.262"
 black = "^23.3.0"
 ipython = "^8.12.0"
+mypy = "^1.2.0"
+types-requests = "*"
+types-python-dateutil = "*"
+types-tqdm = "*"
+types-PyYAML = "*"
+pre-commit = "^3.2.2"
 
 [tool.poetry.group.tests.dependencies]
 pytest = "^7.3.1"
@@ -87,6 +92,16 @@ omit = ["tests/*", "venv/*", ".venv/*"]
 
 [tool.coverage.report]
 precision = 1
+
+[tool.mypy]
+warn_unused_configs = true
+# disallow_untyped_defs = true
+strict_optional = true
+packages = ["podcast_archiver", "tests"]
+
+[[tool.mypy.overrides]]
+module = "feedparser.*"
+ignore_missing_imports = true
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]

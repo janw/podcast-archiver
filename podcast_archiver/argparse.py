@@ -7,7 +7,8 @@ from typing import TYPE_CHECKING
 from pydantic import types
 
 if TYPE_CHECKING:
-    from pydantic import BaseSettings, ModelField
+    from pydantic import BaseSettings
+    from pydantic.fields import ModelField
 
 
 class readable_file(argparse.Action):
