@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import textwrap
+from os import environ
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Union
 
@@ -106,30 +107,44 @@ class Settings(BaseSettings):
 
     @classmethod
     def load_from_yaml(cls, path: Union[Path, None]) -> Settings:
+        target = None
         if path and path.is_file():
-            with path.open("r") as filep:
+            target = path
+        else:
+            target = cls._get_envvar_config_path()
+
+        if target:
+            with target.open("r") as filep:
                 content = safe_load(filep)
             if content:
                 return cls.parse_obj(content)
         return cls()  # type: ignore[call-arg]
 
     @classmethod
-    def load_and_merge(cls, path: Union[Path, None], args: argparse.Namespace):
-        settings = cls.load_from_yaml(path)
-        for name, field in settings.__fields__.items():
+    def _get_envvar_config_path(cls) -> Union[Path, None]:
+        if not (var_value := environ.get(f"{cls.Config.env_prefix}CONFIG")):
+            return None
+
+        if not (env_path := Path(var_value).expanduser()).is_file():
+            raise FileNotFoundError(f"{env_path} does not exist")
+
+        return env_path
+
+    def merge_argparser_args(self, args: argparse.Namespace):
+        for name, field in self.__fields__.items():
             if (args_value := getattr(args, name, None)) is None:
                 continue
 
-            settings_value = getattr(settings, name)
+            settings_value = getattr(self, name)
             if isinstance(settings_value, list) and isinstance(args_value, list):
-                setattr(settings, name, settings_value + args_value)
+                setattr(self, name, settings_value + args_value)
                 continue
 
             if args_value != field.get_default():
-                setattr(settings, name, args_value)
+                setattr(self, name, args_value)
 
-        merged_settings = settings.dict(exclude_defaults=True, exclude_unset=True)
-        return cls.parse_obj(merged_settings)
+        merged_settings = self.dict(exclude_defaults=True, exclude_unset=True)
+        return self.parse_obj(merged_settings)
 
     @classmethod
     def generate_example(cls, path: Path) -> None:

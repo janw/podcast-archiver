@@ -102,6 +102,21 @@ After modifying the settings to your liking, `podcast-archiver` can be run with
 podcast-archiver --config path/to/config.yaml
 ```
 
+Alternatively (for example, if you're running `podcast-archiver` in Docker), you may point it to the config file using the `PODCAST_ARCHIVER_CONFIG=path/to/config.yaml` environment variable.
+
+### Using environment variables
+
+`podcast-archiver` uses [Pydantic](https://docs.pydantic.dev/latest/usage/settings/#parsing-environment-variable-values) to parse and validate its configuration. You can also prefix all configuration options (as used in the config file) with `PODCAST_ARCHIVER_` and export the results as environment variables to change the behavior, like so:
+
+```bash
+export PODCAST_ARCHIVER_FEEDS='[
+    "http://raumzeit-podcast.de/feed/m4a/",
+    "https://feeds.lagedernation.org/feeds/ldn-mp3.xml"
+]'  # Must be a string of a JSON array
+export PODCAST_ARCHIVER_SLUGIFY_PATHS=true
+export PODCAST_ARCHIVER_VERBOSE=2
+```
+
 ## Excursion: Unicode Normalization in Slugify
 
 The `--slugify` option removes all ambiguous characters from folders and filenames used in the archiving process. The removal includes unicode normalization according to [Compatibility Decomposition](http://unicode.org/reports/tr15/tr15-18.html#Decomposition). What? Yeah, me too. I figured this is best seen in an example, so here's a fictitious episode name, and how it would be translated to an target filename using the Archiver:

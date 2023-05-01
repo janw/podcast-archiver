@@ -21,7 +21,8 @@ def main(argv: Union[list[str], None] = None) -> None:
             Settings.generate_example(args.config_generate)
             sys.exit(0)
 
-        settings = Settings.load_and_merge(args.config, args)
+        settings = Settings.load_from_yaml(args.config)
+        settings.merge_argparser_args(args)
         if not (settings.opml_files or settings.feeds):
             parser.error("Must provide at least one of --feed or --opml")
 

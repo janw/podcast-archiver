@@ -53,6 +53,7 @@ pre-commit = "^3.2.2"
 pytest = "^7.3.1"
 pytest-cov = "^4.0.0"
 pytest-responses = "^0.5.1"
+pytest-env = "^0.8.1"
 
 [tool.ruff]
 line-length = 120
@@ -86,12 +87,19 @@ target-version = ['py39', 'py310', 'py311']
 minversion = "6.0"
 testpaths = ["tests",]
 addopts = "--cov podcast_archiver --cov-report term --no-cov-on-fail"
+env = [
+    "PODCAST_ARCHIVER_CONFIG=",
+]
 
 [tool.coverage.run]
 omit = ["tests/*", "venv/*", ".venv/*"]
 
 [tool.coverage.report]
 precision = 1
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+]
 
 [tool.mypy]
 warn_unused_configs = true
