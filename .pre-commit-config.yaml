@@ -14,6 +14,15 @@ repos:
     hooks:
       - id: black
 
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: poetry run mypy
+        require_serial: true
+        language: system
+        types: [python]
+
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: "v4.4.0"
     hooks:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import textwrap
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Union
 
 from pydantic import BaseSettings, DirectoryPath, Field, FilePath, validator
 from yaml import safe_load
@@ -95,13 +95,13 @@ class Settings(BaseSettings):
     )
 
     @validator("archive_directory", pre=True)
-    def normalize_archive_directory(cls, v):
+    def normalize_archive_directory(cls, v) -> Path:
         if v is None:
             return Path.cwd()
         return Path(v).expanduser()
 
     @validator("opml_files", pre=True, each_item=True)
-    def normalize_opml_files(cls, v):
+    def normalize_opml_files(cls, v: Any) -> Path:
         return Path(v).expanduser()
 
     @classmethod
@@ -111,7 +111,7 @@ class Settings(BaseSettings):
                 content = safe_load(filep)
             if content:
                 return cls.parse_obj(content)
-        return cls()
+        return cls()  # type: ignore[call-arg]
 
     @classmethod
     def load_and_merge(cls, path: Union[Path, None], args: argparse.Namespace):
@@ -132,7 +132,7 @@ class Settings(BaseSettings):
         return cls.parse_obj(merged_settings)
 
     @classmethod
-    def generate_example(cls, path: Path) -> str:
+    def generate_example(cls, path: Path) -> None:
         text = ["## Configuration for podcast-archiver"]
         text.append(f"## Generated with version {__version__}\n")
         for name, field in cls.__fields__.items():

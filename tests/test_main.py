@@ -8,7 +8,7 @@ from podcast_archiver.__main__ import main
 
 
 def test_main(tmp_path_cd: Path, feed_lautsprecher):
-    main(("--feed", feed_lautsprecher))
+    main(["--feed", feed_lautsprecher])
 
     files = list(tmp_path_cd.glob("*.m4a"))
     assert len(files) == 5
@@ -16,7 +16,7 @@ def test_main(tmp_path_cd: Path, feed_lautsprecher):
 
 def test_main_interrupted(tmp_path_cd: Path, feed_lautsprecher_notconsumed):
     with patch("requests.sessions.Session.request", side_effect=KeyboardInterrupt), pytest.raises(SystemExit):
-        main(("--feed", feed_lautsprecher_notconsumed))
+        main(["--feed", feed_lautsprecher_notconsumed])
 
     files = list(tmp_path_cd.glob("*.m4a"))
     assert len(files) == 0
