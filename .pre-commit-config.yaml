@@ -1,27 +1,25 @@
 ci:
   autofix_prs: false
   autoupdate_schedule: quarterly
+  autoupdate_commit_msg: 'chore: [pre-commit.ci] pre-commit autoupdate'
 
 repos:
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: 'v0.0.262'
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: 'v0.1.11'
     hooks:
       - id: ruff
         args: [ --fix, --exit-non-zero-on-fix ]
+      - id: ruff-format
 
-  - repo: https://github.com/psf/black
-    rev: "23.3.0"
-    hooks:
-      - id: black
-
-  - repo: local
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v1.8.0'
     hooks:
       - id: mypy
-        name: mypy
-        entry: poetry run mypy
-        require_serial: true
-        language: system
-        types: [python]
+        additional_dependencies:
+          - types-requests
+          - types-python-dateutil
+          - types-tqdm
+          - types-PyYAML
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: "v4.4.0"
@@ -29,15 +27,15 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+      - id: debug-statements
+      - id: check-ast
 
-  - repo: https://github.com/jorisroovers/gitlint
-    rev: 'v0.19.1'
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: 'v3.13.0'
     hooks:
-      - id: gitlint
+      - id: commitizen
 
   - repo: https://github.com/python-poetry/poetry
-    rev: '1.4.2'
+    rev: '1.7.1'
     hooks:
       - id: poetry-check
-      - id: poetry-lock
-      - id: poetry-export

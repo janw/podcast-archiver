@@ -15,4 +15,3 @@ jobs:
       - uses: JRubics/poetry-publish@v1.16
         with:
           pypi_token: ${{ secrets.PYPI_TOKEN }}
-          plugins: "poetry-dynamic-versioning-plugin"
