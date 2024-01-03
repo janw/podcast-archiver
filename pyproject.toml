@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "podcast-archiver"
-version = "0.0.0"
+version = "0.5.1"
 description = "Archive all episodes from your favorite podcasts"
 authors = ["Jan Willhaus <mail@janwillhaus.de>"]
 license = "MIT"
@@ -18,18 +18,16 @@ classifiers = [
     "Topic :: System :: Archiving",
     "Topic :: Utilities",
 ]
+repository = "https://codeberg.org/janw/podcast-archiver"
 
-[tool.poetry-dynamic-versioning]
-enable = true
-vcs = "git"
-style = "semver"
-strict = true
+[tool.poetry.urls]
+"Bug Reports" = "https://codeberg.org/janw/podcast-archiver/issues"
 
 [tool.poetry.scripts]
 podcast-archiver = 'podcast_archiver.__main__:main'
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 python-dateutil = "^2.8.2"
 feedparser = "^6.0.10"
 tqdm = "^4.65.0"
@@ -37,17 +35,20 @@ requests = "^2.29.0"
 pydantic = "^1.10.7"
 platformdirs = "^3.4.0"
 pyyaml = "^6.0"
+rich-click = "^1.7.2"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.0.262"
-black = "^23.3.0"
-ipython = "^8.12.0"
-mypy = "^1.2.0"
+ipython = "*"
+ipdb = "*"
+ruff = "^0.1.11"
+pre-commit = "^3.2.2"
+commitizen = "^3.13.0"
+
+mypy = "^1.8.0"
 types-requests = "*"
 types-python-dateutil = "*"
 types-tqdm = "*"
 types-PyYAML = "*"
-pre-commit = "^3.2.2"
 
 [tool.poetry.group.tests.dependencies]
 pytest = "^7.3.1"
@@ -55,9 +56,23 @@ pytest-cov = "^4.0.0"
 pytest-responses = "^0.5.1"
 pytest-env = "^0.8.1"
 
+[tool.commitizen]
+major_version_zero = true
+version_scheme = "semver"
+version_provider = "poetry"
+version_files = [
+    "pyproject.toml:version = ",
+    "podcast_archiver/__init__.py",
+]
+gpg_sign = true
+annotated_tag = true
+tag_format = "v$version"
+update_changelog_on_bump = true
+changelog_start_rev = "0.4"
+
 [tool.ruff]
 line-length = 120
-target-version = "py39"
+target-version = "py310"
 extend-select = [
     "I",   # isort
     "B",   # bugbear
@@ -69,19 +84,13 @@ extend-select = [
     "SIM", # simplify
     "C90", # mccabe
 ]
-unfixable = [
-    "B", # bugbear
-]
 ignore = [
     "SIM108", # if-else-block-instead-of-if-exp
+    "ISC001", # single-line-implicit-string-concatenation
 ]
 
 [tool.ruff.mccabe]
 max-complexity = 8
-
-[tool.black]
-line-length = 120
-target-version = ['py39', 'py310', 'py311']
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -92,14 +101,19 @@ env = [
 ]
 
 [tool.coverage.run]
-omit = ["tests/*", "venv/*", ".venv/*"]
+omit = [
+    "tests/*",
+    "venv/*",
+    ".venv/*",
+]
 
 [tool.coverage.report]
-precision = 1
-exclude_lines = [
-    "pragma: no cover",
-    "if TYPE_CHECKING:",
+exclude_also = [
+    "if TYPE_CHECKING:"
 ]
+fail_under = 60
+precision = 2
+show_missing = true
 
 [tool.mypy]
 warn_unused_configs = true
@@ -112,5 +126,5 @@ module = "feedparser.*"
 ignore_missing_imports = true
 
 [build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry_dynamic_versioning.backend"
