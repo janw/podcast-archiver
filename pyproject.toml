@@ -54,7 +54,7 @@ types-PyYAML = "*"
 pytest = "^7.3.1"
 pytest-cov = "^4.0.0"
 pytest-responses = "^0.5.1"
-pytest-env = "^0.8.1"
+pytest-env = ">=0.8.1,<1.2.0"
 
 [tool.commitizen]
 major_version_zero = true
