@@ -1,0 +1,50 @@
+name: Python Package
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Build package
+        run: poetry build -vvv
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package
+          path: |
+            README.md
+            pyproject.toml
+            dist/*
+          if-no-files-found: error
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+
+  publish:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: release
+    needs: build
+    steps:
+      - name: Install poetry
+        run: pipx install poetry
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: package
+
+      - run: ls dist/*
+
+      - name: Publish package
+        run: poetry publish
+        env:
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}

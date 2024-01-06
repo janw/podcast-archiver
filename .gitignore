@@ -4,6 +4,7 @@
 *.mp3
 *.m4a
 *.yaml
+!.github/**/*.yaml
 
 archive/
 .ruff_cache/
