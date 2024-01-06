@@ -22,3 +22,8 @@ jobs:
 
       - run: cz check --rev-range origin/main..HEAD
         shell: bash
+        if: github.event_name == 'pull_request' || github.ref != 'refs/heads/main'
+
+      - run: cz check --rev-range HEAD
+        shell: bash
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
