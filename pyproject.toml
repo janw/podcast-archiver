@@ -24,7 +24,7 @@ repository = "https://codeberg.org/janw/podcast-archiver"
 "Bug Reports" = "https://codeberg.org/janw/podcast-archiver/issues"
 
 [tool.poetry.scripts]
-podcast-archiver = 'podcast_archiver.__main__:main'
+podcast-archiver = 'podcast_archiver.cli:main'
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -32,13 +32,13 @@ python-dateutil = "^2.8.2"
 feedparser = "^6.0.10"
 tqdm = "^4.65.0"
 requests = "^2.29.0"
-pydantic = "^1.10.7"
+pydantic = "^2.5.3"
 platformdirs = ">=3.4,<5.0"
 pyyaml = "^6.0"
 rich-click = "^1.7.2"
 
 [tool.poetry.group.dev.dependencies]
-ipython = "*"
+ipython = "<8.18"
 ipdb = "*"
 ruff = "^0.1.11"
 pre-commit = "^3.2.2"
@@ -96,9 +96,9 @@ max-complexity = 8
 minversion = "6.0"
 testpaths = ["tests",]
 addopts = "--cov podcast_archiver --cov-report term --no-cov-on-fail"
-env = [
-    "PODCAST_ARCHIVER_CONFIG=",
-]
+
+[tool.pytest_env]
+PODCAST_ARCHIVER_CONFIG = ""
 
 [tool.coverage.run]
 omit = [

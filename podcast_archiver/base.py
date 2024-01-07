@@ -18,7 +18,7 @@ from tqdm import tqdm
 from podcast_archiver import constants
 
 if TYPE_CHECKING:
-    from podcast_archiver.config import Settings
+    from podcast_archiver.settings import Settings
 
 
 class PodcastArchiver:
@@ -196,7 +196,7 @@ class PodcastArchiver:
                 link = episode_dict["url"]
                 filename = self.linkToTargetFilename(link, feed_info)
 
-                if path.isfile(filename):
+                if filename and path.isfile(filename):
                     del linklist[index:]
                     if self.verbose > 1:
                         print(f" found existing episodes, {len(linklist)} new to process")
@@ -221,7 +221,7 @@ class PodcastArchiver:
         return None
 
     def processPodcastLink(self, feed_next_page):
-        feed_info = None
+        feed_info = {}
         linklist = []
         while True:
             if not (feedobj := self.getFeedObj(feed_next_page)):
@@ -255,7 +255,7 @@ class PodcastArchiver:
         if self.verbose > 1:
             print("\tLocal filename:", filename)
 
-        if path.isfile(filename):
+        if filename and path.isfile(filename):
             if self.verbose > 1:
                 print("\t✓ Already exists.")
             return None
