@@ -1,160 +1,156 @@
 from __future__ import annotations
 
+import pathlib
 import textwrap
-from os import environ
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union
+from datetime import datetime
+from typing import IO, TYPE_CHECKING, Any
 
-from pydantic import BaseSettings, DirectoryPath, Field, FilePath, validator
-from yaml import safe_load
+import pydantic
+import rich
+from pydantic import BaseModel, BeforeValidator, DirectoryPath, Field, FilePath
+from pydantic import ConfigDict as _ConfigDict
+from pydantic_core import to_json
+from typing_extensions import Annotated
+from yaml import YAMLError, safe_load
 
-from podcast_archiver import __version__
+from podcast_archiver import __version__ as version
+from podcast_archiver.constants import PROG_NAME
+from podcast_archiver.exceptions import InvalidSettings
 
 if TYPE_CHECKING:
-    import argparse
+    pass
 
 
-class Settings(BaseSettings):
-    class Config:
-        env_prefix = "PODCAST_ARCHIVER_"
+def defaultcwd(v: pathlib.Path | None) -> pathlib.Path:
+    if not v:
+        return pathlib.Path.cwd()
+    return v
+
+
+def expanduser(v: pathlib.Path) -> pathlib.Path:
+    if isinstance(v, str):
+        v = pathlib.Path(v)
+    return v.expanduser()
+
+
+UserExpandedDir = Annotated[DirectoryPath, BeforeValidator(expanduser), BeforeValidator(defaultcwd)]
+UserExpandedFile = Annotated[FilePath, BeforeValidator(expanduser)]
+
+
+class Settings(BaseModel):
+    model_config = _ConfigDict(populate_by_name=True)
 
     feeds: list[str] = Field(
         default_factory=list,
-        flags=("-f", "--feed"),
-        description=(
-            "Provide feed URLs to the archiver. The command line flag can be used repeatedly to input multiple feeds."
-        ),
-        argparse_action="append",
-        argparse_metavar="FEED_URL_OR_FILE",
+        alias="feed",
+        description="Feed URLs to archive.",
     )
-    opml_files: list[FilePath] = Field(
+
+    opml_files: list[UserExpandedFile] = Field(
         default_factory=list,
-        flags=("-o", "--opml"),
+        alias="opml",
         description=(
-            "Provide an OPML file (as exported by many other podcatchers) containing your feeds. The parameter can be"
-            " used multiple times, once for every OPML file."
+            "OPML files containing feed URLs to archive. OPML files can be exported from a variety of podcatchers."
         ),
-        argparse_action="append",
-        argparse_metavar="OPML_FILE",
     )
-    archive_directory: DirectoryPath = Field(  # noqa: A003
-        None,
-        flags=("-d", "--dir"),
-        description="Set the output directory of the podcast archive.",
+
+    archive_directory: UserExpandedDir = Field(
+        default=None,
+        alias="dir",
+        description=(
+            "Directory to which to download the podcast archive. "
+            "If unset, the archive will be created in the current working directory."
+        ),
     )
 
     create_subdirectories: bool = Field(
-        False,
-        flags=("-s", "--subdirs"),
-        description="Place downloaded podcasts in separate subdirectories per podcast (named with their title).",
+        default=False,
+        alias="subdirs",
+        description="Creates one directory per podcast (named with their title) within the archive directory.",
     )
+
     update_archive: bool = Field(
-        False,
-        flags=("-u", "--update"),
+        default=False,
+        alias="update",
         description=(
-            "Force the archiver to only update the feeds with newly added episodes. As soon as the first old episode"
-            " found in the download directory, further downloading is interrupted."
+            "Update the feeds with newly added episodes only. "
+            "Adding episodes ends with the first episode already present in the download directory."
         ),
     )
+
     verbose: int = Field(
-        0,
-        flags=("-v", "--verbose"),
+        default=0,
+        alias="verbose",
         description="Increase the level of verbosity while downloading.",
-        argparse_action="count",
     )
+
     show_progress_bars: bool = Field(
-        False,
-        flags=("-p", "--progress"),
+        default=False,
+        alias="progress",
         description="Show progress bars while downloading episodes.",
     )
 
     slugify_paths: bool = Field(
-        False,
-        flags=("-S", "--slugify"),
-        description=(
-            "Clean all folders and filename of potentially weird characters that might cause trouble with one or"
-            " another target filesystem."
-        ),
+        default=False,
+        alias="slugify",
+        description="Format filenames in the most compatible way, replacing all special characters.",
     )
 
     maximum_episode_count: int = Field(
-        0,
-        flags=("-m", "--max-episodes"),
+        default=0,
+        alias="max_episodes",
         description=(
-            "Only download the given number of episodes per podcast feed. Useful if you don't really need the entire"
-            " backlog."
+            "Only download the given number of episodes per podcast feed. "
+            "Useful if you don't really need the entire backlog."
         ),
     )
 
     add_date_prefix: bool = Field(
-        False,
-        flags=("--date-prefix",),
-        description=(
-            "Prefix all episodes with an ISO8602 formatted date of when they were published. Useful to ensure"
-            " chronological ordering."
-        ),
+        default=False,
+        alias="date_prefix",
+        description="Prefix episodes with their publishing date. Useful to ensure chronological ordering.",
     )
 
-    @validator("archive_directory", pre=True)
-    def normalize_archive_directory(cls, v) -> Path:
-        if v is None:
-            return Path.cwd()
-        return Path(v).expanduser()
-
-    @validator("opml_files", pre=True, each_item=True)
-    def normalize_opml_files(cls, v: Any) -> Path:
-        return Path(v).expanduser()
+    @classmethod
+    def load_from_dict(cls, value: dict[str, Any]) -> Settings:
+        try:
+            return cls.model_validate(value)
+        except pydantic.ValidationError as exc:
+            raise InvalidSettings(errors=exc.errors()) from exc
 
     @classmethod
-    def load_from_yaml(cls, path: Union[Path, None]) -> Settings:
-        target = None
-        if path and path.is_file():
-            target = path
-        else:
-            target = cls._get_envvar_config_path()
-
-        if target:
-            with target.open("r") as filep:
+    def load_from_yaml(cls, path: pathlib.Path) -> Settings:
+        try:
+            with path.open("r") as filep:
                 content = safe_load(filep)
-            if content:
-                return cls.parse_obj(content)
+        except YAMLError as exc:
+            raise InvalidSettings("Not a valid YAML document") from exc
+
+        if content:
+            return cls.load_from_dict(content)
         return cls()  # type: ignore[call-arg]
 
     @classmethod
-    def _get_envvar_config_path(cls) -> Union[Path, None]:
-        if not (var_value := environ.get(f"{cls.Config.env_prefix}CONFIG")):
-            return None
+    def generate_default_config(cls, file: IO | None = None) -> None:
+        now = datetime.now().replace(microsecond=0).astimezone()
+        wrapper = textwrap.TextWrapper(width=80, initial_indent="# ", subsequent_indent="#   ")
 
-        if not (env_path := Path(var_value).expanduser()).is_file():
-            raise FileNotFoundError(f"{env_path} does not exist")
+        lines = [
+            f"[bright_black]## {PROG_NAME.title()} configuration",
+            f"## Generated with [bold magenta]{PROG_NAME} {version}[/] at [bold magenta]{now}[/]",
+        ]
+        for name, field in cls.model_fields.items():
+            value = field.get_default(call_default_factory=True)
+            lines += [
+                "",
+                *wrapper.wrap(f"Field '{name}': {field.description}"),
+                "#",
+                *wrapper.wrap(f"Equivalent command line option: --{field.alias}"),
+                "#",
+                f"[red]{name}[/][white]:[/] [bold blue]{to_json(value).decode()}[/]",
+            ]
 
-        return env_path
+        rich.print("\n".join(lines).strip(), file=file)
 
-    def merge_argparser_args(self, args: argparse.Namespace):
-        for name, field in self.__fields__.items():
-            if (args_value := getattr(args, name, None)) is None:
-                continue
 
-            settings_value = getattr(self, name)
-            if isinstance(settings_value, list) and isinstance(args_value, list):
-                setattr(self, name, settings_value + args_value)
-                continue
-
-            if args_value != field.get_default():
-                setattr(self, name, args_value)
-
-        merged_settings = self.dict(exclude_defaults=True, exclude_unset=True)
-        return self.parse_obj(merged_settings)
-
-    @classmethod
-    def generate_example(cls, path: Path) -> None:
-        text = ["## Configuration for podcast-archiver"]
-        text.append(f"## Generated with version {__version__}\n")
-        for name, field in cls.__fields__.items():
-            text.extend(
-                textwrap.wrap(f"## Field '{name}': {field.field_info.description}\n", subsequent_indent="##   ")
-            )
-            text.append(f"# {name}: {field.get_default()}\n")
-
-        with path.open("w") as filep:
-            filep.write("\n".join(text))
+DEFAULT_SETTINGS = Settings()
