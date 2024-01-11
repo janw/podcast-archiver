@@ -41,6 +41,7 @@ docker run --tty --rm ghcr.io/janw/podcast-archiver --help
 
 Run `podcast-archiver --help` for details on how to use it:
 
+<!-- RICH-CODEX fake_command: "podcast-archiver --help" -->
 ![`poetry run podcast-archiver --help`](.assets/podcast-archiver-help.svg)
 
 ### Full-fledged example
