@@ -2,8 +2,6 @@ name: Linters
 
 on:
   pull_request:
-  push:
-    branches: [main]
 
 jobs:
   commitizen:
@@ -22,8 +20,34 @@ jobs:
 
       - run: cz check --rev-range origin/main..HEAD
         shell: bash
-        if: github.event_name == 'pull_request' || github.ref != 'refs/heads/main'
 
-      - run: cz check --rev-range HEAD~..
-        shell: bash
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  pre-commit-extras:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - name: Install commitizen
+        run: pipx install poetry
+
+      - name: Set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: 'poetry'
+
+      - run: poetry install --with=dev
+
+      - uses: pre-commit/action@v3.0.0
+        with:
+          extra_args: >
+            rich-codex
+            --all-files
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: assets
+          path: |
+            .assets/*
+          retention-days: 3
+        if: always()

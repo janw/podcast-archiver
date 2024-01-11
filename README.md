@@ -3,7 +3,7 @@
 <!-- markdownlint-disable MD033 MD013 -->
 <div align="center">
 
-![Podcast Archiver Logo](assets/icon.png)
+![Podcast Archiver Logo](.assets/icon.png)
 
 [![version](https://img.shields.io/pypi/v/podcast-archiver.svg)](https://pypi.org/project/podcast-archiver/)
 [![python](https://img.shields.io/pypi/pyversions/podcast-archiver.svg)](https://pypi.org/project/podcast-archiver/)
@@ -19,45 +19,29 @@
 
 </div>
 
-Archive all episodes from your favorite podcasts.
+A fast and simple command line client to archive all episodes from your favorite podcasts.
 
-The archiver takes the feed URLs of your favorite podcasts and downloads all available episodes for you. Even those files "hidden" in a paged feed will be tapped, so you'll have an entire backup of the series. The archiver also supports updating an existing archive, so that it lends itself to be set up as a cronjob.
-
-## Outline
-
-In my experience, very few full-fledged podcast clients are able to access a paged feed (following IETF RFC5005), so only the last few episodes of a podcast will be available to download. When you discover a podcast that has been around for quite a while, you'll have a hard time to follow the "gentle listener's duty" and listen to the whole archive. The script in this repository is supposed to help you acquiring every last episode of your new listening pleasure.
-
-Before downloading any episode the function first fetches all available pages of the feed and prepares a list. That way, you will never miss any episode.
+Podcast Archiver takes the feed URLs of your favorite podcasts and downloads all available episodes for you—even those "hidden" in [paged feeds](https://podlove.org/paged-feeds/). You'll end up with a complete archive of your shows. The archiver also supports updating an existing archive, so that it lends itself to be set up as a cronjob.
 
 ## Setup
 
-### Python package
-
-`podcast-archiver` is Python 3.9+ compatible.
+Install via [pipx](https://pipx.pypa.io/stable/):
 
 ```bash
-# Latest tagged/published version on PyPI:
-pip install podcast-archiver
-
-# Latest development version from main branch:
-pip install git+https://github.com/janw/podcast-archiver.git
+pipx install podcast-archiver
 ```
 
-### Docker image
-
-Alternatively `podcast-archiver` is available as a docker image as well:
+Or use it via Docker:
 
 ```bash
-# Latest tagged/published version, same as on PyPI:
-docker run --rm ghcr.io/janw/podcast-archiver:latest
-
-# Latest development version from main branch:
-docker run --rm ghcr.io/janw/podcast-archiver:edge
+docker run --tty --rm ghcr.io/janw/podcast-archiver --help
 ```
 
 ## Usage
 
-Run `podcast-archiver --help` for details on how to use it.
+Run `podcast-archiver --help` for details on how to use it:
+
+![`poetry run podcast-archiver --help`](.assets/podcast-archiver-help.svg)
 
 ### Full-fledged example
 
