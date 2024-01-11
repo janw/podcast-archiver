@@ -2,6 +2,8 @@ ci:
   autofix_prs: false
   autoupdate_schedule: quarterly
   autoupdate_commit_msg: 'chore: [pre-commit.ci] pre-commit autoupdate'
+  skip: # see linters.yaml -> pre-commit-extras job
+    - "rich-codex"
 
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
@@ -25,6 +27,7 @@ repos:
     rev: "v4.4.0"
     hooks:
       - id: trailing-whitespace
+        exclude_types: [svg]
       - id: end-of-file-fixer
       - id: check-yaml
       - id: debug-statements
@@ -39,3 +42,20 @@ repos:
     rev: '1.7.1'
     hooks:
       - id: poetry-check
+
+  - repo: local
+    hooks:
+      - id: rich-codex
+        name: rich-codex
+        language: system
+        entry: >
+          env
+            FORCE_COLOR=1
+            TERMINAL_WIDTH=140
+          poetry run rich-codex
+            --skip-git-checks
+            --no-confirm
+            --terminal-theme MONOKAI
+            --created-files .assets/created.txt
+        pass_filenames: false
+        types: [markdown]

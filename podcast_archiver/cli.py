@@ -205,7 +205,7 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     type=ConfigPath(),
     expose_value=False,
     default=pathlib.Path(click.get_app_dir(PROG_NAME)) / "config.yaml",
-    show_default=True,
+    show_default=False,
     is_eager=True,
     show_envvar=True,
     help="Path to a config file. Command line arguments will take precedence.",
