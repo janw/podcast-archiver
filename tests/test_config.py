@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from pydantic_core import Url
 
 from podcast_archiver.config import Settings
 from podcast_archiver.exceptions import InvalidSettings
@@ -8,16 +9,16 @@ from podcast_archiver.exceptions import InvalidSettings
 DUMMY_FEED = "http://localhost/feed.rss"
 
 
-def test_load(tmp_path_cd: Path):
+def test_load(tmp_path_cd: Path) -> None:
     configfile = tmp_path_cd / "configtmp.yaml"
     configfile.write_text(f"feeds: [{DUMMY_FEED}]")
 
     settings = Settings.load_from_yaml(configfile)
 
-    assert DUMMY_FEED in settings.feeds
+    assert Url(DUMMY_FEED) in settings.feeds
 
 
-def test_load_invalid_yaml(tmp_path_cd: Path):
+def test_load_invalid_yaml(tmp_path_cd: Path) -> None:
     configfile = tmp_path_cd / "configtmp.yaml"
     configfile.write_text("!randomgiberish")
 
@@ -25,7 +26,7 @@ def test_load_invalid_yaml(tmp_path_cd: Path):
         Settings.load_from_yaml(configfile)
 
 
-def test_load_invalid_type(tmp_path_cd: Path):
+def test_load_invalid_type(tmp_path_cd: Path) -> None:
     configfile = tmp_path_cd / "configtmp.yaml"
     configfile.write_text("feeds: 7")
 
@@ -33,7 +34,7 @@ def test_load_invalid_type(tmp_path_cd: Path):
         Settings.load_from_yaml(configfile)
 
 
-def test_load_nonexistent(tmp_path_cd: Path):
+def test_load_nonexistent(tmp_path_cd: Path) -> None:
     configfile = tmp_path_cd / "configtmp.yaml"
 
     with pytest.raises(FileNotFoundError):

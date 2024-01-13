@@ -30,12 +30,12 @@ podcast-archiver = 'podcast_archiver.cli:main'
 python = "^3.10"
 python-dateutil = "^2.8.2"
 feedparser = "^6.0.10"
-tqdm = "^4.65.0"
 requests = "^2.29.0"
 pydantic = "^2.5.3"
 platformdirs = ">=3.4,<5.0"
 pyyaml = "^6.0"
 rich-click = "^1.7.2"
+python-slugify = "^8.0.1"
 
 [tool.poetry.group.dev.dependencies]
 ipython = "<8.18"
@@ -44,12 +44,8 @@ ruff = "^0.1.11"
 pre-commit = "^3.2.2"
 commitizen = "^3.13.0"
 rich-codex = "^1.2.6"
-
 mypy = "^1.8.0"
-types-requests = "*"
-types-python-dateutil = "*"
-types-tqdm = "*"
-types-PyYAML = "*"
+
 
 [tool.poetry.group.tests.dependencies]
 pytest = "^7.3.1"
@@ -58,7 +54,6 @@ pytest-responses = "^0.5.1"
 pytest-env = ">=0.8.1,<1.2.0"
 
 [tool.commitizen]
-major_version_zero = true
 version_scheme = "semver"
 version_provider = "poetry"
 version_files = [
@@ -91,6 +86,9 @@ ignore = [
     "ISC001", # single-line-implicit-string-concatenation
 ]
 
+[tool.ruff.format]
+quote-style = "double"
+
 [tool.ruff.mccabe]
 max-complexity = 8
 
@@ -118,14 +116,34 @@ precision = 2
 show_missing = true
 
 [tool.mypy]
+disallow_untyped_defs = true
+disallow_any_generics = true
+# disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_incomplete_defs = true
 warn_unused_configs = true
-# disallow_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+# warn_return_any = true
 strict_optional = true
+strict_equality = true
+check_untyped_defs = true
+no_implicit_reexport = true
+
 packages = ["podcast_archiver", "tests"]
+plugins = [
+    "pydantic.mypy",
+]
 
 [[tool.mypy.overrides]]
-module = "feedparser.*"
+module = [
+    "feedparser.*",
+    "requests.*",
+    "slugify.*",
+    "yaml.*",
+]
 ignore_missing_imports = true
+
 
 [build-system]
 requires = ["poetry-core"]

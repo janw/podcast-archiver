@@ -3,12 +3,13 @@ from __future__ import annotations
 import os
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable
 
 import pytest
+from pydantic_core import Url
 
 if TYPE_CHECKING:
-    pass
+    from responses import RequestsMock
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -21,31 +22,31 @@ FEED_CONTENT_EMPTY = (FIXTURES_DIR / "feed_lautsprecher_empty.xml").read_text()
 
 
 @pytest.fixture
-def feed_lautsprecher(responses):
+def feed_lautsprecher(responses: RequestsMock) -> Url:
     responses.add(responses.GET, FEED_URL, FEED_CONTENT)
     responses.add(responses.GET, MEDIA_URL, b"BLOB")
-    return FEED_URL
+    return Url(FEED_URL)
 
 
 @pytest.fixture
-def feed_lautsprecher_notconsumed(responses):
-    return FEED_URL
+def feed_lautsprecher_notconsumed(responses: RequestsMock) -> Url:
+    return Url(FEED_URL)
 
 
 @pytest.fixture
-def feed_lautsprecher_onlyfeed(responses):
+def feed_lautsprecher_onlyfeed(responses: RequestsMock) -> Url:
     responses.add(responses.GET, FEED_URL, FEED_CONTENT)
-    return FEED_URL
+    return Url(FEED_URL)
 
 
 @pytest.fixture
-def feed_lautsprecher_empty(responses):
+def feed_lautsprecher_empty(responses: RequestsMock) -> Url:
     responses.add(responses.GET, FEED_URL, FEED_CONTENT_EMPTY)
-    return FEED_URL
+    return Url(FEED_URL)
 
 
 @pytest.fixture
-def tmp_path_cd(request, tmp_path):
+def tmp_path_cd(request: pytest.FixtureRequest, tmp_path: str) -> Iterable[str]:
     os.chdir(tmp_path)
     yield tmp_path
     os.chdir(request.config.invocation_params.dir)

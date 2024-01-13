@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0">
+  <head>
+    <title>Downcast Podcasts</title>
+  </head>
+  <body>
+    <outline text="Lautsprecher" type="rss" title="Lautsprecher" xmlUrl="https://feeds.metaebene.me/lautsprecher/m4a"/>
+  </body>
+</opml>

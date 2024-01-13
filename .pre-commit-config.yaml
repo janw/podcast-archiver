@@ -17,11 +17,7 @@ repos:
     rev: 'v1.8.0'
     hooks:
       - id: mypy
-        additional_dependencies:
-          - types-requests
-          - types-python-dateutil
-          - types-tqdm
-          - types-PyYAML
+        additional_dependencies: [pydantic]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: "v4.4.0"
@@ -59,3 +55,4 @@ repos:
             --created-files .assets/created.txt
         pass_filenames: false
         types: [markdown]
+        files: '(\.md|cli\.py|config\.py)$'

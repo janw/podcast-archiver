@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<opml version="1.0">
+  <head>
+    <title>Pocket Casts Feeds</title>
+    <dateCreated>Wed, 29 Jul 2015 14:57:51 +0000</dateCreated>
+    <dateModified>Wed, 29 Jul 2015 14:57:51 +0000</dateModified>
+  </head>
+  <body>
+    <outline text="feeds">
+      <outline text="Lautsprecher" type="rss" xmlUrl="https://feeds.metaebene.me/lautsprecher/m4a"/>
+      <outline text="Other" type="rss" xmlUrl=""/>
+      <outline text="Another" type="rss"/>
+    </outline>
+  </body>
+</opml>

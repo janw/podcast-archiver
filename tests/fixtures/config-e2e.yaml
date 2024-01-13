@@ -1,0 +1,25 @@
+## Podcast-Archiver configuration for end-to-end testing purposes
+
+feeds:
+  - "https://feeds.metaebene.me/lautsprecher/m4a"
+  - "https://feeds.serialpodcast.org/serialpodcast"
+  - "https://alternativlos.org/alternativlos.rss"
+  - "https://www.relay.fm/mpu/feed"
+  - "https://www.codingblocks.net/podcast-feed.xml"
+  - "https://feeds.feedburner.com/debugshow"
+  - "https://neusprech.org/feed/podcast/"
+  - "https://iotpodcast.com/feed/podcast/"
+  - "https://atp.fm/rss/"
+  - "https://daringfireball.net/thetalkshow/rss"
+
+verbose: 2
+filename_template: "{show.title}/{episode.published_time:%Y-%m-%d} - {episode.title}.{ext}"
+
+# Field 'maximum_episode_count': Only download the given number of episodes per
+#   podcast feed. Useful if you don't really need the entire backlog.
+#
+# Equivalent command line option: --max_episodes
+#
+maximum_episode_count: 3
+concurrency: 3
+debug_partial: true

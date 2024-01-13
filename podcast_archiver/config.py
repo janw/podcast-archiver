@@ -3,19 +3,21 @@ from __future__ import annotations
 import pathlib
 import textwrap
 from datetime import datetime
-from typing import IO, TYPE_CHECKING, Any
+from functools import cached_property
+from typing import IO, TYPE_CHECKING, Any, Text
 
 import pydantic
-import rich
-from pydantic import BaseModel, BeforeValidator, DirectoryPath, Field, FilePath
+from pydantic import AnyHttpUrl, BaseModel, BeforeValidator, DirectoryPath, Field, FilePath
 from pydantic import ConfigDict as _ConfigDict
 from pydantic_core import to_json
 from typing_extensions import Annotated
 from yaml import YAMLError, safe_load
 
 from podcast_archiver import __version__ as version
-from podcast_archiver.constants import PROG_NAME
+from podcast_archiver import constants
+from podcast_archiver.console import console
 from podcast_archiver.exceptions import InvalidSettings
+from podcast_archiver.utils import FilenameFormatter
 
 if TYPE_CHECKING:
     pass
@@ -40,7 +42,7 @@ UserExpandedFile = Annotated[FilePath, BeforeValidator(expanduser)]
 class Settings(BaseModel):
     model_config = _ConfigDict(populate_by_name=True)
 
-    feeds: list[str] = Field(
+    feeds: list[AnyHttpUrl] = Field(
         default_factory=list,
         alias="feed",
         description="Feed URLs to archive.",
@@ -55,18 +57,12 @@ class Settings(BaseModel):
     )
 
     archive_directory: UserExpandedDir = Field(
-        default=None,
+        default=None,  # type: ignore[assignment]
         alias="dir",
         description=(
             "Directory to which to download the podcast archive. "
             "If unset, the archive will be created in the current working directory."
         ),
-    )
-
-    create_subdirectories: bool = Field(
-        default=False,
-        alias="subdirs",
-        description="Creates one directory per podcast (named with their title) within the archive directory.",
     )
 
     update_archive: bool = Field(
@@ -78,22 +74,28 @@ class Settings(BaseModel):
         ),
     )
 
+    quiet: bool = Field(
+        default=False,
+        alias="quiet",
+        description="Print only minimal progress information. Errors will always be emitted.",
+    )
+
     verbose: int = Field(
         default=0,
         alias="verbose",
         description="Increase the level of verbosity while downloading.",
     )
 
-    show_progress_bars: bool = Field(
-        default=False,
-        alias="progress",
-        description="Show progress bars while downloading episodes.",
-    )
-
     slugify_paths: bool = Field(
         default=False,
         alias="slugify",
         description="Format filenames in the most compatible way, replacing all special characters.",
+    )
+
+    filename_template: str = Field(
+        alias="filename_template",
+        default="{show.title}/{episode.published_time:%Y-%m-%d} - {episode.title}.{ext}",
+        description="Template to be used when generating filenames.",
     )
 
     maximum_episode_count: int = Field(
@@ -105,10 +107,16 @@ class Settings(BaseModel):
         ),
     )
 
-    add_date_prefix: bool = Field(
+    concurrency: int = Field(
+        default=4,
+        alias="concurrency",
+        description="Maximum number of simultaneous downloads.",
+    )
+
+    debug_partial: bool = Field(
         default=False,
-        alias="date_prefix",
-        description="Prefix episodes with their publishing date. Useful to ensure chronological ordering.",
+        alias="debug_partial",
+        description=f"Download only the first {constants.DEBUG_PARTIAL_SIZE} bytes of episodes for debugging purposes.",
     )
 
     @classmethod
@@ -128,29 +136,44 @@ class Settings(BaseModel):
 
         if content:
             return cls.load_from_dict(content)
-        return cls()  # type: ignore[call-arg]
+        return cls()
 
     @classmethod
-    def generate_default_config(cls, file: IO | None = None) -> None:
+    def generate_default_config(cls, file: IO[Text] | None = None) -> None:
         now = datetime.now().replace(microsecond=0).astimezone()
         wrapper = textwrap.TextWrapper(width=80, initial_indent="# ", subsequent_indent="#   ")
 
         lines = [
-            f"[bright_black]## {PROG_NAME.title()} configuration",
-            f"## Generated with [bold magenta]{PROG_NAME} {version}[/] at [bold magenta]{now}[/]",
+            f"## {constants.PROG_NAME.title()} configuration",
+            f"## Generated with {constants.PROG_NAME} {version} at {now}",
         ]
+
         for name, field in cls.model_fields.items():
+            cli_opt = (
+                wrapper.wrap(f"Equivalent command line option: --{field.alias.replace('_', '-')}")
+                if field.alias
+                else []
+            )
             value = field.get_default(call_default_factory=True)
             lines += [
                 "",
                 *wrapper.wrap(f"Field '{name}': {field.description}"),
                 "#",
-                *wrapper.wrap(f"Equivalent command line option: --{field.alias}"),
+                *cli_opt,
                 "#",
-                f"[red]{name}[/][white]:[/] [bold blue]{to_json(value).decode()}[/]",
+                f"{name}: {to_json(value).decode()}",
             ]
 
-        rich.print("\n".join(lines).strip(), file=file)
+        contents = "\n".join(lines).strip()
+        if not file:
+            console.print(contents, highlight=False)
+            return
+        with file:
+            file.write(contents + "\n")
+
+    @cached_property
+    def filename_formatter(self) -> FilenameFormatter:
+        return FilenameFormatter(self)
 
 
 DEFAULT_SETTINGS = Settings()
