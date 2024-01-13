@@ -8,8 +8,10 @@ from click.core import Context, Parameter
 from podcast_archiver import __version__ as version
 from podcast_archiver.base import PodcastArchiver
 from podcast_archiver.config import DEFAULT_SETTINGS, Settings
+from podcast_archiver.console import console
 from podcast_archiver.constants import ENVVAR_PREFIX, PROG_NAME
 from podcast_archiver.exceptions import InvalidSettings
+from podcast_archiver.logging import configure_logging
 
 click.rich_click.USE_RICH_MARKUP = True
 click.rich_click.USE_MARKDOWN = True
@@ -28,7 +30,7 @@ click.rich_click.OPTION_GROUPS = {
         {
             "name": "Processing parameters",
             "options": [
-                "--subdirs",
+                "--filename-template",
                 "--update",
                 "--slugify",
                 "--max-episodes",
@@ -40,8 +42,8 @@ click.rich_click.OPTION_GROUPS = {
 
 
 class ConfigPath(click.Path):
-    def __init__(self):
-        super().__init__(
+    def __init__(self) -> None:
+        return super().__init__(
             exists=True,
             readable=True,
             file_okay=True,
@@ -128,13 +130,14 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     help=Settings.model_fields["archive_directory"].description,
 )
 @click.option(
-    "-s",
-    "--subdirs",
-    type=bool,
-    default=DEFAULT_SETTINGS.create_subdirectories,
-    is_flag=True,
+    "-F",
+    "--filename-template",
+    type=str,
+    show_default=True,
+    required=False,
+    default=DEFAULT_SETTINGS.filename_template,
     show_envvar=True,
-    help=Settings.model_fields["create_subdirectories"].description,
+    help=Settings.model_fields["filename_template"].description,
 )
 @click.option(
     "-u",
@@ -146,18 +149,27 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     help=Settings.model_fields["update_archive"].description,
 )
 @click.option(
-    "-p",
-    "--progress",
+    "-q",
+    "--quiet",
     type=bool,
-    default=DEFAULT_SETTINGS.show_progress_bars,
+    default=DEFAULT_SETTINGS.quiet,
     is_flag=True,
     show_envvar=True,
-    help=Settings.model_fields["show_progress_bars"].description,
+    help=Settings.model_fields["quiet"].description,
+)
+@click.option(
+    "--debug-partial",
+    type=bool,
+    default=DEFAULT_SETTINGS.debug_partial,
+    is_flag=True,
+    show_envvar=True,
+    help=Settings.model_fields["debug_partial"].description,
 )
 @click.option(
     "-v",
     "--verbose",
     count=True,
+    show_envvar=True,
     default=DEFAULT_SETTINGS.verbose,
     help=Settings.model_fields["verbose"].description,
 )
@@ -177,14 +189,6 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     default=DEFAULT_SETTINGS.maximum_episode_count,
     help=Settings.model_fields["maximum_episode_count"].description,
 )
-@click.option(
-    "--date-prefix",
-    type=bool,
-    default=DEFAULT_SETTINGS.add_date_prefix,
-    is_flag=True,
-    show_envvar=True,
-    help=Settings.model_fields["add_date_prefix"].description,
-)
 @click.version_option(
     version,
     "-V",
@@ -194,6 +198,7 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
 @click.option(
     "--config-generate",
     type=bool,
+    expose_value=False,
     is_flag=True,
     is_eager=True,
     callback=generate_default_config,
@@ -211,16 +216,19 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     help="Path to a config file. Command line arguments will take precedence.",
 )
 @click.pass_context
-def main(ctx: click.RichContext, config_generate: bool, **kwargs: Any) -> int:
+def main(ctx: click.RichContext, /, **kwargs: Any) -> int:
+    configure_logging(kwargs["verbose"])
+    console.quiet = kwargs["quiet"] or kwargs["verbose"] > 1
     try:
-        config = Settings.load_from_dict(kwargs)
+        settings = Settings.load_from_dict(kwargs)
 
         # Replicate click's `no_args_is_help` behavior but only when config file does not contain feeds/OPMLs
-        if not (config.feeds or config.opml_files):
+        if not (settings.feeds or settings.opml_files):
             click.echo(ctx.command.get_help(ctx))
             return 0
 
-        pa = PodcastArchiver(config)
+        pa = PodcastArchiver(settings=settings)
+        pa.register_cleanup(ctx)
         pa.run()
     except InvalidSettings as exc:
         raise click.BadParameter(f"Invalid settings: {exc}") from exc

@@ -1,0 +1,13 @@
+engines:
+  bandit:
+    enabled: true
+    checks:
+      assert_used:
+        enabled: false
+
+checks:
+  argument-count:
+    enabled: false
+  method-complexity:
+    config:
+      threshold: 8

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:psc="http://podlove.org/simple-chapters" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:fh="http://purl.org/syndication/history/1.0" xmlns:podcast="https://podcastindex.org/namespace/1.0" xmlns:feedpress="https://feed.press/xmlns" xmlns:media="http://search.yahoo.com/mrss/" version="2.0">
+  <channel>
+    <feedpress:locale>en</feedpress:locale>
+    <title>Der Lautsprecher</title>
+    <link>https://der-lautsprecher.de</link>
+    <description><![CDATA[Ein Podcast über das Senden und Empfangen werden]]></description>
+    <lastBuildDate>Tue, 31 Aug 2021 13:55:27 +0000</lastBuildDate>
+    <image>
+      <url>https://media.metaebene.me/media/lautsprecher/der-lautsprecher-logo-1500x1500.jpg</url>
+      <title>Der Lautsprecher</title>
+      <link>https://der-lautsprecher.de</link>
+    </image>
+    <atom:link rel="self" type="application/rss+xml" title="Der Lautsprecher (AAC Audio)" href="https://feeds.metaebene.me/lautsprecher/m4a"/>
+    <atom:link rel="alternate" type="application/rss+xml" title="Der Lautsprecher (MP3 Audio)" href="https://der-lautsprecher.de/feed/mp3"/>
+    <atom:link rel="alternate" type="application/rss+xml" title="Der Lautsprecher (Ogg Vorbis Audio)" href="https://der-lautsprecher.de/feed/oga"/>
+    <atom:link rel="alternate" type="application/rss+xml" title="Der Lautsprecher (Ogg Opus Audio)" href="https://der-lautsprecher.de/feed/opus"/>
+    <atom:link rel="first" href="https://der-lautsprecher.de/feed/m4a"/>
+    <language>de-DE</language>
+    <atom:link rel="hub" href="http://metaebene.superfeedr.com"/>
+    <fyyd:verify xmlns:fyyd="https://fyyd.de/fyyd-ns/">8bks1uqxowujnm3g6gy5n6ofkmilf8wd1o8vP</fyyd:verify>
+    <atom:link rel="payment" title="Flattr this!" href="https://flattr.com/submit/auto?user_id=243&amp;url=https%3A%2F%2Fder-lautsprecher.de%2F&amp;language=de_DE&amp;category=audio&amp;title=Der+Lautsprecher&amp;description=Ein+Podcast+%C3%BCber+das+Senden+und+Empfangen+werden&amp;tags=podcast%2C+der+lautsprecher%2C+podcasting%2C+tim+pritlove%2C+metaebene" type="text/html"/>
+    <atom:contributor>
+      <atom:name>Tim Pritlove</atom:name>
+      <atom:uri>http://tim.pritlove.org/</atom:uri>
+    </atom:contributor>
+    <podcast:person img="https://der-lautsprecher.de/files/2022/01/Tim-Avatar-2020-300x300.jpeg">Tim Pritlove</podcast:person>
+    <generator>Podlove Podcast Publisher v3.8.6</generator>
+    <copyright>Metaebene Personal Media</copyright>
+    <atom:link rel="me" href="https://podcasts.apple.com/podcast/id418533452"/>
+    <podcast:funding url="https://metaebene.me/spenden">Spenden für die Metaebene</podcast:funding>
+    <item>
+      <title>LS019 hr2 der Tag - ein Gespräch mit Florian Schwinn</title>
+      <link>THIS LINK IS INVALID</link>
+      <pubDate>Tue, 02 Apr 2019 16:03:22 +0000</pubDate>
+      <enclosure url="https://der-lautsprecher.de/podlove/file/405/s/feed/c/m4a/ls019-hr2-der-tag-ein-gespraech-mit-florian-schwinn.m4a" length="22986119" type="audio/mp4"/>
+      <guid isPermaLink="false">podlove-2019-04-02t13:22:40+00:00-827d6a227051dd9</guid>
+     </content:encoded>
+    </item>
+  </channel>
+</rss>

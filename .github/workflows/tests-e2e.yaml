@@ -1,0 +1,24 @@
+name: End-to-end Tests
+
+on:
+  pull_request:
+
+jobs:
+  python-module:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - name: Set up python environment
+        uses: actions/setup-python@v4
+        with:
+          cache: 'pip'
+
+      - name: Install poetry
+        run: pipx install .
+
+      - run: podcast-archiver -c tests/fixtures/config-e2e.yaml
+        env:
+          TERMINAL_WIDTH: "140"
+          FORCE_COLOR: "1"
