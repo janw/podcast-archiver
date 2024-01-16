@@ -11,7 +11,7 @@ from rich import progress as rich_progress
 from podcast_archiver.config import Settings
 from podcast_archiver.console import console
 from podcast_archiver.download import DownloadJob
-from podcast_archiver.enums import QueueCompletionMsg
+from podcast_archiver.enums import QueueCompletionType
 from podcast_archiver.logging import logger
 from podcast_archiver.models import Feed
 
@@ -73,10 +73,10 @@ class FeedProcessor:
             futures, completion_msg = self._process_episodes(feed=feed)
             self._handle_futures(futures, result=result)
 
-        console.print(f"[bar.finished]✔️ {completion_msg}[/]")
+        console.print(f"\n[bar.finished]✔ {completion_msg}[/]")
         return result
 
-    def _process_episodes(self, feed: Feed) -> tuple[list[Future[DownloadJob]], QueueCompletionMsg]:
+    def _process_episodes(self, feed: Feed) -> tuple[list[Future[DownloadJob]], QueueCompletionType]:
         futures: list[Future[DownloadJob]] = []
         for idx, episode in enumerate(feed.episode_iter(self.settings.maximum_episode_count), 1):
             download_job = DownloadJob(
@@ -88,15 +88,15 @@ class FeedProcessor:
             )
             if self.settings.update_archive and download_job.target_exists:
                 logger.info("Up to date with %r", episode)
-                return futures, QueueCompletionMsg.FOUND_EXISTING
+                return futures, QueueCompletionType.FOUND_EXISTING
 
             logger.info("Queueing download for %r", episode)
             futures.append(self.pool_executor.submit(download_job))
             if (max_count := self.settings.maximum_episode_count) and idx == max_count:
                 logger.info("Reached requested maximum episode count of %s", max_count)
-                return futures, QueueCompletionMsg.MAX_EPISODES
+                return futures, QueueCompletionType.MAX_EPISODES
 
-        return futures, QueueCompletionMsg.COMPLETED
+        return futures, QueueCompletionType.COMPLETED
 
     def _handle_futures(self, futures: list[Future[DownloadJob]], *, result: ProcessingResult) -> None:
         for future in futures:
