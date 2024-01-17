@@ -73,7 +73,7 @@ class FeedProcessor:
             futures, completion_msg = self._process_episodes(feed=feed)
             self._handle_futures(futures, result=result)
 
-        console.print(f"\n[bar.finished]✔ {completion_msg}[/]")
+        console.print(f"\n[bar.finished]✔ {completion_msg.value}[/]")
         return result
 
     def _process_episodes(self, feed: Feed) -> tuple[list[Future[DownloadJob]], QueueCompletionType]:
