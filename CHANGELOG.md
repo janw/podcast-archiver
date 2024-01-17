@@ -1,12 +1,16 @@
-## Unreleased
+## v1.0.0 (2024-01-17)
 
 ### Feat
 
+- Completely refactor processing logic (#50)
+- Integrate click for cli and config-parsing
 - Allow configuration of config envvar
 - Add config file support
 
 ### Fix
 
+- Completion message shows as human-readable string (#53)
+- Remnant build-backend adjusted to poetry
 - Update user-agent URL
 
 ### Refactor
