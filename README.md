@@ -23,7 +23,7 @@ A fast and simple command line client to archive all episodes from your favorite
 
 Podcast Archiver takes the feed URLs of your favorite podcasts and downloads all available episodes for you—even those "hidden" in [paged feeds](https://podlove.org/paged-feeds/). You'll end up with a complete archive of your shows. The archiver also supports updating an existing archive, so that it lends itself to be set up as a cronjob.
 
-⚠️ Podcast Archiver v1.0 completely changes the available command line options uses a new format for naming files (see [changing the filename format](#changing-the-filename-format) below). Using it on an existing pre-v1.0 folder structure will re-download all episodes. ⚠️
+⚠️ Podcast Archiver v1.0 completely changes the available command line options uses a new format for naming files (see [changing the filename format](#changing-the-filename-format) below). Using it on an existing pre-v1.0 folder structure will re-download all episodes unless you use an equivalent template. ⚠️
 
 ## Setup
 
@@ -67,6 +67,32 @@ Podcast Archiver has a `--filename-template` option that allows you to change th
 The field `episode.published_time` is a Python-native datetime, so its exact format can be adjusted further a la `{episode.published_time:%Y-%m-%d}` using [strftime-placeholders](https://strftime.org/).
 
 The default value for `--filename-template`. is shown in `podcast-archiver --help`.
+
+#### Examples
+
+* More precise published time
+
+  ```plain
+  {show.title}/{episode.published_time:%Y-%m-%d %H%M%S %Z} - {episode.title}.{ext}
+  ```
+
+  Results in `…/That Show/2023-03-12 123456 UTC - Some Episode.mp3`
+
+* Using the original filename (roughly equivalent to pre-1.0 `--subdirs`)
+
+  ```plain
+  {show.title}/{episode.original_filename}
+  ```
+
+  Results in `…/That Show/ts001-episodefilename.mp3`
+
+* Using the original filename (roughly equivalent to pre-1.0 `--subdirs` + `--date-prefix`)
+
+  ```plain
+  {show.title}/{episode.published_time} {episode.original_filename}
+  ```
+
+  Results in `…/That Show/2023-03-12 ts001-episodefilename.mp3`
 
 ### Using a config file
 
