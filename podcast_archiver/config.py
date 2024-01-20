@@ -17,6 +17,7 @@ from podcast_archiver import __version__ as version
 from podcast_archiver import constants
 from podcast_archiver.console import console
 from podcast_archiver.exceptions import InvalidSettings
+from podcast_archiver.models import ALL_FIELD_TITLES_STR
 from podcast_archiver.utils import FilenameFormatter
 
 if TYPE_CHECKING:
@@ -89,7 +90,10 @@ class Settings(BaseModel):
     filename_template: str = Field(
         alias="filename_template",
         default="{show.title}/{episode.published_time:%Y-%m-%d} - {episode.title}.{ext}",
-        description="Template to be used when generating filenames.",
+        description=(
+            "Template to be used when generating filenames. Available template variables are: "
+            f"{ALL_FIELD_TITLES_STR}, and 'ext' (the filename extension)"
+        ),
     )
 
     maximum_episode_count: int = Field(
