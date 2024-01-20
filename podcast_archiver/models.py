@@ -59,16 +59,16 @@ class Episode(BaseModel):
     @model_validator(mode="after")
     def populate_from_enclosure(self) -> Episode:
         if not self.media_link:
-            for link in self.links:
-                if (
-                    SUPPORTED_LINK_TYPES_RE.match(link.link_type) or link.rel == "enclosure"
-                ) and link.href.host != quirks.INVALID_URL_PLACEHOLDER:
-                    self.media_link = link
-                    break
+            self.media_link = self._get_enclosure_url()
+        self.original_filename = Path(self.media_link.href.path).name if self.media_link.href.path else ""
+        return self
 
-        if self.media_link:
-            self.original_filename = Path(self.media_link.href.path).name if self.media_link.href.path else ""
-            return self
+    def _get_enclosure_url(self) -> Link:
+        for link in self.links:
+            if (
+                SUPPORTED_LINK_TYPES_RE.match(link.link_type) or link.rel == "enclosure"
+            ) and link.href.host != quirks.INVALID_URL_PLACEHOLDER:
+                return link
         raise MissingDownloadUrl(f"Episode {self} did not have a supported download URL")
 
     @cached_property
