@@ -16,14 +16,15 @@ slug_safe_re = re.compile(r"[^A-Za-z0-9-_\.]+")
 
 T = TypeVar("T", str, int)
 
+MIMETYPE_EXTENSION_MAPPING: dict[str, str] = {
+    "audio/mp4": "m4a",
+    "audio/mp3": "mp3",
+    "audio/mpeg": "mp3",
+}
+
 
 def get_generic_extension(link_type: str) -> str:
-    match link_type:
-        case "audio/mp4":
-            return "m4a"
-        case "audio/mp3" | "audio/mpeg":
-            return "mp3"
-    return "ext"
+    return MIMETYPE_EXTENSION_MAPPING.get(link_type, "ext")
 
 
 def make_filename_safe(value: T) -> T:
