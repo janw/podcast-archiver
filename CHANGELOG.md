@@ -1,3 +1,9 @@
+## v1.1.0 (2024-01-20)
+
+### Feat
+
+- Add episode.original_filename template variable
+
 ## v1.0.1 (2024-01-20)
 
 ### Fix
