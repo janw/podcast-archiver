@@ -37,13 +37,15 @@ class Link(BaseModel):
 
 
 class Episode(BaseModel):
-    title: str = "Untitled Episode"
-    subtitle: str = Field("", repr=False)
+    title: str = Field(default="Untitled Episode", title="episode.title")
+    subtitle: str = Field("", repr=False, title="episode.subtitle")
     author: str = Field("", repr=False)
     link: quirks.LenientUrl | None = None
     links: list[Link] = Field(default_factory=list)
     media_link: Link = Field(default=None, repr=False)  # type: ignore[assignment]
-    published_time: datetime = Field(alias="published_parsed")
+    published_time: datetime = Field(alias="published_parsed", title="episode.published_time")
+
+    original_filename: str = Field(default="", repr=False, title="episode.original_filename")
 
     _feed_info: FeedInfo
 
@@ -55,31 +57,44 @@ class Episode(BaseModel):
         return value
 
     @model_validator(mode="after")
-    def populate_media_link(self) -> Episode:
+    def populate_from_enclosure(self) -> Episode:
+        if not self.media_link:
+            self.media_link = self._get_enclosure_url()
+        self.original_filename = Path(self.media_link.href.path).name if self.media_link.href.path else ""
+        return self
+
+    def _get_enclosure_url(self) -> Link:
         for link in self.links:
             if (
                 SUPPORTED_LINK_TYPES_RE.match(link.link_type) or link.rel == "enclosure"
             ) and link.href.host != quirks.INVALID_URL_PLACEHOLDER:
-                self.media_link = link
-                return self
+                return link
         raise MissingDownloadUrl(f"Episode {self} did not have a supported download URL")
 
     @cached_property
     def ext(self) -> str:
-        if self.media_link.href.path and (fname := Path(self.media_link.href.path).name):
+        if fname := self.original_filename:
             stem, sep, suffix = fname.rpartition(".")
             if stem and sep and suffix:
                 return suffix
         return get_generic_extension(self.media_link.link_type)
 
+    @classmethod
+    def field_titles(cls) -> list[str]:
+        return [field.title for field in cls.model_fields.values() if field.title]
+
 
 class FeedInfo(BaseModel):
-    title: str = "Untitled Podcast"
-    subtitle: str | None = None
-    author: str | None = None
-    language: str | None = None
+    title: str = Field(default="Untitled Podcast", title="show.title")
+    subtitle: str | None = Field(default=None, title="show.subtitle")
+    author: str | None = Field(default=None, title="show.author")
+    language: str | None = Field(default=None, title="show.language")
     link: AnyHttpUrl | None = None
     links: list[Link] = []
+
+    @classmethod
+    def field_titles(cls) -> list[str]:
+        return [field.title for field in cls.model_fields.values() if field.title]
 
 
 class FeedPage(BaseModel):
@@ -148,3 +163,8 @@ class Feed:
                 return
         logger.debug("Page was the last")
         self._page = None
+
+
+ALL_FIELD_TITLES = Episode.field_titles() + FeedInfo.field_titles()
+
+ALL_FIELD_TITLES_STR = "'" + ", '".join(ALL_FIELD_TITLES) + "'"
