@@ -18,22 +18,32 @@ from pydantic import (
 )
 
 from podcast_archiver import quirks
-from podcast_archiver.constants import REQUESTS_TIMEOUT, SUPPORTED_LINK_TYPES_RE
+from podcast_archiver.constants import MAX_TITLE_LENGTH, REQUESTS_TIMEOUT, SUPPORTED_LINK_TYPES_RE
 from podcast_archiver.exceptions import MissingDownloadUrl
 from podcast_archiver.logging import logger
 from podcast_archiver.session import session
-from podcast_archiver.utils import get_generic_extension
+from podcast_archiver.utils import get_generic_extension, truncate
 
 
 class Link(BaseModel):
     rel: str = ""
     link_type: str = Field("", alias="type")
     href: quirks.LenientUrl
-    length: int | None = Field(None, repr=False)
+    length: int | None = Field(None, repr=False, exclude=True)
 
     @property
     def url(self) -> str:
         return str(self.href)
+
+
+class Chapter(BaseModel):
+    start: str
+    title: str
+
+
+class Content(BaseModel):
+    content_type: str = Field("", alias="type")
+    value: str = Field("")
 
 
 class Episode(BaseModel):
@@ -42,10 +52,26 @@ class Episode(BaseModel):
     author: str = Field("", repr=False)
     link: quirks.LenientUrl | None = None
     links: list[Link] = Field(default_factory=list)
-    media_link: Link = Field(default=None, repr=False)  # type: ignore[assignment]
+    enclosure: Link = Field(default=None, repr=False)  # type: ignore[assignment]
     published_time: datetime = Field(alias="published_parsed", title="episode.published_time")
 
     original_filename: str = Field(default="", repr=False, title="episode.original_filename")
+
+    # Extended metadata for .info.json
+    episode_number: int | None = Field(None, repr=False, alias="itunes_episode")
+    episode_type: str | None = Field(
+        None,
+        repr=False,
+        validation_alias="itunes_episodetype",
+        serialization_alias="type",
+    )
+    is_explicit: bool | None = Field(None, repr=False, alias="itunes_explicit")
+
+    summary: str | None = Field(None, repr=False)
+    duration: str | None = Field(None, repr=False, alias="itunes_duration")
+    chapters: list[Chapter] | None = Field(None, repr=False, alias="psc_chapters.chapters")
+    shownotes: str | None = Field(None, repr=False)
+    content: list[Content] | None = Field(None, repr=False, alias="content", exclude=True)
 
     _feed_info: FeedInfo
 
@@ -56,11 +82,30 @@ class Episode(BaseModel):
             return datetime.fromtimestamp(mktime(value)).replace(tzinfo=timezone.utc)
         return value
 
+    @field_validator("title", mode="after")
+    @classmethod
+    def truncate_title(cls, value: str) -> str:
+        return truncate(value, MAX_TITLE_LENGTH)
+
     @model_validator(mode="after")
-    def populate_from_enclosure(self) -> Episode:
-        if not self.media_link:
-            self.media_link = self._get_enclosure_url()
-        self.original_filename = Path(self.media_link.href.path).name if self.media_link.href.path else ""
+    def populate_shownotes(self) -> Episode:
+        fallback = ""
+        for cont in self.content or []:
+            match cont.content_type:
+                case "text/plain":
+                    fallback = cont.value
+                case "text/html":
+                    self.shownotes = cont.value
+                    return self
+        if fallback and not self.shownotes:
+            self.shownotes = fallback
+        return self
+
+    @model_validator(mode="after")
+    def populate_enclosure(self) -> Episode:
+        if not self.enclosure:
+            self.enclosure = self._get_enclosure_url()
+        self.original_filename = Path(self.enclosure.href.path).name if self.enclosure.href.path else ""
         return self
 
     def _get_enclosure_url(self) -> Link:
@@ -77,7 +122,7 @@ class Episode(BaseModel):
             stem, sep, suffix = fname.rpartition(".")
             if stem and sep and suffix:
                 return suffix
-        return get_generic_extension(self.media_link.link_type)
+        return get_generic_extension(self.enclosure.link_type)
 
     @classmethod
     def field_titles(cls) -> list[str]:
@@ -91,6 +136,11 @@ class FeedInfo(BaseModel):
     language: str | None = Field(default=None, title="show.language")
     link: AnyHttpUrl | None = None
     links: list[Link] = []
+
+    @field_validator("title", mode="after")
+    @classmethod
+    def truncate_title(cls, value: str) -> str:
+        return truncate(value, MAX_TITLE_LENGTH)
 
     @classmethod
     def field_titles(cls) -> list[str]:

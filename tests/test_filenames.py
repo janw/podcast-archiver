@@ -11,7 +11,7 @@ EPISODE = Episode(
     subtitle="The unreleased version",
     author="Janw",
     published_parsed=datetime(2023, 3, 12, 12, 34, 56, tzinfo=timezone.utc),
-    media_link=Link(
+    enclosure=Link(
         rel="enclosure",
         link_type="audio/mpeg",
         href="http://nowhere.invalid/file.mp3",

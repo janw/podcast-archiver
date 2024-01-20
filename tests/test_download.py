@@ -9,7 +9,8 @@ from unittest import mock
 import pytest
 from requests import HTTPError
 
-from podcast_archiver import download
+from podcast_archiver import download, utils
+from podcast_archiver.config import Settings
 from podcast_archiver.enums import DownloadResult
 from podcast_archiver.models import FeedPage
 from tests.conftest import MEDIA_URL
@@ -21,11 +22,18 @@ if TYPE_CHECKING:
 def test_download_job(tmp_path_cd: Path, feedobj_lautsprecher: dict[str, Any]) -> None:
     feed = FeedPage.model_validate(feedobj_lautsprecher)
     episode = feed.episodes[0]
-
-    job = download.DownloadJob(episode=episode, feed_info=feed.feed)
+    mock_progress = mock.Mock(
+        **{
+            "add_task.return_value": 0,
+            "update.return_value": None,
+        }
+    )
+    job = download.DownloadJob(episode=episode, feed_info=feed.feed, progress=mock_progress)
     result = job()
 
     assert result == DownloadResult.COMPLETED_SUCCESSFULLY
+    mock_progress.add_task.assert_called_once()
+    mock_progress.update.assert_called()
 
 
 def test_download_already_exists(tmp_path_cd: Path, feedobj_lautsprecher_notconsumed: dict[str, Any]) -> None:
@@ -61,7 +69,7 @@ class PartialObjectMock(Protocol):
     "failure_mode, side_effect, should_download",
     [
         (partial(mock.patch.object, download.session, "get"), HTTPError, False),
-        (partial(mock.patch.object, download.shutil, "move"), PermissionError, True),
+        (partial(mock.patch.object, utils.os, "fsync"), IOError, True),
     ],
 )
 def test_download_failed(
@@ -93,3 +101,15 @@ def test_download_failed(
     assert failure_rec.exc_info
     exc_type, _, _ = failure_rec.exc_info
     assert exc_type == side_effect, failure_rec.exc_info
+
+
+@pytest.mark.parametrize("write_info_json", [False, True])
+def test_download_info_json(tmp_path_cd: Path, feedobj_lautsprecher: dict[str, Any], write_info_json: bool) -> None:
+    feed = FeedPage.model_validate(feedobj_lautsprecher)
+    episode = feed.episodes[0]
+    settings = Settings(write_info_json=write_info_json)
+    job = download.DownloadJob(episode=episode, feed_info=feed.feed, settings=settings)
+    result = job()
+
+    assert result == DownloadResult.COMPLETED_SUCCESSFULLY
+    assert job.infojsonfile.exists() == write_info_json

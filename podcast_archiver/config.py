@@ -69,6 +69,12 @@ class Settings(BaseModel):
         ),
     )
 
+    write_info_json: bool = Field(
+        default=False,
+        alias="write_info_json",
+        description="Write episode metadata to a .info.json file next to the media file itself.",
+    )
+
     quiet: bool = Field(
         default=False,
         alias="quiet",

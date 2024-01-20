@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import shutil
-from functools import cached_property
 from pathlib import Path
 from threading import Event
-from typing import Any
+from typing import IO, Any
 
 from requests import Response
 from rich import progress as rich_progress
@@ -15,6 +13,7 @@ from podcast_archiver.enums import DownloadResult
 from podcast_archiver.logging import logger
 from podcast_archiver.models import Episode, FeedInfo
 from podcast_archiver.session import session
+from podcast_archiver.utils import atomic_write
 
 
 class DownloadJob:
@@ -55,37 +54,40 @@ class DownloadJob:
 
     def __call__(self) -> DownloadResult:
         try:
-            if result := self.preflight_check():
-                return result
-
-            response = session.get(
-                self.episode.media_link.url,
-                stream=True,
-                allow_redirects=True,
-                timeout=constants.REQUESTS_TIMEOUT,
-            )
-            response.raise_for_status()
-            total_size = int(response.headers.get("content-length", "0"))
-            self.update_progress(total=total_size)
-
-            self.target.parent.mkdir(parents=True, exist_ok=True)
-            if not self.receive_data(self.tempfile, response):
-                return DownloadResult.ABORTED
-
-            logger.debug("Moving file %s => %s", self.tempfile, self.target)
-            shutil.move(self.tempfile, self.target)
-
-            logger.info("Completed download of %s", self.target)
-            return DownloadResult.COMPLETED_SUCCESSFULLY
+            return self.run()
         except Exception as exc:
             logger.error("Download failed", exc_info=exc)
             return DownloadResult.FAILED
-        finally:
-            self.tempfile.unlink(missing_ok=True)
 
-    @cached_property
-    def tempfile(self) -> Path:
-        return self.target.with_suffix(self.target.suffix + ".part")
+    def run(self) -> DownloadResult:
+        self.target.parent.mkdir(parents=True, exist_ok=True)
+        self.write_info_json()
+        if result := self.preflight_check():
+            return result
+
+        response = session.get(
+            self.episode.enclosure.url,
+            stream=True,
+            allow_redirects=True,
+            timeout=constants.REQUESTS_TIMEOUT,
+        )
+        response.raise_for_status()
+        total_size = int(response.headers.get("content-length", "0"))
+        self.update_progress(total=total_size)
+
+        with atomic_write(self.target, mode="wb") as fp:
+            receive_complete = self.receive_data(fp, response)
+
+        if not receive_complete:
+            self.target.unlink(missing_ok=True)
+            return DownloadResult.ABORTED
+
+        logger.info("Completed download of %s", self.target)
+        return DownloadResult.COMPLETED_SUCCESSFULLY
+
+    @property
+    def infojsonfile(self) -> Path:
+        return self.target.with_suffix(".info.json")
 
     def init_progress(self) -> None:
         if self._progress is None:
@@ -94,7 +96,7 @@ class DownloadJob:
         self._task_id = self._progress.add_task(
             description=self.episode.title,
             date=self.episode.published_time,
-            total=self.episode.media_link.length,
+            total=self.episode.enclosure.length,
             visible=False,
         )
 
@@ -106,27 +108,34 @@ class DownloadJob:
 
     def preflight_check(self) -> DownloadResult | None:
         if self.target_exists:
+            logger.debug("Pre-flight check on episode '%s': already exists.", self.episode.title)
             size = self.target.stat().st_size
-            self.update_progress(total=size, completed=size, visible=True)
+            self.update_progress(total=size, completed=size)
             return DownloadResult.ALREADY_EXISTS
 
         return None
 
-    def receive_data(self, filename: Path, response: Response) -> bool:
+    def receive_data(self, fp: IO[str], response: Response) -> bool:
         total_written = 0
-        with filename.open("wb") as fp:
-            for chunk in response.iter_content(chunk_size=constants.DOWNLOAD_CHUNK_SIZE):
-                total_written += fp.write(chunk)
-                self.update_progress(completed=total_written)
+        for chunk in response.iter_content(chunk_size=constants.DOWNLOAD_CHUNK_SIZE):
+            total_written += fp.write(chunk)
+            self.update_progress(completed=total_written)
 
-                if self.settings.debug_partial and total_written >= constants.DEBUG_PARTIAL_SIZE:
-                    logger.debug("Partial download completed.")
-                    return True
-                if self.stop_event.is_set():
-                    logger.debug("Stop event is set, bailing.")
-                    return False
+            if self.settings.debug_partial and total_written >= constants.DEBUG_PARTIAL_SIZE:
+                logger.debug("Partial download completed.")
+                return True
+            if self.stop_event.is_set():
+                logger.debug("Stop event is set, bailing.")
+                return False
 
         return True
+
+    def write_info_json(self) -> None:
+        if not self.settings.write_info_json:
+            return
+        logger.info("Writing episode metadata to %s", self.infojsonfile.name)
+        with atomic_write(self.infojsonfile) as fp:
+            fp.write(self.episode.model_dump_json(indent=2) + "\n")
 
     @property
     def target_exists(self) -> bool:

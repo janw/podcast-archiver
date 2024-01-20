@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from pydantic_core import Url
 
 from podcast_archiver.base import PodcastArchiver
@@ -15,7 +16,18 @@ def test_happy_path(tmp_path: Path, feed_lautsprecher: Url) -> None:
     assert len(files) == 5
 
 
-def test_happy_path_max_episodes(tmp_path: Path, feed_lautsprecher: Url) -> None:
+def test_happy_path_info_json(tmp_path: Path, feed_lautsprecher: Url) -> None:
+    settings = Settings(archive_directory=tmp_path, feeds=[feed_lautsprecher], quiet=True, write_info_json=True)
+    pa = PodcastArchiver(settings)
+    pa.run()
+
+    files = list(tmp_path.glob("**/*.m4a"))
+    assert len(files) == 5
+    files = list(tmp_path.glob("**/*.info.json"))
+    assert len(files) == 5
+
+
+def test_happy_path_max_episodes(tmp_path: Path, feed_lautsprecher: Url, capsys: pytest.CaptureFixture[str]) -> None:
     settings = Settings(
         archive_directory=tmp_path,
         feeds=[feed_lautsprecher],
@@ -27,7 +39,9 @@ def test_happy_path_max_episodes(tmp_path: Path, feed_lautsprecher: Url) -> None
     pa.run()
 
     files = list(tmp_path.glob("**/*.m4a"))
+    outerr = capsys.readouterr()
     assert len(files) == 2
+    assert "Maximum episode count reached" in outerr.out
 
 
 def test_happy_path_files_exist(tmp_path: Path, feed_lautsprecher: Url) -> None:

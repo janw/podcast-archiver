@@ -1,5 +1,5 @@
 import pathlib
-from os import PathLike
+from os import PathLike, getenv
 from typing import Any, cast
 
 import rich_click as click
@@ -28,13 +28,18 @@ click.rich_click.OPTION_GROUPS = {
             ],
         },
         {
-            "name": "Processing parameters",
+            "name": "Output parameters",
             "options": [
                 "--filename-template",
-                "--update",
+                "--write-info-json",
                 "--slugify",
+            ],
+        },
+        {
+            "name": "Processing parameters",
+            "options": [
+                "--update",
                 "--max-episodes",
-                "--date-prefix",
             ],
         },
     ]
@@ -55,6 +60,8 @@ class ConfigPath(click.Path):
     def convert(  # type: ignore[override]
         self, value: str | PathLike[str], param: Parameter | None, ctx: Context | None
     ) -> str | bytes | PathLike[str] | None:
+        if value is None:
+            return None
         if (
             ctx
             and param
@@ -81,6 +88,12 @@ class ConfigPath(click.Path):
             self.fail(f"{self.name.title()} {click.format_filename(filepath)!r} is invalid: {exc}", param, ctx)
 
         return filepath
+
+
+def get_default_config_path() -> pathlib.Path | None:
+    if getenv("TESTING", "0").lower() in ("1", "true"):
+        return None
+    return pathlib.Path(click.get_app_dir(PROG_NAME)) / "config.yaml"  # pragma: no cover
 
 
 def generate_default_config(ctx: click.Context, param: click.Parameter, value: bool) -> None:
@@ -152,6 +165,14 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     help=Settings.model_fields["update_archive"].description,
 )
 @click.option(
+    "--write-info-json",
+    type=bool,
+    default=DEFAULT_SETTINGS.write_info_json,
+    is_flag=True,
+    show_envvar=True,
+    help=Settings.model_fields["write_info_json"].description,
+)
+@click.option(
     "-q",
     "--quiet",
     type=bool,
@@ -159,6 +180,14 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     is_flag=True,
     show_envvar=True,
     help=Settings.model_fields["quiet"].description,
+)
+@click.option(
+    "-C",
+    "--concurrency",
+    type=int,
+    default=DEFAULT_SETTINGS.concurrency,
+    show_envvar=True,
+    help=Settings.model_fields["concurrency"].description,
 )
 @click.option(
     "--debug-partial",
@@ -212,7 +241,7 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     "--config",
     type=ConfigPath(),
     expose_value=False,
-    default=pathlib.Path(click.get_app_dir(PROG_NAME)) / "config.yaml",
+    default=get_default_config_path,
     show_default=False,
     is_eager=True,
     show_envvar=True,
