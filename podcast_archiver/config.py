@@ -23,19 +23,13 @@ if TYPE_CHECKING:
     pass
 
 
-def defaultcwd(v: pathlib.Path | None) -> pathlib.Path:
-    if not v:
-        return pathlib.Path.cwd()
-    return v
-
-
 def expanduser(v: pathlib.Path) -> pathlib.Path:
     if isinstance(v, str):
         v = pathlib.Path(v)
     return v.expanduser()
 
 
-UserExpandedDir = Annotated[DirectoryPath, BeforeValidator(expanduser), BeforeValidator(defaultcwd)]
+UserExpandedDir = Annotated[DirectoryPath, BeforeValidator(expanduser)]
 UserExpandedFile = Annotated[FilePath, BeforeValidator(expanduser)]
 
 
@@ -57,11 +51,11 @@ class Settings(BaseModel):
     )
 
     archive_directory: UserExpandedDir = Field(
-        default=None,  # type: ignore[assignment]
+        default=UserExpandedDir("."),
         alias="dir",
         description=(
             "Directory to which to download the podcast archive. "
-            "If unset, the archive will be created in the current working directory."
+            "By default, the archive will be created in the current working directory  ('.')."
         ),
     )
 

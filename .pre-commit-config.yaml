@@ -4,6 +4,7 @@ ci:
   autoupdate_commit_msg: 'chore: [pre-commit.ci] pre-commit autoupdate'
   skip: # see linters.yaml -> pre-commit-extras job
     - "rich-codex"
+    - "mypy"
 
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
@@ -12,12 +13,6 @@ repos:
       - id: ruff
         args: [ --fix, --exit-non-zero-on-fix ]
       - id: ruff-format
-
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.8.0'
-    hooks:
-      - id: mypy
-        additional_dependencies: [pydantic]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: "v4.4.0"
@@ -56,3 +51,10 @@ repos:
         pass_filenames: false
         types: [markdown]
         files: '(\.md|cli\.py|config\.py)$'
+
+      - id: mypy
+        name: mypy
+        entry: poetry run mypy
+        language: system
+        require_serial: true
+        pass_filenames: false

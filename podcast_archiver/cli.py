@@ -52,9 +52,9 @@ class ConfigPath(click.Path):
             path_type=pathlib.Path,
         )
 
-    def convert(
+    def convert(  # type: ignore[override]
         self, value: str | PathLike[str], param: Parameter | None, ctx: Context | None
-    ) -> str | bytes | PathLike[str]:
+    ) -> str | bytes | PathLike[str] | None:
         if (
             ctx
             and param
@@ -62,9 +62,12 @@ class ConfigPath(click.Path):
             and value == param.get_default(ctx, call=True)
             and not value.exists()
         ):
-            value.parent.mkdir(exist_ok=True, parents=True)
-            with value.open("w") as fp:
-                Settings.generate_default_config(file=fp)
+            try:
+                value.parent.mkdir(exist_ok=True, parents=True)
+                with value.open("w") as fp:
+                    Settings.generate_default_config(file=fp)
+            except (OSError, FileNotFoundError):
+                return None
 
         filepath = cast(pathlib.Path, super().convert(value, param, ctx))
         if not ctx or ctx.resilient_parsing:

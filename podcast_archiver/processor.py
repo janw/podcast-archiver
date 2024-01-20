@@ -11,7 +11,7 @@ from rich import progress as rich_progress
 from podcast_archiver.config import Settings
 from podcast_archiver.console import console
 from podcast_archiver.download import DownloadJob
-from podcast_archiver.enums import QueueCompletionType
+from podcast_archiver.enums import DownloadResult, QueueCompletionType
 from podcast_archiver.logging import logger
 from podcast_archiver.models import Feed
 
@@ -73,11 +73,11 @@ class FeedProcessor:
             futures, completion_msg = self._process_episodes(feed=feed)
             self._handle_futures(futures, result=result)
 
-        console.print(f"\n[bar.finished]✔ {completion_msg.value}[/]")
+        console.print(f"\n[bar.finished]✔ {completion_msg}[/]")
         return result
 
-    def _process_episodes(self, feed: Feed) -> tuple[list[Future[DownloadJob]], QueueCompletionType]:
-        futures: list[Future[DownloadJob]] = []
+    def _process_episodes(self, feed: Feed) -> tuple[list[Future[DownloadResult]], QueueCompletionType]:
+        futures: list[Future[DownloadResult]] = []
         for idx, episode in enumerate(feed.episode_iter(self.settings.maximum_episode_count), 1):
             download_job = DownloadJob(
                 episode,
@@ -98,7 +98,7 @@ class FeedProcessor:
 
         return futures, QueueCompletionType.COMPLETED
 
-    def _handle_futures(self, futures: list[Future[DownloadJob]], *, result: ProcessingResult) -> None:
+    def _handle_futures(self, futures: list[Future[DownloadResult]], *, result: ProcessingResult) -> None:
         for future in futures:
             try:
                 _result = future.result()
