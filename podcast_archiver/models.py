@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-# from pprint import
 from datetime import datetime, timezone
 from functools import cached_property
+from pathlib import Path
 from time import mktime, struct_time
 from typing import Any, Iterator
 
@@ -66,9 +66,10 @@ class Episode(BaseModel):
 
     @cached_property
     def ext(self) -> str:
-        url = self.media_link.href
-        if url.path and (suffix := url.path.rpartition(".")[-1]):
-            return suffix
+        if self.media_link.href.path and (fname := Path(self.media_link.href.path).name):
+            stem, sep, suffix = fname.rpartition(".")
+            if stem and sep and suffix:
+                return suffix
         return get_generic_extension(self.media_link.link_type)
 
 
@@ -90,17 +91,6 @@ class FeedPage(BaseModel):
 
     bozo: bool | int = False
     bozo_exception: Exception | None = None
-
-    # @model_validator(mode="before")
-    # @classmethod
-    # def check_bozo(cls, data: Any) -> Any:
-    #     if (
-    #         isinstance(data, dict)
-    #         and data.get("bozo")
-    #         and not isinstance(data.get("bozo_exception"), feedparser.CharacterEncodingOverride)
-    #     ):
-    #         raise ValueError("Invalid feed")
-    #     return data
 
     @classmethod
     def from_url(cls, url: AnyHttpUrl) -> FeedPage:
