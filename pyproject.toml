@@ -99,12 +99,12 @@ addopts = "--cov podcast_archiver --cov-report term --no-cov-on-fail"
 
 [tool.pytest_env]
 PODCAST_ARCHIVER_CONFIG = ""
+HOME = "/nonexistent"
 
 [tool.coverage.run]
-omit = [
-    "tests/*",
-    "venv/*",
-    ".venv/*",
+branch = true
+source = [
+    "podcast_archiver",
 ]
 
 [tool.coverage.report]

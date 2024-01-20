@@ -95,4 +95,4 @@ def test_main_config_file_generate(tmp_path_cd: Path, capsys: pytest.CaptureFixt
     assert "# Field 'feeds': " in captured.out
     assert "feeds: []\n" in captured.out
     assert "# Field 'archive_directory': " in captured.out
-    assert "archive_directory: null\n" in captured.out
+    assert 'archive_directory: "."\n' in captured.out
