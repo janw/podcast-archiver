@@ -1,3 +1,10 @@
+## v1.0.1 (2024-01-20)
+
+### Fix
+
+- Parse unknown/missing file extensions properly (#56)
+- Handle download failures gracefully (#55)
+
 ## v1.0.0 (2024-01-17)
 
 ### Feat
