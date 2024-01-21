@@ -59,7 +59,6 @@ version_provider = "poetry"
 version_files = [
     "pyproject.toml:version = ",
     "podcast_archiver/__init__.py",
-    "README.md",
 ]
 gpg_sign = true
 annotated_tag = true
