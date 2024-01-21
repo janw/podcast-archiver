@@ -34,6 +34,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           body_path: "body.md"
-          tag_name: ${{ env.REVISION }}
+          tag_name: v${{ env.REVISION }}
+          skipIfReleaseExists: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
