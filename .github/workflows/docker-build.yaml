@@ -14,22 +14,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Set up python environment
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-          cache: 'pip'
-
-      - name: Install poetry
-        run: pip install poetry poetry-dynamic-versioning
-
-      - name: Apply dynamic version
-        run: |
-          poetry dynamic-versioning
-          cat podcast_archiver/__init__.py
 
       - name: Docker meta
         id: meta
