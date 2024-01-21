@@ -20,7 +20,7 @@ jobs:
           sparse-checkout: |
             pyproject.toml
             podcast_archiver/__init__.py
-            README.toml
+            README.md
             CHANGELOG.md
           sparse-checkout-cone-mode: false
 
