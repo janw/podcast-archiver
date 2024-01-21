@@ -31,10 +31,8 @@ jobs:
           changelog_increment_filename: body.md
 
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v1
+        uses: ncipollo/release-action@v1
         with:
-          body_path: "body.md"
-          tag_name: v${{ env.REVISION }}
+          tag: v${{ env.REVISION }}
+          bodyFile: "body.md"
           skipIfReleaseExists: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
