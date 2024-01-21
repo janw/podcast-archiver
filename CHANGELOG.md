@@ -1,3 +1,13 @@
+## v1.2.0 (2024-01-21)
+
+### Feat
+
+- Add episode.original_filename template variable (#57)
+
+### Fix
+
+- Restore missing first progress line (#58)
+
 ## v1.1.0 (2024-01-20)
 
 ### Feat

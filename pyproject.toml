@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "podcast-archiver"
-version = "1.1.0"
+version = "1.2.0"
 description = "Archive all episodes from your favorite podcasts"
 authors = ["Jan Willhaus <mail@janwillhaus.de>"]
 license = "MIT"
