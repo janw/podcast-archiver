@@ -66,7 +66,7 @@ class DownloadJob:
             )
             response.raise_for_status()
             total_size = int(response.headers.get("content-length", "0"))
-            self.update_progress(total=total_size, visible=True)
+            self.update_progress(total=total_size)
 
             self.target.parent.mkdir(parents=True, exist_ok=True)
             if not self.receive_data(self.tempfile, response):
@@ -88,7 +88,7 @@ class DownloadJob:
         return self.target.with_suffix(self.target.suffix + ".part")
 
     def init_progress(self) -> None:
-        if not self._progress:
+        if self._progress is None:
             return
 
         self._task_id = self._progress.add_task(
@@ -99,8 +99,9 @@ class DownloadJob:
         )
 
     def update_progress(self, visible: bool = True, **kwargs: Any) -> None:
-        if not self._progress or not self._task_id:
+        if self._task_id is None:
             return
+        assert self._progress
         self._progress.update(self._task_id, visible=visible, **kwargs)
 
     def preflight_check(self) -> DownloadResult | None:
