@@ -9,9 +9,12 @@
 [![python](https://img.shields.io/pypi/pyversions/podcast-archiver.svg)](https://pypi.org/project/podcast-archiver/)
 [![downloads](https://img.shields.io/pypi/dm/podcast-archiver)](https://pypi.org/project/podcast-archiver/)
 
+[![Docker Build](https://github.com/janw/podcast-archiver/actions/workflows/docker-build.yaml/badge.svg)](https://ghcr.io/janw/podcast-archiver)
+[![Tests](https://github.com/janw/podcast-archiver/actions/workflows/tests.yaml/badge.svg)](https://github.com/janw/podcast-archiver/actions/workflows/tests.yaml?query=branch%3Amain)
+[![pre-commit.ci](https://results.pre-commit.ci/badge/github/janw/podcast-archiver/main.svg)](https://results.pre-commit.ci/latest/github/janw/podcast-archiver/main)
+
 [![Maintainability](https://api.codeclimate.com/v1/badges/1cdd7513333043558ee7/maintainability)](https://codeclimate.com/github/janw/podcast-archiver/maintainability)
 [![codecov](https://codecov.io/gh/janw/podcast-archiver/branch/main/graph/badge.svg?token=G8WI2ZILRG)](https://codecov.io/gh/janw/podcast-archiver)
-[![pre-commit.ci](https://results.pre-commit.ci/badge/github/janw/podcast-archiver/main.svg)](https://results.pre-commit.ci/latest/github/janw/podcast-archiver/main)
 
 [![ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://docs.astral.sh/ruff/)
 [![poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/docs/)
@@ -59,14 +62,12 @@ This way, you can easily add and remove feeds to the list and let the archiver f
 
 ### Changing the filename format
 
-Podcast Archiver has a `--filename-template` option that allows you to change the particular naming scheme of the archive. At this time, the following variables are available:
+Podcast Archiver has a `--filename-template` option that allows you to change the particular naming scheme of the archive. The default value for `--filename-template`. is shown in `podcast-archiver --help`, as well as all the available variables. The basic ones are:
 
-* Episode: `episode.title`, `episode.subtitle`, `episode.author`, `episode.published_time`
+* Episode: `episode.title`, `episode.subtitle`, `episode.author`, `episode.published_time`, `episode.original_filename`
 * Podcast: `show.title`, `show.subtitle`, `show.author`, `show.language`
 
-The field `episode.published_time` is a Python-native datetime, so its exact format can be adjusted further a la `{episode.published_time:%Y-%m-%d}` using [strftime-placeholders](https://strftime.org/).
-
-The default value for `--filename-template`. is shown in `podcast-archiver --help`.
+Note here that `episode.published_time` is a Python-native datetime, so its exact format can be adjusted further a la `{episode.published_time:%Y-%m-%d %H%M%S}` using [strftime-placeholders](https://strftime.org/). By default it uses `%Y-%m-%d` (e.g. 2024-12-31).
 
 #### Examples
 
