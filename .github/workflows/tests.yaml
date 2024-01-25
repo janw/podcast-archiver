@@ -42,3 +42,10 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
           name: coverage-${{ matrix.python-version }}
+
+      - uses: paambaati/codeclimate-action@v5
+        env:
+          CC_TEST_REPORTER_ID: 0989a67ad63bf381fa6a37af8f34b1846dfcc2fe90773ba845ea4dcd4719fe0b
+        with:
+          coverageLocations: |
+            ./coverage.xml:cobertura
