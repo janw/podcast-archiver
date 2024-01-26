@@ -1,0 +1,11 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 90%    # the required coverage value
+        threshold: 1%  # the leniency in hitting the target
+
+comment:
+  layout: "condensed_header, reach, diff, files, condensed_footer"
+  behavior: default
+  require_changes: true  # only post the comment if coverage changes
