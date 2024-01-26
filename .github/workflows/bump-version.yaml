@@ -26,6 +26,7 @@ jobs:
 
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
+        id: gpg-import
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -38,14 +39,21 @@ jobs:
         run: gpg -K
 
       - name: Create bump and changelog
-        uses: commitizen-tools/commitizen-action@master
+        uses: janw/commitizen-action@add-previous-rev-to-env
         with:
           github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           changelog_increment_filename: body.md
+          git_name: ${{ steps.gpg-import.outputs.name }}
+          git_email: ${{ steps.gpg-import.outputs.email }}
 
-      - run: git verify-commit HEAD
+      - run: echo $PREVIOUS_REVISION => $REVISION
+
+      - name: Verify commit signature
+        if: env.REVISION != env.PREVIOUS_REVISION
+        run: git verify-commit HEAD
 
       - name: Create GitHub release
+        if: env.REVISION != env.PREVIOUS_REVISION
         uses: ncipollo/release-action@v1
         with:
           tag: v${{ env.REVISION }}
