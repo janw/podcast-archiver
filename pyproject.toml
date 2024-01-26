@@ -18,17 +18,16 @@ classifiers = [
     "Topic :: System :: Archiving",
     "Topic :: Utilities",
 ]
-repository = "https://codeberg.org/janw/podcast-archiver"
+repository = "https://github.com/janw/podcast-archiver"
 
 [tool.poetry.urls]
-"Bug Reports" = "https://codeberg.org/janw/podcast-archiver/issues"
+"Bug Reports" = "https://github.com/janw/podcast-archiver/issues"
 
 [tool.poetry.scripts]
 podcast-archiver = 'podcast_archiver.cli:main'
 
 [tool.poetry.dependencies]
 python = "^3.10"
-python-dateutil = "^2.8.2"
 feedparser = "^6.0.10"
 requests = "^2.29.0"
 pydantic = "^2.5.3"
@@ -51,19 +50,6 @@ pytest = "^7.3.1"
 pytest-cov = "^4.0.0"
 pytest-responses = "^0.5.1"
 pytest-env = ">=0.8.1,<1.2.0"
-
-
-[tool.poetry-homebrew.config]
-dependencies = [
-    "\"rust\" => :build"
-]
-step_install = """
-    virtualenv_create(libexec, "python3")
-    virtualenv_install_with_resources
-    generate_completions_from_executable(bin/"podcast-archiver", shells: [:bash, :zsh, :fish], shell_parameter_format: :click)
-"""
-head_url = "https://github.com/janw/podcast-archiver.git"
-head_branch = "main"
 
 [tool.commitizen]
 version_scheme = "semver"
