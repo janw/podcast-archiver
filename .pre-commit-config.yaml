@@ -36,22 +36,6 @@ repos:
 
   - repo: local
     hooks:
-      - id: rich-codex
-        name: rich-codex
-        language: system
-        entry: >
-          env
-            FORCE_COLOR=1
-            TERMINAL_WIDTH=140
-          poetry run rich-codex
-            --skip-git-checks
-            --no-confirm
-            --terminal-theme MONOKAI
-            --created-files .assets/created.txt
-        pass_filenames: false
-        types: [markdown]
-        files: '(\.md|cli\.py|config\.py)$'
-
       - id: mypy
         name: mypy
         entry: poetry run mypy
