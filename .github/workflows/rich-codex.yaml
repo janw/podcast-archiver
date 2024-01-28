@@ -1,0 +1,12 @@
+name: Rich-codex
+
+on:
+  push:
+    branches-ignore:
+      - "main"
+
+jobs:
+  rich-codex:
+    uses: janw/workflows/.github/workflows/poetry-rich-codex.yaml@main
+    permissions:
+      contents: write
