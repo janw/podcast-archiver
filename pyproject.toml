@@ -41,17 +41,29 @@ python-slugify = "^8.0.1"
 ipython = "<8.18"
 ipdb = "*"
 ruff = "^0.1.11"
-pre-commit = "^3.2.2"
+pre-commit = "^3.6.0"
 commitizen = "^3.13.0"
 rich-codex = "^1.2.6"
 mypy = "^1.8.0"
-
 
 [tool.poetry.group.tests.dependencies]
 pytest = "^7.3.1"
 pytest-cov = "^4.0.0"
 pytest-responses = "^0.5.1"
 pytest-env = ">=0.8.1,<1.2.0"
+
+
+[tool.poetry-homebrew.config]
+dependencies = [
+    "\"rust\" => :build"
+]
+step_install = """
+    virtualenv_create(libexec, "python3")
+    virtualenv_install_with_resources
+    generate_completions_from_executable(bin/"podcast-archiver", shells: [:bash, :zsh, :fish], shell_parameter_format: :click)
+"""
+head_url = "https://github.com/janw/podcast-archiver.git"
+head_branch = "main"
 
 [tool.commitizen]
 version_scheme = "semver"

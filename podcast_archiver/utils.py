@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 from string import Formatter
-from typing import TYPE_CHECKING, Any, Iterable, TypedDict, cast
+from typing import TYPE_CHECKING, Any, Iterable, TypedDict
 
 from slugify import slugify as _slugify
 
@@ -31,21 +31,18 @@ def make_filename_safe(value: str) -> str:
 
 
 def slugify(value: str) -> str:
-    return cast(
-        str,
-        _slugify(
-            value,
-            lowercase=False,
-            regex_pattern=slug_safe_re,
-            replacements=[
-                ("Ü", "UE"),
-                ("ü", "ue"),
-                ("Ö", "OE"),
-                ("ö", "oe"),
-                ("Ä", "AE"),
-                ("ä", "ae"),
-            ],
-        ),
+    return _slugify(
+        value,
+        lowercase=False,
+        regex_pattern=slug_safe_re,  # type: ignore[arg-type]
+        replacements=[
+            ("Ü", "UE"),
+            ("ü", "ue"),
+            ("Ö", "OE"),
+            ("ö", "oe"),
+            ("Ä", "AE"),
+            ("ä", "ae"),
+        ],
     )
 
 
