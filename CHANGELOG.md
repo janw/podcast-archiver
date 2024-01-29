@@ -1,3 +1,9 @@
+## v1.2.1 (2024-01-29)
+
+### Fix
+
+- Publish using PyPI trusted publisher
+
 ## v1.2.0 (2024-01-21)
 
 ### Feat
