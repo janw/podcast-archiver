@@ -1,0 +1,36 @@
+on:
+  push:
+    branches:
+      - test-commit-signing
+
+jobs:
+  sign-commit:
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        id: gpg-import
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+          git_tag_gpgsign: true
+          fingerprint: 2B939A343491740FE1483E5C41E311388E4BB349
+
+      - name: List keys
+        run: gpg -K
+
+      - run: |
+          echo "Hello there" | tee change.file
+          git add change.file
+          git commit -m "changed a file"
+
+      - name: Verify commit signature
+        run: git verify-commit HEAD
