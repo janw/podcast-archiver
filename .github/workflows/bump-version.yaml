@@ -7,55 +7,8 @@ on:
 
 jobs:
   bump-version:
-    if: "!startsWith(github.event.head_commit.message, 'bump:')"
-    runs-on: ubuntu-latest
-    environment: release
-    steps:
-      - name: Check out
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          fetch-depth: 0
-          # Must include all files from pyproject.toml's tool.commitizen.version_files
-          sparse-checkout: |
-            pyproject.toml
-            podcast_archiver/__init__.py
-            README.md
-            CHANGELOG.md
-          sparse-checkout-cone-mode: false
-
-      - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@v6
-        id: gpg-import
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.GPG_PASSPHRASE }}
-          git_user_signingkey: true
-          git_commit_gpgsign: true
-          git_tag_gpgsign: true
-          fingerprint: 2B939A343491740FE1483E5C41E311388E4BB349
-
-      - name: List keys
-        run: gpg -K
-
-      - name: Create bump and changelog
-        uses: janw/commitizen-action@add-previous-rev-to-env
-        with:
-          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          changelog_increment_filename: body.md
-          git_name: ${{ steps.gpg-import.outputs.name }}
-          git_email: ${{ steps.gpg-import.outputs.email }}
-
-      - run: echo $PREVIOUS_REVISION => $REVISION
-
-      - name: Verify commit signature
-        if: env.REVISION != env.PREVIOUS_REVISION
-        run: git verify-commit HEAD
-
-      - name: Create GitHub release
-        if: env.REVISION != env.PREVIOUS_REVISION
-        uses: ncipollo/release-action@v1
-        with:
-          tag: v${{ env.REVISION }}
-          bodyFile: "body.md"
-          skipIfReleaseExists: true
+    uses: janw/workflows/.github/workflows/commitizen-bump-version.yaml@main
+    secrets:
+      personal-access-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+      gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
