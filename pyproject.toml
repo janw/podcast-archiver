@@ -62,6 +62,7 @@ annotated_tag = true
 tag_format = "v$version"
 update_changelog_on_bump = true
 changelog_start_rev = "0.4"
+gpg_sign = true
 
 [tool.ruff]
 line-length = 120
