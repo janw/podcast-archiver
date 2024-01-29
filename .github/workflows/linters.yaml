@@ -5,21 +5,7 @@ on:
 
 jobs:
   commitizen:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          sparse-checkout: |
-            pyproject.toml
-          sparse-checkout-cone-mode: false
-
-      - name: Install commitizen
-        run: pipx install commitizen
-
-      - run: cz check --rev-range origin/main..HEAD
-        shell: bash
+    uses: janw/workflows/.github/workflows/commitizen.yaml@main
 
   pre-commit:
     uses: janw/workflows/.github/workflows/poetry-pre-commit.yaml@main
