@@ -37,7 +37,7 @@ rich-click = "^1.7.2"
 python-slugify = "^8.0.1"
 
 [tool.poetry.group.dev.dependencies]
-ipython = "<8.18"
+ipython = "<8.19"
 ipdb = "*"
 ruff = "^0.1.11"
 pre-commit = "^3.6.0"
