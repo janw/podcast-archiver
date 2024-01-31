@@ -1,0 +1,28 @@
+class {{ formula_name }} < Formula
+  include Language::Python::Virtualenv
+
+  desc "{{ package.description }}"
+{% if package.homepage %}  homepage "{{ package.homepage }}"
+{% endif %}
+{% if package.license %}  license "{{ package.license }}"
+{% endif %}
+  head "https://github.com/janw/podcast-archiver.git", branch: "main"
+
+{{ PACKAGE_URL }}
+
+  depends_on "python3"
+  depends_on "rust" => :build
+
+{{ RESOURCES }}
+
+  def install
+    virtualenv_create(libexec, "python3")
+    virtualenv_install_with_resources
+
+    generate_completions_from_executable(bin/"podcast-archiver", shells: [:bash, :zsh, :fish], shell_parameter_format: :click)
+  end
+
+  test do
+    false
+  end
+end
