@@ -36,6 +36,12 @@ Install via [pipx](https://pipx.pypa.io/stable/):
 pipx install podcast-archiver
 ```
 
+Install via [brew](https://brew.sh/):
+
+```bash
+brew install janw/tap/podcast-archiver
+```
+
 Or use it via Docker:
 
 ```bash
