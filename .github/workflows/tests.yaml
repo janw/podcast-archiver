@@ -8,6 +8,9 @@ on:
     tags:
       - "*"
 
+env:
+  HOMEBREW_NO_AUTO_UPDATE: "1"
+
 jobs:
   pytest:
     runs-on: ubuntu-latest
@@ -21,13 +24,13 @@ jobs:
     name: pytest-${{ matrix.python-version }}
     steps:
       - name: Check out
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install poetry
         run: pipx install poetry
 
       - name: Set up python environment
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           cache: 'poetry'
           python-version: ${{ matrix.python-version }}
@@ -37,8 +40,52 @@ jobs:
       - run: poetry run pytest --cov-report=xml
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
           name: coverage-${{ matrix.python-version }}
+
+  test-formula:
+    runs-on: macos-latest
+    env:
+      PIP_CACHE_DIR: ~/.pip-cache
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            pyproject.toml
+            poetry.lock
+            brew/template.rb.j2
+          sparse-checkout-cone-mode: false
+
+      - name: Install poetry + poetry-brew
+        run: |
+          pipx install 'poetry>=1.7.0'
+          pipx inject poetry poetry-homebrew-formula
+
+      - name: Configure cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.PIP_CACHE_DIR }}
+          key: brew-${{ hashFiles('poetry.lock') }}
+          restore-keys: brew-
+
+      - name: Render formula template
+        shell: bash
+        run: |
+          brew tap-new --no-git janw/testing
+          poetry homebrew-formula \
+          --verbose \
+          --template brew/template.rb.j2 \
+          --output "$(brew --repo janw/testing)/Formula/podcast-archiver.rb"
+
+      - name: Install formula
+        shell: bash
+        run: brew install podcast-archiver
+
+      - name: Test formula
+        shell: bash
+        run: brew test podcast-archiver
