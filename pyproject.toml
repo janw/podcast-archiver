@@ -39,7 +39,7 @@ python-slugify = "^8.0.1"
 [tool.poetry.group.dev.dependencies]
 ipython = "<8.18"
 ipdb = "*"
-ruff = "^0.1.11"
+ruff = ">=0.1.11,<0.3.0"
 pre-commit = "^3.6.0"
 commitizen = "^3.13.0"
 rich-codex = "^1.2.6"
