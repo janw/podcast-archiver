@@ -9,22 +9,11 @@ from requests import HTTPError
 from rich import progress as rich_progress
 
 from podcast_archiver.config import Settings
-from podcast_archiver.console import console
+from podcast_archiver.console import console, get_progress
 from podcast_archiver.download import DownloadJob
 from podcast_archiver.enums import DownloadResult, QueueCompletionType
 from podcast_archiver.logging import logger
 from podcast_archiver.models import Feed
-
-PROGRESS_COLUMNS = (
-    rich_progress.SpinnerColumn(finished_text="[bar.finished]✔[/]"),
-    rich_progress.TextColumn("[blue]{task.fields[date]:%Y-%m-%d}"),
-    rich_progress.TextColumn("[progress.description]{task.description}"),
-    rich_progress.BarColumn(bar_width=25),
-    rich_progress.TaskProgressColumn(),
-    rich_progress.TimeRemainingColumn(),
-    rich_progress.DownloadColumn(),
-    rich_progress.TransferSpeedColumn(),
-)
 
 
 @dataclass
@@ -44,12 +33,11 @@ class FeedProcessor:
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
         self.pool_executor = ThreadPoolExecutor(max_workers=self.settings.concurrency)
-        self.progress = rich_progress.Progress(
-            *PROGRESS_COLUMNS,
+        self.progress = get_progress(
             console=console,
             disable=settings.verbose > 1 or settings.quiet,
+            dry_run=settings.dry_run,
         )
-        # self.progress.live.vertical_overflow = "visible"
         self.stop_event = Event()
 
     def process(self, url: AnyHttpUrl) -> ProcessingResult:
