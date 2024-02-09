@@ -1,4 +1,5 @@
 import time
+from typing import Any, cast
 
 import pytest
 from pydantic_core import Url
@@ -45,11 +46,22 @@ EPISODE_FIXTURE = {
     },
     "content": [
         {
+            "type": "application/json",
+            "language": None,
+            "value": '{\\"some_value\\":12}',
+        },
+        {
             "type": "text/plain",
             "language": None,
             "base": "https://feeds.feedburner.com/debugshow",
             "value": "Formerly on the Apple design prototype team that brought us, among other things, the Pencil, and the Siri experience team that put voices in our cars and televisions, Linda Dong and Lia Napolitano join Guy and Rene in a chat recorded right after WWDC 2016 in June… but saved as a special holiday gift for us all now. Grab a beverage and hit play!",
-        }
+        },
+        {
+            "type": "text/html",
+            "language": None,
+            "base": "https://feeds.feedburner.com/debugshow",
+            "value": "<p>Formerly on the Apple design prototype team that brought us, among other things, the Pencil, and the Siri experience team that put voices in our cars and televisions, Linda Dong and Lia Napolitano join Guy and Rene in a chat recorded right after WWDC 2016 in June… but saved as a special holiday gift for us all now. Grab a beverage and hit play!</p>",
+        },
     ],
     "image": {"href": "http://www.mobilenations.com/broadcasting/podcast_debug_1400.jpg"},
     "itunes_explicit": None,
@@ -60,10 +72,25 @@ def test_episode_validation() -> None:
     episode = Episode.model_validate(EPISODE_FIXTURE)
 
     assert episode.title == "83: Linda Dong & Lia Napolitano on prototyping experience"
-    assert episode.media_link.href == Url("http://traffic.libsyn.com/zenandtech/debug83.mp3")
-    assert episode.media_link.url == "http://traffic.libsyn.com/zenandtech/debug83.mp3"
-    # assert episode.original_filename == "debug83.mp3"
+    assert episode.enclosure.href == Url("http://traffic.libsyn.com/zenandtech/debug83.mp3")
+    assert episode.enclosure.url == "http://traffic.libsyn.com/zenandtech/debug83.mp3"
+    assert episode.original_filename == "debug83.mp3"
     assert episode.ext == "mp3"
+
+    assert episode.shownotes
+    assert episode.shownotes.startswith("<p>")
+    assert episode.shownotes.endswith("</p>")
+
+
+def test_episode_validation_shownotes_fallback() -> None:
+    data = EPISODE_FIXTURE.copy()
+    cast(list[dict[str, Any]], data["content"]).pop(-1)
+
+    episode = Episode.model_validate(data)
+
+    assert episode.shownotes
+    assert episode.shownotes.startswith("Formerly on the Apple")
+    assert episode.shownotes.endswith("Grab a beverage and hit play!")
 
 
 @pytest.mark.parametrize("mimetype,expected_ext", list(MIMETYPE_EXTENSION_MAPPING.items()))
@@ -83,6 +110,6 @@ def test_episode_missing_ext(mimetype: str, expected_ext: str) -> None:
         }
     )
 
-    assert episode.media_link.url == "http://traffic.libsyn.com/zenandtech/debug83"
+    assert episode.enclosure.url == "http://traffic.libsyn.com/zenandtech/debug83"
     # assert episode.original_filename == "debug83"
     assert episode.ext == expected_ext

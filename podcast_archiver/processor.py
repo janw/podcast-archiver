@@ -49,7 +49,7 @@ class FeedProcessor:
             console=console,
             disable=settings.verbose > 1 or settings.quiet,
         )
-        self.progress.live.vertical_overflow = "visible"
+        # self.progress.live.vertical_overflow = "visible"
         self.stop_event = Event()
 
     def process(self, url: AnyHttpUrl) -> ProcessingResult:

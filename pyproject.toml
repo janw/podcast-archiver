@@ -96,7 +96,7 @@ addopts = "--cov podcast_archiver --cov-report term --no-cov-on-fail"
 
 [tool.pytest_env]
 PODCAST_ARCHIVER_CONFIG = ""
-HOME = "/nonexistent"
+TESTING = 1
 
 [tool.coverage.run]
 branch = true

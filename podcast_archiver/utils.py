@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import os
 import re
+from contextlib import contextmanager
 from pathlib import Path
 from string import Formatter
-from typing import TYPE_CHECKING, Any, Iterable, TypedDict
+from typing import IO, TYPE_CHECKING, Any, Iterable, Iterator, TypedDict
 
 from slugify import slugify as _slugify
+
+from podcast_archiver.logging import logger
 
 if TYPE_CHECKING:
     from podcast_archiver.config import Settings
@@ -34,7 +38,7 @@ def slugify(value: str) -> str:
     return _slugify(
         value,
         lowercase=False,
-        regex_pattern=slug_safe_re,  # type: ignore[arg-type]
+        regex_pattern=slug_safe_re,
         replacements=[
             ("Ü", "UE"),
             ("ü", "ue"),
@@ -44,6 +48,16 @@ def slugify(value: str) -> str:
             ("ä", "ae"),
         ],
     )
+
+
+def truncate(value: str, max_length: int) -> str:
+    if len(value) <= max_length:
+        return value
+    truncated = value[:max_length]
+    prefix, sep, suffix = truncated.rpartition(" ")
+    if prefix and sep:
+        return "".join((prefix, sep, "…"))
+    return truncated[: max_length - 1] + "…"
 
 
 class FormatterKwargs(TypedDict, total=False):
@@ -90,3 +104,17 @@ class FilenameFormatter(Formatter):
             "ext": episode.ext,
         }
         return self._path_root / self.vformat(self._template, args=(), kwargs=kwargs)
+
+
+@contextmanager
+def atomic_write(target: Path, mode: str = "w") -> Iterator[IO[Any]]:
+    tempfile = target.with_suffix(".part")
+    try:
+        with tempfile.open(mode) as fp:
+            yield fp
+            fp.flush()
+            os.fsync(fp.fileno())
+        logger.debug("Moving file %s => %s", tempfile, target)
+        os.rename(tempfile, target)
+    finally:
+        tempfile.unlink(missing_ok=True)
