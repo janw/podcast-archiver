@@ -1,0 +1,45 @@
+name: Pre-commit Autoupdate
+
+on:
+  schedule:
+    - cron: "0 0 * * 0" # every sunday at midnight
+  workflow_dispatch:
+  push:
+    branches:
+      - add-pre-commit-autoupdate
+
+jobs:
+  autoupdate:
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        id: gpg-import
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+
+      - name: Install pre-commit
+        run: pipx install pre-commit
+
+      - name: Run pre-commit autoupdate
+        run: pre-commit autoupdate
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          add-paths: |
+            .pre-commit-config.yaml
+          commit-message: "bump(pre-commit): pre-commit autoupdate"
+          title: "bump(pre-commit): pre-commit autoupdate"
+          body: ""
+          token: ${{ secrets.BOT_PERSONAL_ACCESS_TOKEN }}
+          push-to-fork: janw-bot/podcast-archiver
+          committer: ${{ steps.gpg-import.outputs.name }} <${{ steps.gpg-import.outputs.email }}>
+          branch: bump-formula/${{ inputs.formula-name }}-${{github.ref_name}}
