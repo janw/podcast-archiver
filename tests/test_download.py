@@ -60,8 +60,7 @@ def test_download_aborted(tmp_path_cd: Path, feedobj_lautsprecher: dict[str, Any
 
 
 class PartialObjectMock(Protocol):
-    def __call__(self, side_effect: type[Exception]) -> mock.Mock:
-        ...
+    def __call__(self, side_effect: type[Exception]) -> mock.Mock: ...
 
 
 # mypy: disable-error-code="attr-defined"
