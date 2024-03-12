@@ -1,3 +1,11 @@
+ci:
+    autoupdate_commit_msg: 'bump(pre-commit): pre-commit.ci autoupdate'
+    autoupdate_schedule: weekly
+    autofix_commit_msg: 'ci(pre-commit): auto fixes from pre-commit hooks'
+    autofix_prs: true
+    skip:
+      - mypy  # is local
+
 default_install_hook_types:
   - pre-commit
   - commit-msg

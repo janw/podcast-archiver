@@ -7,5 +7,5 @@ jobs:
   commitizen:
     uses: janw/workflows/.github/workflows/commitizen.yaml@main
 
-  pre-commit:
-    uses: janw/workflows/.github/workflows/poetry-pre-commit.yaml@main
+  mypy:
+    uses: janw/workflows/.github/workflows/poetry-mypy.yaml@main
