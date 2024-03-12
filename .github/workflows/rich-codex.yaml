@@ -8,3 +8,5 @@ on:
 jobs:
   rich-codex:
     uses: janw/workflows/.github/workflows/poetry-rich-codex.yaml@main
+    secrets:
+      token: ${{ secrets.BOT_PERSONAL_ACCESS_TOKEN }}
