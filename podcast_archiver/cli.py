@@ -40,6 +40,7 @@ click.rich_click.OPTION_GROUPS = {
             "options": [
                 "--update",
                 "--max-episodes",
+                "--chronological",
             ],
         },
     ]
@@ -163,6 +164,14 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     is_flag=True,
     show_envvar=True,
     help=Settings.model_fields["update_archive"].description,
+)
+@click.option(
+    "--chronological",
+    type=bool,
+    default=DEFAULT_SETTINGS.chronological,
+    is_flag=True,
+    show_envvar=True,
+    help=Settings.model_fields["chronological"].description,
 )
 @click.option(
     "--write-info-json",

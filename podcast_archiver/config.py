@@ -69,6 +69,16 @@ class Settings(BaseModel):
         ),
     )
 
+    chronological: bool = Field(
+        default=False,
+        alias="chronological",
+        description=(
+            "Download episodes in chronological order (oldest first). This will force all pages of paged feeds to be "
+            "processed before archiving commences. If combined with --max-episodes, the limit applies from the first "
+            "episode. Cannot be combined with --update."
+        ),
+    )
+
     write_info_json: bool = Field(
         default=False,
         alias="write_info_json",
