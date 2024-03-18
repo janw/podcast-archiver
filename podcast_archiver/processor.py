@@ -49,7 +49,7 @@ class FeedProcessor:
             console=console,
             disable=settings.verbose > 1 or settings.quiet,
         )
-        # self.progress.live.vertical_overflow = "visible"
+        self.progress.live.vertical_overflow = "visible"
         self.stop_event = Event()
 
     def process(self, url: AnyHttpUrl) -> ProcessingResult:
@@ -78,7 +78,12 @@ class FeedProcessor:
 
     def _process_episodes(self, feed: Feed) -> tuple[list[Future[DownloadResult]], QueueCompletionType]:
         futures: list[Future[DownloadResult]] = []
-        for idx, episode in enumerate(feed.episode_iter(self.settings.maximum_episode_count), 1):
+
+        episodes = feed.episode_iter(self.settings.maximum_episode_count)
+        if self.settings.chronological:
+            episodes = reversed(list(episodes))
+
+        for idx, episode in enumerate(episodes, 1):
             download_job = DownloadJob(
                 episode,
                 feed_info=feed.info,
@@ -86,7 +91,7 @@ class FeedProcessor:
                 progress=self.progress,
                 stop_event=self.stop_event,
             )
-            if self.settings.update_archive and download_job.target_exists:
+            if self.settings.update_archive and download_job.target_exists and not self.settings.chronological:
                 logger.info("Up to date with %r", episode)
                 return futures, QueueCompletionType.FOUND_EXISTING
 
