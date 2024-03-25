@@ -81,6 +81,12 @@ class Settings(BaseModel):
         description="Print only minimal progress information. Errors will always be emitted.",
     )
 
+    dry_run: bool = Field(
+        default=False,
+        alias="dry_run",
+        description="Do not download anything.",
+    )
+
     verbose: int = Field(
         default=0,
         alias="verbose",

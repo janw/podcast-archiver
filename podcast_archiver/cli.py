@@ -33,6 +33,7 @@ click.rich_click.OPTION_GROUPS = {
                 "--filename-template",
                 "--write-info-json",
                 "--slugify",
+                "--dry-run",
             ],
         },
         {
@@ -180,6 +181,15 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     is_flag=True,
     show_envvar=True,
     help=Settings.model_fields["quiet"].description,
+)
+@click.option(
+    "-n",
+    "--dry-run",
+    type=bool,
+    default=DEFAULT_SETTINGS.dry_run,
+    is_flag=True,
+    show_envvar=True,
+    help=Settings.model_fields["dry_run"].description,
 )
 @click.option(
     "-C",

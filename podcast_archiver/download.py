@@ -60,8 +60,9 @@ class DownloadJob:
             return DownloadResult.FAILED
 
     def run(self) -> DownloadResult:
-        self.target.parent.mkdir(parents=True, exist_ok=True)
-        self.write_info_json()
+        if not self.settings.dry_run:
+            self.target.parent.mkdir(parents=True, exist_ok=True)
+            self.write_info_json()
         if result := self.preflight_check():
             return result
 
@@ -74,6 +75,11 @@ class DownloadJob:
         response.raise_for_status()
         total_size = int(response.headers.get("content-length", "0"))
         self.update_progress(total=total_size)
+
+        if self.settings.dry_run:
+            logger.info("Dry-run download of %s", self.target)
+            self.update_progress(total=total_size, completed=total_size)
+            return DownloadResult.COMPLETED_SUCCESSFULLY
 
         with atomic_write(self.target, mode="wb") as fp:
             receive_complete = self.receive_data(fp, response)
