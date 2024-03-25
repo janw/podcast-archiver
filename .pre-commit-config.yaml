@@ -1,5 +1,5 @@
 ci:
-    autoupdate_commit_msg: 'bump(pre-commit): pre-commit.ci autoupdate'
+    autoupdate_commit_msg: 'build(pre-commit): pre-commit.ci autoupdate'
     autoupdate_schedule: weekly
     autofix_commit_msg: 'ci(pre-commit): auto fixes from pre-commit hooks'
     autofix_prs: true
@@ -14,7 +14,7 @@ default_stages:
   - pre-commit
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 'v0.3.2'
+    rev: 'v0.3.4'
     hooks:
       - id: ruff
         args: [ --fix, --exit-non-zero-on-fix ]
@@ -31,7 +31,7 @@ repos:
       - id: check-ast
 
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: 'v3.18.3'
+    rev: 'v3.20.0'
     hooks:
       - id: commitizen
       - id: commitizen-branch
