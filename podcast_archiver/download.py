@@ -1,19 +1,22 @@
 from __future__ import annotations
 
-from pathlib import Path
 from threading import Event
-from typing import IO, Any
-
-from requests import Response
-from rich import progress as rich_progress
+from typing import IO, TYPE_CHECKING, Any
 
 from podcast_archiver import constants
 from podcast_archiver.config import DEFAULT_SETTINGS, Settings
 from podcast_archiver.enums import DownloadResult
 from podcast_archiver.logging import logger
-from podcast_archiver.models import Episode, FeedInfo
 from podcast_archiver.session import session
 from podcast_archiver.utils import atomic_write
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from requests import Response
+    from rich import progress as rich_progress
+
+    from podcast_archiver.models import Episode, FeedInfo
 
 
 class DownloadJob:

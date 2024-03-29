@@ -74,7 +74,7 @@ def test_main_config_file(tmp_path_cd: Path, feed_lautsprecher: Url) -> None:
 
 def test_main_config_file_invalid(tmp_path_cd: Path, feed_lautsprecher_notconsumed: Url) -> None:
     configfile = tmp_path_cd / "configtmp.yaml"
-    configfile.write_text("asdf blabl")
+    configfile.write_text("asdf bla")
 
     with pytest.raises(click.BadParameter, match="File '.+/configtmp.yaml' is invalid"):
         cli.main(["--config", str(configfile)], standalone_mode=False)

@@ -4,7 +4,7 @@ import pathlib
 import textwrap
 from datetime import datetime
 from functools import cached_property
-from typing import IO, TYPE_CHECKING, Any, Text
+from typing import IO, Any, Text
 
 import pydantic
 from pydantic import AnyHttpUrl, BaseModel, BeforeValidator, DirectoryPath, Field, FilePath
@@ -19,9 +19,6 @@ from podcast_archiver.console import console
 from podcast_archiver.exceptions import InvalidSettings
 from podcast_archiver.models import ALL_FIELD_TITLES_STR
 from podcast_archiver.utils import FilenameFormatter
-
-if TYPE_CHECKING:
-    pass
 
 
 def expanduser(v: pathlib.Path) -> pathlib.Path:

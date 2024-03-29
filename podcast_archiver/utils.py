@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 import re
 from contextlib import contextmanager
-from pathlib import Path
 from string import Formatter
 from typing import IO, TYPE_CHECKING, Any, Iterable, Iterator, TypedDict
 
@@ -12,6 +11,8 @@ from slugify import slugify as _slugify
 from podcast_archiver.logging import logger
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from podcast_archiver.config import Settings
     from podcast_archiver.models import Episode, FeedInfo
 

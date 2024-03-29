@@ -2,6 +2,7 @@
 name = "podcast-archiver"
 version = "1.3.0"
 description = "Archive all episodes from your favorite podcasts"
+# cspell: disable
 authors = ["Jan Willhaus <mail@janwillhaus.de>"]
 license = "MIT"
 readme = "README.md"
@@ -67,7 +68,7 @@ gpg_sign = true
 [tool.ruff]
 line-length = 120
 target-version = "py310"
-extend-select = [
+lint.extend-select = [
     "I",   # isort
     "B",   # bugbear
     "A",   # builtins
@@ -77,8 +78,10 @@ extend-select = [
     "C4",  # comprehensions
     "SIM", # simplify
     "C90", # mccabe
+    "FA",  # future-annotations
+    "TCH", # type-checking
 ]
-ignore = [
+lint.ignore = [
     "SIM108", # if-else-block-instead-of-if-exp
     "ISC001", # single-line-implicit-string-concatenation
 ]
@@ -86,7 +89,7 @@ ignore = [
 [tool.ruff.format]
 quote-style = "double"
 
-[tool.ruff.mccabe]
+[tool.ruff.lint.mccabe]
 max-complexity = 8
 
 [tool.pytest.ini_options]

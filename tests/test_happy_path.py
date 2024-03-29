@@ -60,7 +60,7 @@ def test_happy_path_files_exist(tmp_path: Path, feed_lautsprecher: Url) -> None:
 
 
 def test_happy_path_update(tmp_path: Path, feed_lautsprecher: Url) -> None:
-    (tmp_path / "LS017 Podcastverzeichnisse.m4a").touch()
+    (tmp_path / "LS017 Podcastverzeichnisse.m4a").touch()  # cspell: disable-line
     settings = Settings(
         archive_directory=tmp_path,
         feeds=[feed_lautsprecher],

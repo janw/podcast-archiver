@@ -20,7 +20,7 @@ def test_load(tmp_path_cd: Path) -> None:
 
 def test_load_invalid_yaml(tmp_path_cd: Path) -> None:
     configfile = tmp_path_cd / "configtmp.yaml"
-    configfile.write_text("!randomgiberish")
+    configfile.write_text("!randomgibberish")
 
     with pytest.raises(InvalidSettings, match="Not a valid YAML document"):
         Settings.load_from_yaml(configfile)
