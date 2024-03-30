@@ -21,6 +21,7 @@ words:
   # misc
   - capsys
   - commitizen
+  - fileh
   - filep
   - janw
   - janwxyz

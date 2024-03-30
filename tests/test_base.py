@@ -14,8 +14,8 @@ from tests.conftest import FEED_URL, FIXTURES_DIR
         FIXTURES_DIR / "opml_downcast_valid.xml",
     ],
 )
-def test_add_opml(opml_file: Path) -> None:
-    pa = PodcastArchiver(Settings())
+def test_add_opml(opml_file: Path, default_settings_no_feeds: Settings) -> None:
+    pa = PodcastArchiver(default_settings_no_feeds)
     pa.add_from_opml(opml_file)
 
     assert [str(f) for f in pa.feeds] == [FEED_URL]

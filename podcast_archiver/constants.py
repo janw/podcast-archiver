@@ -13,3 +13,8 @@ DOWNLOAD_CHUNK_SIZE = 256 * 1024
 DEBUG_PARTIAL_SIZE = DOWNLOAD_CHUNK_SIZE * 4
 
 MAX_TITLE_LENGTH = 96
+
+DEFAULT_FILENAME_TEMPLATE = "{show.title}/{episode.published_time:%Y-%m-%d} - {episode.title}.{ext}"
+DEFAULT_CONCURRENCY = 4
+
+DEFAULT_CONFIG_FILE_ERROR_MESSAGE = "Not a valid YAML document"

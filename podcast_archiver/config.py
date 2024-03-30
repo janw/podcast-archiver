@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import pathlib
 import textwrap
+from contextlib import suppress
 from datetime import datetime
-from functools import cached_property
-from typing import IO, Any, Text
+from os import PathLike, getenv
+from typing import Any, cast
 
-import pydantic
-from pydantic import AnyHttpUrl, BaseModel, BeforeValidator, DirectoryPath, Field, FilePath
-from pydantic import ConfigDict as _ConfigDict
+import click
+from click.core import Parameter
+from pydantic import AnyHttpUrl, BaseModel, BeforeValidator, DirectoryPath, FilePath, ValidationError
 from pydantic_core import to_json
 from typing_extensions import Annotated
 from yaml import YAMLError, safe_load
@@ -17,8 +18,64 @@ from podcast_archiver import __version__ as version
 from podcast_archiver import constants
 from podcast_archiver.console import console
 from podcast_archiver.exceptions import InvalidSettings
-from podcast_archiver.models import ALL_FIELD_TITLES_STR
-from podcast_archiver.utils import FilenameFormatter
+
+
+def get_default_config_path() -> pathlib.Path | None:
+    if getenv("TESTING", "0").lower() in ("1", "true"):
+        return None
+    return pathlib.Path(click.get_app_dir(constants.PROG_NAME)) / "config.yaml"  # pragma: no cover
+
+
+def generate_default_config(ctx: click.Context) -> str:
+    now = datetime.now().replace(microsecond=0).astimezone()
+    wrapper = textwrap.TextWrapper(width=80, initial_indent="# ", subsequent_indent="#   ")
+
+    lines = [
+        f"## {constants.PROG_NAME.title()} configuration",
+        f"## Generated with {constants.PROG_NAME} {version} at {now}",
+    ]
+
+    for cli_param in cast(list[Parameter | click.Option], ctx.command.params):
+        if (name := cli_param.name) in ("help", "config", "config_generate", "version"):
+            continue
+
+        param_value = cli_param.get_default(ctx, call=True)
+        param_help = ""
+        if _help := getattr(cli_param, "help", ""):
+            param_help = f": {_help}"
+        lines += [
+            "",
+            *wrapper.wrap(f"Field '{name}'{param_help}"),
+            "#",
+            *wrapper.wrap(f"Equivalent command line option: {', '.join(cli_param.opts)}"),
+            "#",
+            f"{name}: {to_json(param_value).decode()}",
+        ]
+
+    return "\n".join(lines).strip()
+
+
+def print_default_config(ctx: click.Context, param: click.Parameter, value: bool = True) -> None:
+    if not value or ctx.resilient_parsing:
+        return
+    console.print(generate_default_config(ctx), highlight=False)
+    ctx.exit()
+
+
+def write_default_config(
+    ctx: click.Context, param: click.Parameter, value: str | PathLike[str]
+) -> str | PathLike[str] | None:
+    if not value or ctx.resilient_parsing:
+        return None
+    if not isinstance(value, pathlib.Path) or value != param.get_default(ctx, call=True) or value.exists():
+        return None
+
+    with suppress(OSError, FileNotFoundError):
+        value.parent.mkdir(exist_ok=True, parents=True)
+        with value.open("w") as fh:
+            fh.write(generate_default_config(ctx) + "\n")
+
+    return value
 
 
 def expanduser(v: pathlib.Path) -> pathlib.Path:
@@ -32,149 +89,37 @@ UserExpandedFile = Annotated[FilePath, BeforeValidator(expanduser)]
 
 
 class Settings(BaseModel):
-    model_config = _ConfigDict(populate_by_name=True)
+    feeds: list[str | AnyHttpUrl] = []
+    opml_files: list[UserExpandedFile] = []
+    archive_directory: UserExpandedDir
 
-    feeds: list[AnyHttpUrl] = Field(
-        default_factory=list,
-        alias="feed",
-        description="Feed URLs to archive.",
-    )
+    update_archive: bool
+    write_info_json: bool
+    maximum_episode_count: int
+    filename_template: str
+    slugify_paths: bool
 
-    opml_files: list[UserExpandedFile] = Field(
-        default_factory=list,
-        alias="opml",
-        description=(
-            "OPML files containing feed URLs to archive. OPML files can be exported from a variety of podcatchers."
-        ),
-    )
-
-    archive_directory: UserExpandedDir = Field(
-        default=UserExpandedDir("."),
-        alias="dir",
-        description=(
-            "Directory to which to download the podcast archive. "
-            "By default, the archive will be created in the current working directory  ('.')."
-        ),
-    )
-
-    update_archive: bool = Field(
-        default=False,
-        alias="update",
-        description=(
-            "Update the feeds with newly added episodes only. "
-            "Adding episodes ends with the first episode already present in the download directory."
-        ),
-    )
-
-    write_info_json: bool = Field(
-        default=False,
-        alias="write_info_json",
-        description="Write episode metadata to a .info.json file next to the media file itself.",
-    )
-
-    quiet: bool = Field(
-        default=False,
-        alias="quiet",
-        description="Print only minimal progress information. Errors will always be emitted.",
-    )
-
-    verbose: int = Field(
-        default=0,
-        alias="verbose",
-        description="Increase the level of verbosity while downloading.",
-    )
-
-    slugify_paths: bool = Field(
-        default=False,
-        alias="slugify",
-        description="Format filenames in the most compatible way, replacing all special characters.",
-    )
-
-    filename_template: str = Field(
-        alias="filename_template",
-        default="{show.title}/{episode.published_time:%Y-%m-%d} - {episode.title}.{ext}",
-        description=(
-            "Template to be used when generating filenames. Available template variables are: "
-            f"{ALL_FIELD_TITLES_STR}, and 'ext' (the filename extension)"
-        ),
-    )
-
-    maximum_episode_count: int = Field(
-        default=0,
-        alias="max_episodes",
-        description=(
-            "Only download the given number of episodes per podcast feed. "
-            "Useful if you don't really need the entire backlog."
-        ),
-    )
-
-    concurrency: int = Field(
-        default=4,
-        alias="concurrency",
-        description="Maximum number of simultaneous downloads.",
-    )
-
-    debug_partial: bool = Field(
-        default=False,
-        alias="debug_partial",
-        description=f"Download only the first {constants.DEBUG_PARTIAL_SIZE} bytes of episodes for debugging purposes.",
-    )
+    quiet: bool
+    verbose: int
+    concurrency: int
+    debug_partial: bool
 
     @classmethod
-    def load_from_dict(cls, value: dict[str, Any]) -> Settings:
+    def load_and_merge_settings(cls, config_file: pathlib.Path, **overrides: Any) -> Settings:
+        content = None
+        if config_file and config_file.exists():
+            try:
+                with config_file.open("r") as fileh:
+                    content = safe_load(fileh)
+            except YAMLError as exc:
+                raise InvalidSettings(constants.DEFAULT_CONFIG_FILE_ERROR_MESSAGE) from exc
+        if content is None:
+            content = {}
+        if not isinstance(content, dict):
+            raise InvalidSettings(constants.DEFAULT_CONFIG_FILE_ERROR_MESSAGE)
+
+        content.update({k: v for k, v in overrides.items() if not isinstance(v, list | tuple) or len(v) > 0})
         try:
-            return cls.model_validate(value)
-        except pydantic.ValidationError as exc:
+            return cls.model_validate(content)
+        except ValidationError as exc:
             raise InvalidSettings(errors=exc.errors()) from exc
-
-    @classmethod
-    def load_from_yaml(cls, path: pathlib.Path) -> Settings:
-        try:
-            with path.open("r") as filep:
-                content = safe_load(filep)
-        except YAMLError as exc:
-            raise InvalidSettings("Not a valid YAML document") from exc
-
-        if content:
-            return cls.load_from_dict(content)
-        return cls()
-
-    @classmethod
-    def generate_default_config(cls, file: IO[Text] | None = None) -> None:
-        now = datetime.now().replace(microsecond=0).astimezone()
-        wrapper = textwrap.TextWrapper(width=80, initial_indent="# ", subsequent_indent="#   ")
-
-        lines = [
-            f"## {constants.PROG_NAME.title()} configuration",
-            f"## Generated with {constants.PROG_NAME} {version} at {now}",
-        ]
-
-        for name, field in cls.model_fields.items():
-            cli_opt = (
-                wrapper.wrap(f"Equivalent command line option: --{field.alias.replace('_', '-')}")
-                if field.alias
-                else []
-            )
-            value = field.get_default(call_default_factory=True)
-            lines += [
-                "",
-                *wrapper.wrap(f"Field '{name}': {field.description}"),
-                "#",
-                *cli_opt,
-                "#",
-                f"{name}: {to_json(value).decode()}",
-            ]
-
-        contents = "\n".join(lines).strip()
-        if not file:
-            console.print(contents, highlight=False)
-            return
-        with file:
-            file.write(contents + "\n")
-
-    @cached_property
-    def filename_formatter(self) -> FilenameFormatter:
-        return FilenameFormatter(self)
-
-
-DEFAULT_SETTINGS = Settings()

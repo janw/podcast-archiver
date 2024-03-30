@@ -75,6 +75,7 @@ class FilenameFormatter(Formatter):
     _template: str
     _slugify: bool
     _path_root: Path
+    _partial: bool
 
     _parsed: list[tuple[str, str | None, str | None, str | None]]
 
@@ -82,6 +83,7 @@ class FilenameFormatter(Formatter):
         self._template = settings.filename_template
         self._slugify = settings.slugify_paths
         self._path_root = settings.archive_directory
+        self._partial = settings.debug_partial
 
     def parse(  # type: ignore[override]
         self,
@@ -104,7 +106,10 @@ class FilenameFormatter(Formatter):
             "show": feed_info,
             "ext": episode.ext,
         }
-        return self._path_root / self.vformat(self._template, args=(), kwargs=kwargs)
+        path = self._path_root / self.vformat(self._template, args=(), kwargs=kwargs)
+        if self._partial:
+            path = path.with_suffix(".partial" + path.suffix)
+        return path
 
 
 @contextmanager
