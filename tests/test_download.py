@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 from functools import partial
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol
 from unittest import mock
 
@@ -16,6 +15,8 @@ from podcast_archiver.models import FeedPage
 from tests.conftest import MEDIA_URL
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from responses import RequestsMock
 
 

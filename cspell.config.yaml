@@ -1,0 +1,43 @@
+files:
+  - "**/*"
+useGitignore: true
+ignorePaths:
+  - archive
+  - __pycache__
+  - htmlcov
+  - '*.xml'
+  - '*.opml'
+  - '*.svg'
+  - LICENSE
+allowCompoundWords: true
+words:
+  # podcasts-related
+  - archiver
+  - lautsprecher
+  - podcatcher
+  - podcatchers
+  - shownotes
+
+  # misc
+  - capsys
+  - commitizen
+  - filep
+  - janw
+  - janwxyz
+  - mccabe
+  - mktime
+  - mypy
+  - pipx
+  - posix
+  - pydantic
+  - pypi
+  - pyproject
+  - pytest
+  - PYTHONUNBUFFERED
+  - pyyaml
+  - subdirs
+  - tini
+  - tmpl
+  - venv
+  - virtualenv
+  - willhaus

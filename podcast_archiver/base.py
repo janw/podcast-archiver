@@ -2,14 +2,18 @@ from __future__ import annotations
 
 import xml.etree.ElementTree as etree
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import rich_click as click
 from pydantic import AnyHttpUrl
 
-from podcast_archiver.config import Settings
 from podcast_archiver.console import console
 from podcast_archiver.logging import logger
 from podcast_archiver.processor import FeedProcessor
+
+if TYPE_CHECKING:
+    import rich_click as click
+
+    from podcast_archiver.config import Settings
 
 
 class PodcastArchiver:

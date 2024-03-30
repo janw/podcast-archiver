@@ -3,17 +3,20 @@ from __future__ import annotations
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass
 from threading import Event
+from typing import TYPE_CHECKING
 
 from pydantic import AnyHttpUrl, ValidationError
 from requests import HTTPError
 from rich import progress as rich_progress
 
-from podcast_archiver.config import Settings
 from podcast_archiver.console import console
 from podcast_archiver.download import DownloadJob
 from podcast_archiver.enums import DownloadResult, QueueCompletionType
 from podcast_archiver.logging import logger
 from podcast_archiver.models import Feed
+
+if TYPE_CHECKING:
+    from podcast_archiver.config import Settings
 
 PROGRESS_COLUMNS = (
     rich_progress.SpinnerColumn(finished_text="[bar.finished]✔[/]"),

@@ -7,6 +7,7 @@ from pydantic_core import Url
 from podcast_archiver.models import Episode
 from podcast_archiver.utils import MIMETYPE_EXTENSION_MAPPING
 
+# cSpell:ignore Napolitano, WWDC, Ritchie, Siri
 EPISODE_FIXTURE = {
     "title": "83: Linda Dong & Lia Napolitano on prototyping experience",
     "title_detail": {

@@ -1,12 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Annotated, Any
+from typing import Annotated, Any
 
 from pydantic import AnyHttpUrl, ValidationError, ValidationInfo, ValidatorFunctionWrapHandler, WrapValidator
-
-if TYPE_CHECKING:
-    pass
-
 
 INVALID_URL_PLACEHOLDER = "original.was.invalid"
 
