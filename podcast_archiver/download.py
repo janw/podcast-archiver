@@ -4,7 +4,6 @@ from threading import Event
 from typing import IO, TYPE_CHECKING, Any
 
 from podcast_archiver import constants
-from podcast_archiver.config import DEFAULT_SETTINGS, Settings
 from podcast_archiver.enums import DownloadResult
 from podcast_archiver.logging import logger
 from podcast_archiver.session import session
@@ -16,6 +15,7 @@ if TYPE_CHECKING:
     from requests import Response
     from rich import progress as rich_progress
 
+    from podcast_archiver.config import Settings
     from podcast_archiver.models import Episode, FeedInfo
 
 
@@ -26,6 +26,9 @@ class DownloadJob:
     target: Path
     stop_event: Event
 
+    _debug_partial: bool
+    _write_info_json: bool
+
     _progress: rich_progress.Progress | None = None
     _task_id: rich_progress.TaskID | None = None
 
@@ -33,18 +36,19 @@ class DownloadJob:
         self,
         episode: Episode,
         *,
+        target: Path,
         feed_info: FeedInfo,
-        settings: Settings = DEFAULT_SETTINGS,
+        debug_partial: bool = False,
+        write_info_json: bool = False,
         progress: rich_progress.Progress | None = None,
         stop_event: Event | None = None,
     ) -> None:
         self.episode = episode
+        self.target = target
         self.feed_info = feed_info
-        self.settings = settings
+        self._debug_partial = debug_partial
+        self._write_info_json = write_info_json
         self._progress = progress
-        self.target = self.settings.filename_formatter.format(episode=self.episode, feed_info=self.feed_info)
-        if settings.debug_partial:
-            self.target = self.target.with_suffix(".partial" + self.target.suffix)
         self.stop_event = stop_event or Event()
 
         self.init_progress()
@@ -124,7 +128,7 @@ class DownloadJob:
             total_written += fp.write(chunk)
             self.update_progress(completed=total_written)
 
-            if self.settings.debug_partial and total_written >= constants.DEBUG_PARTIAL_SIZE:
+            if self._debug_partial and total_written >= constants.DEBUG_PARTIAL_SIZE:
                 logger.debug("Partial download completed.")
                 return True
             if self.stop_event.is_set():
@@ -134,7 +138,7 @@ class DownloadJob:
         return True
 
     def write_info_json(self) -> None:
-        if not self.settings.write_info_json:
+        if not self._write_info_json:
             return
         logger.info("Writing episode metadata to %s", self.infojsonfile.name)
         with atomic_write(self.infojsonfile) as fp:

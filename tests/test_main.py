@@ -30,7 +30,7 @@ def test_main_nonexistent_dir(feed_lautsprecher_notconsumed: Url) -> None:
 
 
 def test_main_nonexistent_opml(tmp_path_cd: Path, feed_lautsprecher_notconsumed: Url) -> None:
-    with pytest.raises(click.BadParameter, match="Field 'opml.0': Path does not point to a file"):
+    with pytest.raises(click.BadParameter, match="File '/nonexistent.xml' does not exist."):
         cli.main(["--opml", "/nonexistent.xml"], standalone_mode=False)
 
 
@@ -76,7 +76,7 @@ def test_main_config_file_invalid(tmp_path_cd: Path, feed_lautsprecher_notconsum
     configfile = tmp_path_cd / "configtmp.yaml"
     configfile.write_text("asdf bla")
 
-    with pytest.raises(click.BadParameter, match="File '.+/configtmp.yaml' is invalid"):
+    with pytest.raises(click.UsageError, match="Not a valid YAML document"):
         cli.main(["--config", str(configfile)], standalone_mode=False)
 
 

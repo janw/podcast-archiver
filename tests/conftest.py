@@ -9,6 +9,9 @@ import feedparser
 import pytest
 from pydantic_core import Url
 
+from podcast_archiver.config import Settings
+from podcast_archiver.constants import DEFAULT_FILENAME_TEMPLATE
+
 if TYPE_CHECKING:
     from responses import RequestsMock
 
@@ -64,3 +67,27 @@ def tmp_path_cd(request: pytest.FixtureRequest, tmp_path: str) -> Iterable[str]:
     os.chdir(tmp_path)
     yield tmp_path
     os.chdir(request.config.invocation_params.dir)
+
+
+@pytest.fixture
+def default_settings_no_feeds(tmp_path: Path) -> Settings:
+    return Settings(
+        feeds=[],
+        opml_files=[],
+        archive_directory=tmp_path,
+        update_archive=False,
+        write_info_json=False,
+        maximum_episode_count=0,
+        filename_template=DEFAULT_FILENAME_TEMPLATE,
+        slugify_paths=False,
+        quiet=False,
+        verbose=1,
+        concurrency=2,
+        debug_partial=False,
+    )
+
+
+@pytest.fixture
+def default_settings(default_settings_no_feeds: Settings, feed_lautsprecher: Url) -> Settings:
+    default_settings_no_feeds.feeds = [feed_lautsprecher]
+    return default_settings_no_feeds

@@ -2,20 +2,27 @@ from __future__ import annotations
 
 import logging
 import logging.config
+from typing import TYPE_CHECKING
 
 from rich.logging import RichHandler
 
 from podcast_archiver.console import console
 
+if TYPE_CHECKING:
+    import click
+
 logger = logging.getLogger("podcast_archiver")
 
 
-def configure_logging(verbosity: int) -> None:
-    if verbosity > 2:
+def configure_logging(ctx: click.Context, param: click.Parameter, value: int | None) -> int | None:
+    if value is None or ctx.resilient_parsing:
+        return None
+
+    if value > 2:
         level = logging.DEBUG
-    elif verbosity == 2:
+    elif value == 2:
         level = logging.INFO
-    elif verbosity == 1:
+    elif value == 1:
         level = logging.WARNING
     else:
         level = logging.ERROR
@@ -37,3 +44,4 @@ def configure_logging(verbosity: int) -> None:
         ],
     )
     logger.debug("Running in debug mode.")
+    return value

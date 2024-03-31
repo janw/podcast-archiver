@@ -1,17 +1,24 @@
+from __future__ import annotations
+
 import pathlib
-from os import PathLike, getenv
-from typing import Any, cast
+from typing import Any
 
 import rich_click as click
-from click.core import Context, Parameter
 
 from podcast_archiver import __version__ as version
+from podcast_archiver import constants
 from podcast_archiver.base import PodcastArchiver
-from podcast_archiver.config import DEFAULT_SETTINGS, Settings
+from podcast_archiver.config import (
+    Settings,
+    get_default_config_path,
+    print_default_config,
+    write_default_config,
+)
 from podcast_archiver.console import console
 from podcast_archiver.constants import ENVVAR_PREFIX, PROG_NAME
-from podcast_archiver.exceptions import InvalidSettings
+from podcast_archiver.exceptions import InvalidFeed, InvalidSettings
 from podcast_archiver.logging import configure_logging
+from podcast_archiver.models import ALL_FIELD_TITLES_STR
 
 click.rich_click.USE_RICH_MARKUP = True
 click.rich_click.USE_MARKDOWN = True
@@ -46,64 +53,6 @@ click.rich_click.OPTION_GROUPS = {
 }
 
 
-class ConfigPath(click.Path):
-    def __init__(self) -> None:
-        return super().__init__(
-            exists=True,
-            readable=True,
-            file_okay=True,
-            dir_okay=False,
-            resolve_path=True,
-            path_type=pathlib.Path,
-        )
-
-    def convert(  # type: ignore[override]
-        self, value: str | PathLike[str], param: Parameter | None, ctx: Context | None
-    ) -> str | bytes | PathLike[str] | None:
-        if value is None:
-            return None
-        if (
-            ctx
-            and param
-            and isinstance(value, pathlib.Path)
-            and value == param.get_default(ctx, call=True)
-            and not value.exists()
-        ):
-            try:
-                value.parent.mkdir(exist_ok=True, parents=True)
-                with value.open("w") as fp:
-                    Settings.generate_default_config(file=fp)
-            except (OSError, FileNotFoundError):
-                return None
-
-        filepath = cast(pathlib.Path, super().convert(value, param, ctx))
-        if not ctx or ctx.resilient_parsing:
-            return filepath
-
-        try:
-            ctx.default_map = ctx.default_map or {}
-            settings = Settings.load_from_yaml(filepath)
-            ctx.default_map.update(settings.model_dump(exclude_unset=True, exclude_none=True, by_alias=True))
-        except InvalidSettings as exc:
-            self.fail(f"{self.name.title()} {click.format_filename(filepath)!r} is invalid: {exc}", param, ctx)
-
-        return filepath
-
-
-def get_default_config_path() -> pathlib.Path | None:
-    if getenv("TESTING", "0").lower() in ("1", "true"):
-        return None
-    return pathlib.Path(click.get_app_dir(PROG_NAME)) / "config.yaml"  # pragma: no cover
-
-
-def generate_default_config(ctx: click.Context, param: click.Parameter, value: bool) -> None:
-    if not value or ctx.resilient_parsing:
-        return
-
-    Settings.generate_default_config()
-    ctx.exit()
-
-
 @click.command(
     context_settings={
         "auto_envvar_prefix": ENVVAR_PREFIX,
@@ -114,25 +63,37 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
 @click.option(
     "-f",
     "--feed",
+    "feeds",
+    default=[],
     multiple=True,
     show_envvar=True,
-    help=Settings.model_fields["feeds"].description + " Use repeatedly for multiple feeds.",  # type: ignore[operator]
+    help="Feed URLs to archive. Use repeatedly for multiple feeds.",
 )
 @click.option(
     "-o",
     "--opml",
+    "opml_files",
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        resolve_path=True,
+        path_type=pathlib.Path,
+    ),
+    default=[],
     multiple=True,
     show_envvar=True,
     help=(
-        Settings.model_fields["opml_files"].description  # type: ignore[operator]
-        + " Use repeatedly for multiple files."
+        "OPML files containing feed URLs to archive. OPML files can be exported from a variety of podcatchers."
+        "Use repeatedly for multiple files."
     ),
 )
 @click.option(
     "-d",
     "--dir",
+    "archive_directory",
     type=click.Path(
-        exists=False,
+        exists=True,
         writable=True,
         file_okay=False,
         dir_okay=True,
@@ -141,9 +102,12 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     ),
     show_default=True,
     required=False,
-    default=DEFAULT_SETTINGS.archive_directory,
+    default=pathlib.Path("."),
     show_envvar=True,
-    help=Settings.model_fields["archive_directory"].description,
+    help=(
+        "Directory to which to download the podcast archive. "
+        "By default, the archive will be created in the current working directory ('.')."
+    ),
 )
 @click.option(
     "-F",
@@ -151,75 +115,83 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     type=str,
     show_default=True,
     required=False,
-    default=DEFAULT_SETTINGS.filename_template,
+    default=constants.DEFAULT_FILENAME_TEMPLATE,
     show_envvar=True,
-    help=Settings.model_fields["filename_template"].description,
+    help=(
+        "Template to be used when generating filenames. Available template variables are: "
+        f"{ALL_FIELD_TITLES_STR}, and 'ext' (the filename extension)."
+    ),
 )
 @click.option(
     "-u",
     "--update",
+    "update_archive",
     type=bool,
-    default=DEFAULT_SETTINGS.update_archive,
     is_flag=True,
     show_envvar=True,
-    help=Settings.model_fields["update_archive"].description,
+    help=(
+        "Update the feeds with newly added episodes only. "
+        "Adding episodes ends with the first episode already present in the download directory."
+    ),
 )
 @click.option(
     "--write-info-json",
     type=bool,
-    default=DEFAULT_SETTINGS.write_info_json,
     is_flag=True,
     show_envvar=True,
-    help=Settings.model_fields["write_info_json"].description,
+    help="Write episode metadata to a .info.json file next to the media file itself.",
 )
 @click.option(
     "-q",
     "--quiet",
     type=bool,
-    default=DEFAULT_SETTINGS.quiet,
     is_flag=True,
     show_envvar=True,
-    help=Settings.model_fields["quiet"].description,
+    help="Print only minimal progress information. Errors will always be emitted.",
 )
 @click.option(
     "-C",
     "--concurrency",
     type=int,
-    default=DEFAULT_SETTINGS.concurrency,
+    default=constants.DEFAULT_CONCURRENCY,
     show_envvar=True,
-    help=Settings.model_fields["concurrency"].description,
+    help="Maximum number of simultaneous downloads.",
 )
 @click.option(
     "--debug-partial",
     type=bool,
-    default=DEFAULT_SETTINGS.debug_partial,
     is_flag=True,
     show_envvar=True,
-    help=Settings.model_fields["debug_partial"].description,
+    help=f"Download only the first {constants.DEBUG_PARTIAL_SIZE} bytes of episodes for debugging purposes.",
 )
 @click.option(
     "-v",
     "--verbose",
     count=True,
     show_envvar=True,
-    default=DEFAULT_SETTINGS.verbose,
-    help=Settings.model_fields["verbose"].description,
+    is_eager=True,
+    callback=configure_logging,
+    help="Increase the level of verbosity while downloading.",
 )
 @click.option(
     "-S",
     "--slugify",
+    "slugify_paths",
     type=bool,
-    default=DEFAULT_SETTINGS.slugify_paths,
     is_flag=True,
     show_envvar=True,
-    help=Settings.model_fields["slugify_paths"].description,
+    help="Format filenames in the most compatible way, replacing all special characters.",
 )
 @click.option(
     "-m",
     "--max-episodes",
+    "maximum_episode_count",
     type=int,
-    default=DEFAULT_SETTINGS.maximum_episode_count,
-    help=Settings.model_fields["maximum_episode_count"].description,
+    default=0,
+    help=(
+        "Only download the given number of episodes per podcast feed. "
+        "Useful if you don't really need the entire backlog."
+    ),
 )
 @click.version_option(
     version,
@@ -233,27 +205,31 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     expose_value=False,
     is_flag=True,
     is_eager=True,
-    callback=generate_default_config,
+    callback=print_default_config,
     help="Emit an example YAML config file to stdout and exit.",
 )
 @click.option(
     "-c",
     "--config",
-    type=ConfigPath(),
-    expose_value=False,
+    type=click.Path(
+        exists=True,
+        readable=True,
+        file_okay=True,
+        dir_okay=False,
+        resolve_path=True,
+        path_type=pathlib.Path,
+    ),
     default=get_default_config_path,
     show_default=False,
-    is_eager=True,
     show_envvar=True,
+    callback=write_default_config,
     help="Path to a config file. Command line arguments will take precedence.",
 )
 @click.pass_context
-def main(ctx: click.RichContext, /, **kwargs: Any) -> int:
-    configure_logging(kwargs["verbose"])
-    console.quiet = kwargs["quiet"] or kwargs["verbose"] > 1
+def main(ctx: click.RichContext, config: pathlib.Path, **kwargs: Any) -> int:
     try:
-        settings = Settings.load_from_dict(kwargs)
-
+        settings = Settings.load_and_merge_settings(config_file=config, **kwargs)
+        console.quiet = settings.quiet or settings.verbose > 1
         # Replicate click's `no_args_is_help` behavior but only when config file does not contain feeds/OPMLs
         if not (settings.feeds or settings.opml_files):
             click.echo(ctx.command.get_help(ctx))
@@ -262,8 +238,10 @@ def main(ctx: click.RichContext, /, **kwargs: Any) -> int:
         pa = PodcastArchiver(settings=settings)
         pa.register_cleanup(ctx)
         pa.run()
+    except InvalidFeed as exc:
+        raise click.BadParameter(f"Cannot parse feed '{exc.feed}'") from exc
     except InvalidSettings as exc:
-        raise click.BadParameter(f"Invalid settings: {exc}") from exc
+        raise click.UsageError(f"Invalid config: {exc}") from exc
     except KeyboardInterrupt as exc:
         raise click.Abort("Interrupted by user") from exc
     except FileNotFoundError as exc:

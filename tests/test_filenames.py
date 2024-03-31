@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from pathlib import Path
 
 import pytest
 
@@ -50,9 +51,13 @@ FEED_INFO = FeedInfo(
         ),
     ],
 )
-def test_filename_formatting(fname_tmpl: str, slugify: bool, expected_fname: str) -> None:
-    settings = Settings(filename_template=fname_tmpl, slugify_paths=slugify)
-    formatter = FilenameFormatter(settings=settings)
+def test_filename_formatting(
+    fname_tmpl: str, slugify: bool, expected_fname: str, default_settings_no_feeds: Settings
+) -> None:
+    default_settings_no_feeds.archive_directory = Path("")
+    default_settings_no_feeds.filename_template = fname_tmpl
+    default_settings_no_feeds.slugify_paths = slugify
+    formatter = FilenameFormatter(settings=default_settings_no_feeds)
 
     result = formatter.format(EPISODE, feed_info=FEED_INFO)
 
