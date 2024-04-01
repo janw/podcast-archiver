@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from functools import partial
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol
 from unittest import mock
 
@@ -9,14 +10,11 @@ import pytest
 from requests import HTTPError
 
 from podcast_archiver import download, utils
-from podcast_archiver.config import Settings
 from podcast_archiver.enums import DownloadResult
 from podcast_archiver.models import FeedPage
 from tests.conftest import MEDIA_URL
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from responses import RequestsMock
 
 
@@ -29,7 +27,7 @@ def test_download_job(tmp_path_cd: Path, feedobj_lautsprecher: dict[str, Any]) -
             "update.return_value": None,
         }
     )
-    job = download.DownloadJob(episode=episode, feed_info=feed.feed, progress=mock_progress)
+    job = download.DownloadJob(episode=episode, feed_info=feed.feed, target=Path("file.mp3"), progress=mock_progress)
     result = job()
 
     assert result == DownloadResult.COMPLETED_SUCCESSFULLY
@@ -41,8 +39,8 @@ def test_download_already_exists(tmp_path_cd: Path, feedobj_lautsprecher_notcons
     feed = FeedPage.model_validate(feedobj_lautsprecher_notconsumed)
     episode = feed.episodes[0]
 
-    job = download.DownloadJob(episode=episode, feed_info=feed.feed)
-    job.target.parent.mkdir()
+    job = download.DownloadJob(episode=episode, feed_info=feed.feed, target=Path("file.mp3"))
+    job.target.parent.mkdir(exist_ok=True)
     job.target.touch()
     result = job()
 
@@ -53,7 +51,7 @@ def test_download_aborted(tmp_path_cd: Path, feedobj_lautsprecher: dict[str, Any
     feed = FeedPage.model_validate(feedobj_lautsprecher)
     episode = feed.episodes[0]
 
-    job = download.DownloadJob(episode=episode, feed_info=feed.feed)
+    job = download.DownloadJob(episode=episode, feed_info=feed.feed, target=Path("file.mp3"))
     job.stop_event.set()
     result = job()
 
@@ -86,7 +84,7 @@ def test_download_failed(
     if should_download:
         responses.add(responses.GET, MEDIA_URL, b"BLOB")
 
-    job = download.DownloadJob(episode=episode, feed_info=feed.feed)
+    job = download.DownloadJob(episode=episode, feed_info=feed.feed, target=Path("file.mp3"))
     with failure_mode(side_effect=side_effect), caplog.at_level(logging.ERROR):
         result = job()
 
@@ -107,8 +105,12 @@ def test_download_failed(
 def test_download_info_json(tmp_path_cd: Path, feedobj_lautsprecher: dict[str, Any], write_info_json: bool) -> None:
     feed = FeedPage.model_validate(feedobj_lautsprecher)
     episode = feed.episodes[0]
-    settings = Settings(write_info_json=write_info_json)
-    job = download.DownloadJob(episode=episode, feed_info=feed.feed, settings=settings)
+    job = download.DownloadJob(
+        episode=episode,
+        feed_info=feed.feed,
+        target=tmp_path_cd / "file.mp3",
+        write_info_json=write_info_json,
+    )
     result = job()
 
     assert result == DownloadResult.COMPLETED_SUCCESSFULLY

@@ -14,6 +14,7 @@ from podcast_archiver.download import DownloadJob
 from podcast_archiver.enums import DownloadResult, QueueCompletionType
 from podcast_archiver.logging import logger
 from podcast_archiver.models import Feed
+from podcast_archiver.utils import FilenameFormatter
 
 if TYPE_CHECKING:
     from podcast_archiver.config import Settings
@@ -40,12 +41,15 @@ class ProcessingResult:
 
 class FeedProcessor:
     settings: Settings
+    filename_formatter: FilenameFormatter
+
     pool_executor: ThreadPoolExecutor
     progress: rich_progress.Progress
     stop_event: Event
 
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
+        self.filename_formatter = FilenameFormatter(settings)
         self.pool_executor = ThreadPoolExecutor(max_workers=self.settings.concurrency)
         self.progress = rich_progress.Progress(
             *PROGRESS_COLUMNS,
@@ -82,10 +86,13 @@ class FeedProcessor:
     def _process_episodes(self, feed: Feed) -> tuple[list[Future[DownloadResult]], QueueCompletionType]:
         futures: list[Future[DownloadResult]] = []
         for idx, episode in enumerate(feed.episode_iter(self.settings.maximum_episode_count), 1):
+            target = self.filename_formatter.format(episode=episode, feed_info=feed.info)
             download_job = DownloadJob(
                 episode,
+                target=target,
                 feed_info=feed.info,
-                settings=self.settings,
+                debug_partial=self.settings.debug_partial,
+                write_info_json=self.settings.write_info_json,
                 progress=self.progress,
                 stop_event=self.stop_event,
             )

@@ -36,13 +36,11 @@ class Settings(BaseModel):
 
     feeds: list[AnyHttpUrl] = Field(
         default_factory=list,
-        alias="feed",
         description="Feed URLs to archive.",
     )
 
     opml_files: list[UserExpandedFile] = Field(
         default_factory=list,
-        alias="opml",
         description=(
             "OPML files containing feed URLs to archive. OPML files can be exported from a variety of podcatchers."
         ),
@@ -50,7 +48,6 @@ class Settings(BaseModel):
 
     archive_directory: UserExpandedDir = Field(
         default=UserExpandedDir("."),
-        alias="dir",
         description=(
             "Directory to which to download the podcast archive. "
             "By default, the archive will be created in the current working directory  ('.')."
@@ -59,7 +56,6 @@ class Settings(BaseModel):
 
     update_archive: bool = Field(
         default=False,
-        alias="update",
         description=(
             "Update the feeds with newly added episodes only. "
             "Adding episodes ends with the first episode already present in the download directory."
@@ -68,31 +64,26 @@ class Settings(BaseModel):
 
     write_info_json: bool = Field(
         default=False,
-        alias="write_info_json",
         description="Write episode metadata to a .info.json file next to the media file itself.",
     )
 
     quiet: bool = Field(
         default=False,
-        alias="quiet",
         description="Print only minimal progress information. Errors will always be emitted.",
     )
 
     verbose: int = Field(
         default=0,
-        alias="verbose",
         description="Increase the level of verbosity while downloading.",
     )
 
     slugify_paths: bool = Field(
         default=False,
-        alias="slugify",
         description="Format filenames in the most compatible way, replacing all special characters.",
     )
 
     filename_template: str = Field(
-        alias="filename_template",
-        default="{show.title}/{episode.published_time:%Y-%m-%d} - {episode.title}.{ext}",
+        default=constants.DEFAULT_FILENAME_TEMPLATE,
         description=(
             "Template to be used when generating filenames. Available template variables are: "
             f"{ALL_FIELD_TITLES_STR}, and 'ext' (the filename extension)"
@@ -101,7 +92,6 @@ class Settings(BaseModel):
 
     maximum_episode_count: int = Field(
         default=0,
-        alias="max_episodes",
         description=(
             "Only download the given number of episodes per podcast feed. "
             "Useful if you don't really need the entire backlog."
@@ -110,14 +100,17 @@ class Settings(BaseModel):
 
     concurrency: int = Field(
         default=4,
-        alias="concurrency",
         description="Maximum number of simultaneous downloads.",
     )
 
     debug_partial: bool = Field(
         default=False,
-        alias="debug_partial",
         description=f"Download only the first {constants.DEBUG_PARTIAL_SIZE} bytes of episodes for debugging purposes.",
+    )
+
+    config_path: FilePath | None = Field(
+        default=None,
+        exclude=True,
     )
 
     @classmethod
@@ -135,9 +128,13 @@ class Settings(BaseModel):
         except YAMLError as exc:
             raise InvalidSettings("Not a valid YAML document") from exc
 
-        if content:
-            return cls.load_from_dict(content)
-        return cls()
+        content = content or {}
+
+        if not isinstance(content, dict):
+            raise InvalidSettings("Not a valid YAML document")
+
+        content.update(config_path=path)
+        return cls.load_from_dict(content)
 
     @classmethod
     def generate_default_config(cls, file: IO[Text] | None = None) -> None:
@@ -150,6 +147,8 @@ class Settings(BaseModel):
         ]
 
         for name, field in cls.model_fields.items():
+            if name in ("config_path",):
+                continue
             cli_opt = (
                 wrapper.wrap(f"Equivalent command line option: --{field.alias.replace('_', '-')}")
                 if field.alias
@@ -175,6 +174,3 @@ class Settings(BaseModel):
     @cached_property
     def filename_formatter(self) -> FilenameFormatter:
         return FilenameFormatter(self)
-
-
-DEFAULT_SETTINGS = Settings()
