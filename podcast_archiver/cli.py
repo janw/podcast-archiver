@@ -1,23 +1,30 @@
+from __future__ import annotations
+
+import os
 import pathlib
-from os import PathLike, getenv
-from typing import Any, cast
+import stat
+from os import getenv
+from typing import TYPE_CHECKING, Any
 
 import rich_click as click
-from click.core import Context, Parameter
 
 from podcast_archiver import __version__ as version
+from podcast_archiver import constants
 from podcast_archiver.base import PodcastArchiver
-from podcast_archiver.config import DEFAULT_SETTINGS, Settings
+from podcast_archiver.config import Settings
 from podcast_archiver.console import console
-from podcast_archiver.constants import ENVVAR_PREFIX, PROG_NAME
 from podcast_archiver.exceptions import InvalidSettings
 from podcast_archiver.logging import configure_logging
+
+if TYPE_CHECKING:
+    from click.shell_completion import CompletionItem
+
 
 click.rich_click.USE_RICH_MARKUP = True
 click.rich_click.USE_MARKDOWN = True
 click.rich_click.OPTIONS_PANEL_TITLE = "Miscellaneous Options"
 click.rich_click.OPTION_GROUPS = {
-    PROG_NAME: [
+    constants.PROG_NAME: [
         {
             "name": "Basic parameters",
             "options": [
@@ -46,54 +53,53 @@ click.rich_click.OPTION_GROUPS = {
 }
 
 
-class ConfigPath(click.Path):
-    def __init__(self) -> None:
-        return super().__init__(
-            exists=True,
-            readable=True,
-            file_okay=True,
-            dir_okay=False,
-            resolve_path=True,
-            path_type=pathlib.Path,
-        )
+class ConfigFile(click.ParamType):
+    name = "file"
 
-    def convert(  # type: ignore[override]
-        self, value: str | PathLike[str], param: Parameter | None, ctx: Context | None
-    ) -> str | bytes | PathLike[str] | None:
-        if value is None:
-            return None
-        if (
-            ctx
-            and param
-            and isinstance(value, pathlib.Path)
-            and value == param.get_default(ctx, call=True)
-            and not value.exists()
-        ):
-            try:
+    def _check_existence(self, value: pathlib.Path, param: click.Parameter | None, ctx: click.Context | None) -> None:
+        try:
+            st = value.stat()
+        except OSError:
+            if value == get_default_config_path():
                 value.parent.mkdir(exist_ok=True, parents=True)
                 with value.open("w") as fp:
                     Settings.generate_default_config(file=fp)
-            except (OSError, FileNotFoundError):
-                return None
+                return
 
-        filepath = cast(pathlib.Path, super().convert(value, param, ctx))
-        if not ctx or ctx.resilient_parsing:
-            return filepath
+            self.fail(f"{self.name.title()} {click.format_filename(value)!r} does not exist.", param, ctx)
 
-        try:
-            ctx.default_map = ctx.default_map or {}
-            settings = Settings.load_from_yaml(filepath)
-            ctx.default_map.update(settings.model_dump(exclude_unset=True, exclude_none=True, by_alias=True))
-        except InvalidSettings as exc:
-            self.fail(f"{self.name.title()} {click.format_filename(filepath)!r} is invalid: {exc}", param, ctx)
+        if not stat.S_ISREG(st.st_mode):
+            self.fail(f"{self.name.title()} {click.format_filename(value)!r} is not a file.", param, ctx)
 
-        return filepath
+        if not os.access(value, os.R_OK):
+            self.fail(f"{self.name.title()} {click.format_filename(value)!r} is not readable.", param, ctx)
+
+    def convert(
+        self, value: str | pathlib.Path, param: click.Parameter | None, ctx: click.Context | None
+    ) -> pathlib.Path:
+        if isinstance(value, str):
+            value = pathlib.Path(value)
+        value = value.resolve()
+        self._check_existence(value, param, ctx)
+
+        if ctx:
+            try:
+                settings = Settings.load_from_yaml(value)
+                ctx.default_map = settings.model_dump(exclude_unset=True, exclude_none=True)
+            except InvalidSettings as exc:
+                self.fail(f"{self.name.title()} {click.format_filename(value)!r} is invalid: {exc}", param, ctx)
+        return value
+
+    def shell_complete(self, ctx: click.Context, param: click.Parameter, incomplete: str) -> list[CompletionItem]:
+        from click.shell_completion import CompletionItem
+
+        return [CompletionItem(incomplete, type="file")]
 
 
 def get_default_config_path() -> pathlib.Path | None:
     if getenv("TESTING", "0").lower() in ("1", "true"):
         return None
-    return pathlib.Path(click.get_app_dir(PROG_NAME)) / "config.yaml"  # pragma: no cover
+    return (pathlib.Path(click.get_app_dir(constants.PROG_NAME)) / "config.yaml").resolve()  # pragma: no cover
 
 
 def generate_default_config(ctx: click.Context, param: click.Parameter, value: bool) -> None:
@@ -106,7 +112,7 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
 
 @click.command(
     context_settings={
-        "auto_envvar_prefix": ENVVAR_PREFIX,
+        "auto_envvar_prefix": constants.ENVVAR_PREFIX,
     },
     help="Archive all of your favorite podcasts",
 )
@@ -114,6 +120,7 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
 @click.option(
     "-f",
     "--feed",
+    "feeds",
     multiple=True,
     show_envvar=True,
     help=Settings.model_fields["feeds"].description + " Use repeatedly for multiple feeds.",  # type: ignore[operator]
@@ -121,6 +128,14 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
 @click.option(
     "-o",
     "--opml",
+    "opml_files",
+    type=click.Path(
+        exists=True,
+        readable=True,
+        dir_okay=False,
+        resolve_path=True,
+        path_type=pathlib.Path,
+    ),
     multiple=True,
     show_envvar=True,
     help=(
@@ -131,6 +146,7 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
 @click.option(
     "-d",
     "--dir",
+    "archive_directory",
     type=click.Path(
         exists=False,
         writable=True,
@@ -141,7 +157,7 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     ),
     show_default=True,
     required=False,
-    default=DEFAULT_SETTINGS.archive_directory,
+    default=pathlib.Path("."),
     show_envvar=True,
     help=Settings.model_fields["archive_directory"].description,
 )
@@ -151,15 +167,15 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     type=str,
     show_default=True,
     required=False,
-    default=DEFAULT_SETTINGS.filename_template,
+    default=constants.DEFAULT_FILENAME_TEMPLATE,
     show_envvar=True,
     help=Settings.model_fields["filename_template"].description,
 )
 @click.option(
     "-u",
     "--update",
+    "update_archive",
     type=bool,
-    default=DEFAULT_SETTINGS.update_archive,
     is_flag=True,
     show_envvar=True,
     help=Settings.model_fields["update_archive"].description,
@@ -167,7 +183,6 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
 @click.option(
     "--write-info-json",
     type=bool,
-    default=DEFAULT_SETTINGS.write_info_json,
     is_flag=True,
     show_envvar=True,
     help=Settings.model_fields["write_info_json"].description,
@@ -176,7 +191,6 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     "-q",
     "--quiet",
     type=bool,
-    default=DEFAULT_SETTINGS.quiet,
     is_flag=True,
     show_envvar=True,
     help=Settings.model_fields["quiet"].description,
@@ -185,14 +199,13 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     "-C",
     "--concurrency",
     type=int,
-    default=DEFAULT_SETTINGS.concurrency,
+    default=constants.DEFAULT_CONCURRENCY,
     show_envvar=True,
     help=Settings.model_fields["concurrency"].description,
 )
 @click.option(
     "--debug-partial",
     type=bool,
-    default=DEFAULT_SETTINGS.debug_partial,
     is_flag=True,
     show_envvar=True,
     help=Settings.model_fields["debug_partial"].description,
@@ -202,14 +215,13 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     "--verbose",
     count=True,
     show_envvar=True,
-    default=DEFAULT_SETTINGS.verbose,
     help=Settings.model_fields["verbose"].description,
 )
 @click.option(
     "-S",
     "--slugify",
+    "slugify_paths",
     type=bool,
-    default=DEFAULT_SETTINGS.slugify_paths,
     is_flag=True,
     show_envvar=True,
     help=Settings.model_fields["slugify_paths"].description,
@@ -217,15 +229,16 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
 @click.option(
     "-m",
     "--max-episodes",
+    "maximum_episode_count",
     type=int,
-    default=DEFAULT_SETTINGS.maximum_episode_count,
+    default=0,
     help=Settings.model_fields["maximum_episode_count"].description,
 )
 @click.version_option(
     version,
     "-V",
     "--version",
-    prog_name=PROG_NAME,
+    prog_name=constants.PROG_NAME,
 )
 @click.option(
     "--config-generate",
@@ -239,8 +252,8 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
 @click.option(
     "-c",
     "--config",
-    type=ConfigPath(),
-    expose_value=False,
+    "config_path",
+    type=ConfigFile(),
     default=get_default_config_path,
     show_default=False,
     is_eager=True,
@@ -272,4 +285,4 @@ def main(ctx: click.RichContext, /, **kwargs: Any) -> int:
 
 
 if __name__ == "__main__":
-    main.main(prog_name=PROG_NAME)
+    main.main(prog_name=constants.PROG_NAME)

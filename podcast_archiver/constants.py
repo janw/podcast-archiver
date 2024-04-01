@@ -1,3 +1,4 @@
+import pathlib
 import re
 
 from podcast_archiver import __version__
@@ -13,3 +14,7 @@ DOWNLOAD_CHUNK_SIZE = 256 * 1024
 DEBUG_PARTIAL_SIZE = DOWNLOAD_CHUNK_SIZE * 4
 
 MAX_TITLE_LENGTH = 96
+
+DEFAULT_ARCHIVE_DIRECTORY = pathlib.Path(".")
+DEFAULT_FILENAME_TEMPLATE = "{show.title}/{episode.published_time:%Y-%m-%d} - {episode.title}.{ext}"
+DEFAULT_CONCURRENCY = 4
