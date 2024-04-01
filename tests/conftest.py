@@ -2,12 +2,15 @@ from __future__ import annotations
 
 import os
 import re
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Iterable
 
 import feedparser
 import pytest
 from pydantic_core import Url
+
+from podcast_archiver.models import Episode, Link
 
 if TYPE_CHECKING:
     from responses import RequestsMock
@@ -50,6 +53,7 @@ def feed_lautsprecher_empty(responses: RequestsMock) -> Url:
 
 @pytest.fixture
 def feedobj_lautsprecher(responses: RequestsMock) -> Url:
+    responses.assert_all_requests_are_fired = False
     responses.add(responses.GET, MEDIA_URL, b"BLOB")
     return FEED_OBJ
 
@@ -64,3 +68,18 @@ def tmp_path_cd(request: pytest.FixtureRequest, tmp_path: str) -> Iterable[str]:
     os.chdir(tmp_path)
     yield tmp_path
     os.chdir(request.config.invocation_params.dir)
+
+
+@pytest.fixture
+def episode() -> Episode:
+    return Episode(
+        title="Some Episode",
+        subtitle="The unreleased version",
+        author="Janw",
+        published_parsed=datetime(2023, 3, 12, 12, 34, 56, tzinfo=timezone.utc),
+        enclosure=Link(
+            rel="enclosure",
+            link_type="audio/mpeg",
+            href="http://nowhere.invalid/file.mp3",
+        ),
+    )

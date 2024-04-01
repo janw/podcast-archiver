@@ -4,6 +4,7 @@
 *.mp3
 *.m4a
 *.yaml
+*.db
 !.github/**/*.yaml
 
 archive/

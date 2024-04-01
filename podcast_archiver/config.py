@@ -3,11 +3,19 @@ from __future__ import annotations
 import pathlib
 import textwrap
 from datetime import datetime
-from functools import cached_property
+from os import getenv
 from typing import IO, Any, Text
 
 import pydantic
-from pydantic import AnyHttpUrl, BaseModel, BeforeValidator, DirectoryPath, Field, FilePath
+from pydantic import (
+    AnyHttpUrl,
+    BaseModel,
+    BeforeValidator,
+    DirectoryPath,
+    Field,
+    FilePath,
+    NewPath,
+)
 from pydantic import ConfigDict as _ConfigDict
 from pydantic_core import to_json
 from typing_extensions import Annotated
@@ -15,10 +23,9 @@ from yaml import YAMLError, safe_load
 
 from podcast_archiver import __version__ as version
 from podcast_archiver import constants
-from podcast_archiver.console import console
+from podcast_archiver.database import BaseDatabase, Database, DummyDatabase
 from podcast_archiver.exceptions import InvalidSettings
 from podcast_archiver.models import ALL_FIELD_TITLES_STR
-from podcast_archiver.utils import FilenameFormatter
 
 
 def expanduser(v: pathlib.Path) -> pathlib.Path:
@@ -29,6 +36,12 @@ def expanduser(v: pathlib.Path) -> pathlib.Path:
 
 UserExpandedDir = Annotated[DirectoryPath, BeforeValidator(expanduser)]
 UserExpandedFile = Annotated[FilePath, BeforeValidator(expanduser)]
+UserExpandedPossibleFile = Annotated[FilePath | NewPath, BeforeValidator(expanduser)]
+
+
+def in_ci() -> bool:
+    val = getenv("CI", "").lower()
+    return val.lower() in ("true", "1")
 
 
 class Settings(BaseModel):
@@ -108,7 +121,22 @@ class Settings(BaseModel):
         description=f"Download only the first {constants.DEBUG_PARTIAL_SIZE} bytes of episodes for debugging purposes.",
     )
 
-    config_path: FilePath | None = Field(
+    database: UserExpandedPossibleFile | None = Field(
+        default=None,
+        description=(
+            "Location of the database to keep track of downloaded episodes. By default, the database will be created "
+            f"as '{constants.DEFAULT_DATABASE_FILENAME}' in the directory of the config file."
+        ),
+    )
+    ignore_database: bool = Field(
+        default=False,
+        description=(
+            "Ignore the episodes database when downloading. This will cause files to be downloaded again, even if they "
+            "already exist in the database."
+        ),
+    )
+
+    config: FilePath | None = Field(
         default=None,
         exclude=True,
     )
@@ -133,7 +161,7 @@ class Settings(BaseModel):
         if not isinstance(content, dict):
             raise InvalidSettings("Not a valid YAML document")
 
-        content.update(config_path=path)
+        content.update(config=path)
         return cls.load_from_dict(content)
 
     @classmethod
@@ -147,7 +175,7 @@ class Settings(BaseModel):
         ]
 
         for name, field in cls.model_fields.items():
-            if name in ("config_path",):
+            if name in ("config",):
                 continue
             cli_opt = (
                 wrapper.wrap(f"Equivalent command line option: --{field.alias.replace('_', '-')}")
@@ -166,11 +194,22 @@ class Settings(BaseModel):
 
         contents = "\n".join(lines).strip()
         if not file:
+            from podcast_archiver.console import console
+
             console.print(contents, highlight=False)
             return
         with file:
             file.write(contents + "\n")
 
-    @cached_property
-    def filename_formatter(self) -> FilenameFormatter:
-        return FilenameFormatter(self)
+    def get_database(self) -> BaseDatabase:
+        if getenv("TESTING", "0").lower() in ("1", "true"):
+            return DummyDatabase()
+
+        if self.database:
+            db_path = str(self.database)
+        elif self.config:
+            db_path = str(self.config.parent / constants.DEFAULT_DATABASE_FILENAME)
+        else:
+            db_path = constants.DEFAULT_DATABASE_FILENAME
+
+        return Database(filename=db_path, ignore_existing=self.ignore_database)

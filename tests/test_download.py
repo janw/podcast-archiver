@@ -21,41 +21,36 @@ if TYPE_CHECKING:
 def test_download_job(tmp_path_cd: Path, feedobj_lautsprecher: dict[str, Any]) -> None:
     feed = FeedPage.model_validate(feedobj_lautsprecher)
     episode = feed.episodes[0]
-    mock_progress = mock.Mock(
-        **{
-            "add_task.return_value": 0,
-            "update.return_value": None,
-        }
-    )
-    job = download.DownloadJob(episode=episode, feed_info=feed.feed, target=Path("file.mp3"), progress=mock_progress)
+    mock_progress = mock.Mock(return_value=None)
+    job = download.DownloadJob(episode=episode, target=Path("file.mp3"), progress_callback=mock_progress)
     result = job()
 
-    assert result == DownloadResult.COMPLETED_SUCCESSFULLY
-    mock_progress.add_task.assert_called_once()
-    mock_progress.update.assert_called()
+    assert result == (episode, DownloadResult.COMPLETED_SUCCESSFULLY)
+    mock_progress.assert_called()
+    assert mock_progress.call_count == 2
 
 
 def test_download_already_exists(tmp_path_cd: Path, feedobj_lautsprecher_notconsumed: dict[str, Any]) -> None:
     feed = FeedPage.model_validate(feedobj_lautsprecher_notconsumed)
     episode = feed.episodes[0]
 
-    job = download.DownloadJob(episode=episode, feed_info=feed.feed, target=Path("file.mp3"))
+    job = download.DownloadJob(episode=episode, target=Path("file.mp3"))
     job.target.parent.mkdir(exist_ok=True)
     job.target.touch()
     result = job()
 
-    assert result == DownloadResult.ALREADY_EXISTS
+    assert result == (episode, DownloadResult.ALREADY_EXISTS)
 
 
 def test_download_aborted(tmp_path_cd: Path, feedobj_lautsprecher: dict[str, Any]) -> None:
     feed = FeedPage.model_validate(feedobj_lautsprecher)
     episode = feed.episodes[0]
 
-    job = download.DownloadJob(episode=episode, feed_info=feed.feed, target=Path("file.mp3"))
+    job = download.DownloadJob(episode=episode, target=Path("file.mp3"))
     job.stop_event.set()
     result = job()
 
-    assert result == DownloadResult.ABORTED
+    assert result == (episode, DownloadResult.ABORTED)
 
 
 class PartialObjectMock(Protocol):
@@ -84,11 +79,11 @@ def test_download_failed(
     if should_download:
         responses.add(responses.GET, MEDIA_URL, b"BLOB")
 
-    job = download.DownloadJob(episode=episode, feed_info=feed.feed, target=Path("file.mp3"))
+    job = download.DownloadJob(episode=episode, target=Path("file.mp3"))
     with failure_mode(side_effect=side_effect), caplog.at_level(logging.ERROR):
         result = job()
 
-    assert result == DownloadResult.FAILED
+    assert result == (episode, DownloadResult.FAILED)
     failure_rec = None
     for record in caplog.records:
         if record.message == "Download failed":
@@ -105,13 +100,8 @@ def test_download_failed(
 def test_download_info_json(tmp_path_cd: Path, feedobj_lautsprecher: dict[str, Any], write_info_json: bool) -> None:
     feed = FeedPage.model_validate(feedobj_lautsprecher)
     episode = feed.episodes[0]
-    job = download.DownloadJob(
-        episode=episode,
-        feed_info=feed.feed,
-        target=tmp_path_cd / "file.mp3",
-        write_info_json=write_info_json,
-    )
+    job = download.DownloadJob(episode=episode, target=tmp_path_cd / "file.mp3", write_info_json=write_info_json)
     result = job()
 
-    assert result == DownloadResult.COMPLETED_SUCCESSFULLY
+    assert result == (episode, DownloadResult.COMPLETED_SUCCESSFULLY)
     assert job.infojsonfile.exists() == write_info_json
