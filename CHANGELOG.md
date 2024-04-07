@@ -1,3 +1,9 @@
+## v1.3.3 (2024-04-07)
+
+### Fix
+
+- Restore docker entrypoint, update dockerfile (#127, #125)
+
 ## v1.3.2 (2024-04-07)
 
 ### Fix
