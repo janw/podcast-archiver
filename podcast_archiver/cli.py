@@ -257,6 +257,7 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     default=get_default_config_path,
     show_default=False,
     is_eager=True,
+    envvar=constants.ENVVAR_PREFIX + "_CONFIG",
     show_envvar=True,
     help="Path to a config file. Command line arguments will take precedence.",
 )

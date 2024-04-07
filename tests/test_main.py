@@ -1,3 +1,4 @@
+from os import environ
 from pathlib import Path
 from unittest.mock import patch
 
@@ -67,6 +68,17 @@ def test_main_config_file(tmp_path_cd: Path, feed_lautsprecher: Url) -> None:
     configfile.write_text(f"feeds: [{feed_lautsprecher}]")
 
     cli.main(["--config", str(configfile), "-d", tmp_path_cd], standalone_mode=False)
+
+    files = list(tmp_path_cd.glob("**/*.m4a"))
+    assert len(files) == 5
+
+
+def test_main_config_file_envvar(tmp_path_cd: Path, feed_lautsprecher: Url) -> None:
+    configfile = tmp_path_cd / "configtmp.yaml"
+    configfile.write_text(f"feeds: [{feed_lautsprecher}]")
+
+    with patch.dict(environ, {"PODCAST_ARCHIVER_CONFIG": str(configfile)}):
+        cli.main(["-d", tmp_path_cd], standalone_mode=False)
 
     files = list(tmp_path_cd.glob("**/*.m4a"))
     assert len(files) == 5
