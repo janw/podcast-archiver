@@ -1,3 +1,9 @@
+## v1.3.2 (2024-04-07)
+
+### Fix
+
+- restore config envvar as PODCAST_ARCHIVER_CONFIG (#126)
+
 ## v1.3.1 (2024-04-01)
 
 ### Refactor
