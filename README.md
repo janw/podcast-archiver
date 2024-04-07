@@ -48,6 +48,8 @@ Or use it via Docker:
 docker run --tty --rm ghcr.io/janw/podcast-archiver --help
 ```
 
+By default, the docker image downloads episodes to a volume mounted at `/archive`.
+
 ## Usage
 
 Run `podcast-archiver --help` for details on how to use it:
