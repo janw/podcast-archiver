@@ -98,7 +98,7 @@ class FilenameFormatter(Formatter):
             return slugify(formatted)
         return make_filename_safe(formatted)
 
-    def format(self, episode: Episode, feed_info: FeedInfo) -> Path:  # type: ignore[override] # noqa: A003
+    def format(self, episode: Episode, feed_info: FeedInfo) -> Path:  # type: ignore[override]
         kwargs: FormatterKwargs = {
             "episode": episode,
             "show": feed_info,

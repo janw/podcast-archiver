@@ -80,6 +80,7 @@ lint.extend-select = [
     "C90", # mccabe
     "FA",  # future-annotations
     "TCH", # type-checking
+    "RUF", # ruff-specific
 ]
 lint.ignore = [
     "SIM108", # if-else-block-instead-of-if-exp
@@ -109,7 +110,7 @@ source = [
 
 [tool.coverage.report]
 exclude_also = [
-    "if TYPE_CHECKING:"
+    "if TYPE_CHECKING:",
 ]
 fail_under = 60
 precision = 2

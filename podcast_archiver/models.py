@@ -73,7 +73,13 @@ class Episode(BaseModel):
     shownotes: str | None = Field(None, repr=False)
     content: list[Content] | None = Field(None, repr=False, alias="content", exclude=True)
 
-    _feed_info: FeedInfo
+    guid: str = Field(default=None, alias="id")  # type: ignore[assignment]
+
+    def __hash__(self) -> int:
+        return hash(self.guid)
+
+    def __eq__(self, other: Episode | Any) -> bool:
+        return isinstance(other, Episode) and self.guid == other.guid
 
     @field_validator("published_time", mode="before")
     @classmethod
@@ -105,6 +111,15 @@ class Episode(BaseModel):
     def populate_enclosure(self) -> Episode:
         if not self.enclosure:
             self.enclosure = self._get_enclosure_url()
+        self.original_filename = Path(self.enclosure.href.path).name if self.enclosure.href.path else ""
+        return self
+
+    @model_validator(mode="after")
+    def ensure_guid(self) -> Episode:
+        if not self.guid:
+            # If no GUID is given, use the enclosure url instead
+            # See https://help.apple.com/itc/podcasts_connect/#/itcb54353390
+            self.guid = self.enclosure.url
         self.original_filename = Path(self.enclosure.href.path).name if self.enclosure.href.path else ""
         return self
 

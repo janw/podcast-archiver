@@ -11,7 +11,7 @@ import rich_click as click
 from podcast_archiver import __version__ as version
 from podcast_archiver import constants
 from podcast_archiver.base import PodcastArchiver
-from podcast_archiver.config import Settings
+from podcast_archiver.config import Settings, in_ci
 from podcast_archiver.console import console
 from podcast_archiver.exceptions import InvalidSettings
 from podcast_archiver.logging import configure_logging
@@ -32,6 +32,7 @@ click.rich_click.OPTION_GROUPS = {
                 "--opml",
                 "--dir",
                 "--config",
+                "--database",
             ],
         },
         {
@@ -47,6 +48,7 @@ click.rich_click.OPTION_GROUPS = {
             "options": [
                 "--update",
                 "--max-episodes",
+                "--ignore-database",
             ],
         },
     ]
@@ -155,7 +157,6 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
         resolve_path=True,
         path_type=pathlib.Path,
     ),
-    show_default=True,
     required=False,
     default=pathlib.Path("."),
     show_envvar=True,
@@ -232,6 +233,7 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     "maximum_episode_count",
     type=int,
     default=0,
+    show_envvar=True,
     help=Settings.model_fields["maximum_episode_count"].description,
 )
 @click.version_option(
@@ -252,14 +254,32 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
 @click.option(
     "-c",
     "--config",
-    "config_path",
+    "config",
     type=ConfigFile(),
-    default=get_default_config_path,
-    show_default=False,
+    default=get_default_config_path(),
+    show_default=not in_ci(),
     is_eager=True,
     envvar=constants.ENVVAR_PREFIX + "_CONFIG",
     show_envvar=True,
     help="Path to a config file. Command line arguments will take precedence.",
+)
+@click.option(
+    "--database",
+    type=click.Path(
+        exists=False,
+        dir_okay=False,
+        resolve_path=True,
+    ),
+    default=None,
+    show_envvar=True,
+    help=Settings.model_fields["database"].description,
+)
+@click.option(
+    "--ignore-database",
+    type=bool,
+    is_flag=True,
+    show_envvar=True,
+    help=Settings.model_fields["ignore_database"].description,
 )
 @click.pass_context
 def main(ctx: click.RichContext, /, **kwargs: Any) -> int:
@@ -278,7 +298,7 @@ def main(ctx: click.RichContext, /, **kwargs: Any) -> int:
         pa.run()
     except InvalidSettings as exc:
         raise click.BadParameter(f"Invalid settings: {exc}") from exc
-    except KeyboardInterrupt as exc:
+    except KeyboardInterrupt as exc:  # pragma: no cover
         raise click.Abort("Interrupted by user") from exc
     except FileNotFoundError as exc:
         raise click.Abort(exc) from exc
