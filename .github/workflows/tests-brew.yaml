@@ -1,0 +1,52 @@
+name: Brew Tests
+
+on:
+  pull_request:
+
+env:
+  HOMEBREW_NO_AUTO_UPDATE: "1"
+
+jobs:
+  test-formula:
+    runs-on: macos-latest
+    env:
+      PIP_CACHE_DIR: ~/.pip-cache
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            pyproject.toml
+            poetry.lock
+            brew/template.rb.j2
+          sparse-checkout-cone-mode: false
+
+      - name: Install poetry + poetry-brew
+        run: |
+          pipx install 'poetry>=1.7.0'
+          pipx inject poetry poetry-homebrew-formula
+
+      - name: Configure cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.PIP_CACHE_DIR }}
+          key: brew-${{ hashFiles('poetry.lock') }}
+          restore-keys: brew-
+
+      - name: Render formula template
+        shell: bash
+        run: |
+          brew tap-new --no-git janw/testing
+          poetry homebrew-formula \
+          --verbose \
+          --template brew/template.rb.j2 \
+          --output "$(brew --repo janw/testing)/Formula/podcast-archiver.rb"
+
+      - name: Install formula
+        shell: bash
+        run: brew install podcast-archiver
+
+      - name: Test formula
+        shell: bash
+        run: brew test podcast-archiver
