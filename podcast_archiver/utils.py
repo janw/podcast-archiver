@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from podcast_archiver.models import Episode, FeedInfo
 
 filename_safe_re = re.compile(r'[/\\?%*:|"<>]')
-slug_safe_re = re.compile(r"[^A-Za-z0-9-_\.\/]+")
+slug_safe_re = re.compile(r"[^A-Za-z0-9-_\.]+")
 
 
 MIMETYPE_EXTENSION_MAPPING: dict[str, str] = {
