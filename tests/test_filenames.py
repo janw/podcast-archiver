@@ -5,8 +5,8 @@ from podcast_archiver.models import Episode, FeedInfo
 from podcast_archiver.utils import FilenameFormatter
 
 FEED_INFO = FeedInfo(
-    title="That Show",
-    subtitle="The one that never came to be",
+    title="That\Show",
+    subtitle="The one that never comes/came to be",
     author="TheJanwShow",
     language="de-DE",
 )
@@ -18,22 +18,27 @@ FEED_INFO = FeedInfo(
         (
             "{show.title}/{episode.published_time:%Y-%m-%d %H%M%S %Z} - {episode.title}.{ext}",
             False,
-            "That Show/2023-03-12 123456 UTC - Some Episode.mp3",
+            "That-Show/2023-03-12 123456 UTC - Some Episode.mp3",
+        ),
+        (
+            "{show.title}/{episode.published_time:%Y-%m-%d %H%M%S %Z} - {episode.title}.{ext}",
+            True,
+            "That-Show/2023-03-12-123456-UTC - Some-Episode.mp3",
         ),
         (
             "{show.author} - {show.subtitle}/{show.language} - {episode.published_time} - {episode.author}.{ext}",
             False,
-            "TheJanwShow - The one that never came to be/de-DE - 2023-03-12 - Janw.mp3",
+            "TheJanwShow - The one that never comes-came to be/de-DE - 2023-03-12 - Janw.mp3",
         ),
         (
             "{show.author}--{show.subtitle}/{show.language}--{episode.published_time}--{episode.author}.{ext}",
             True,
-            "TheJanwShow--The-one-that-never-came-to-be/de-DE--2023-03-12--Janw.mp3",
+            "TheJanwShow--The-one-that-never-comes-came-to-be/de-DE--2023-03-12--Janw.mp3",
         ),
         (
             "{show.author} -- {show.subtitle}/{episode.published_time} {episode.original_filename}",
             False,
-            "TheJanwShow -- The one that never came to be/2023-03-12 file.mp3",
+            "TheJanwShow -- The one that never comes-came to be/2023-03-12 file.mp3",
         ),
     ],
 )
