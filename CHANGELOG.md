@@ -1,3 +1,9 @@
+## v1.4.4 (2024-06-08)
+
+### Fix
+
+- Remove unnecessary parsing of feed link (#159)
+
 ## v1.4.3 (2024-06-08)
 
 ### Fix
