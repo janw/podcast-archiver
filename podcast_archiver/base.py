@@ -4,8 +4,6 @@ import xml.etree.ElementTree as etree
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pydantic import AnyHttpUrl
-
 from podcast_archiver.console import console
 from podcast_archiver.logging import logger
 from podcast_archiver.processor import FeedProcessor
@@ -18,7 +16,7 @@ if TYPE_CHECKING:
 
 class PodcastArchiver:
     settings: Settings
-    feeds: set[AnyHttpUrl]
+    feeds: set[str]
 
     def __init__(self, settings: Settings):
         self.settings = settings
@@ -37,7 +35,7 @@ class PodcastArchiver:
         def _cleanup() -> None:
             self.processor.shutdown()
 
-    def add_feed(self, feed: Path | AnyHttpUrl) -> None:
+    def add_feed(self, feed: Path | str) -> None:
         if isinstance(feed, Path):
             with open(feed, "r") as fp:
                 self.feeds.union(set(fp.read().strip().splitlines()))
@@ -51,7 +49,7 @@ class PodcastArchiver:
         # TODO: Move parsing to pydantic
         for elem in tree.findall(".//outline[@type='rss'][@xmlUrl!='']"):
             if url := elem.get("xmlUrl"):
-                self.add_feed(AnyHttpUrl(url))
+                self.add_feed(url)
 
     def run(self) -> int:
         failures = 0

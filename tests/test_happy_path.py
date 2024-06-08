@@ -7,7 +7,7 @@ from podcast_archiver.base import PodcastArchiver
 from podcast_archiver.config import Settings
 
 
-def test_happy_path(tmp_path: Path, feed_lautsprecher: Url) -> None:
+def test_happy_path(tmp_path: Path, feed_lautsprecher: str) -> None:
     settings = Settings(archive_directory=tmp_path, feeds=[feed_lautsprecher], quiet=True)
     pa = PodcastArchiver(settings)
     pa.run()
@@ -16,7 +16,7 @@ def test_happy_path(tmp_path: Path, feed_lautsprecher: Url) -> None:
     assert len(files) == 5
 
 
-def test_happy_path_info_json(tmp_path: Path, feed_lautsprecher: Url) -> None:
+def test_happy_path_info_json(tmp_path: Path, feed_lautsprecher: str) -> None:
     settings = Settings(archive_directory=tmp_path, feeds=[feed_lautsprecher], quiet=True, write_info_json=True)
     pa = PodcastArchiver(settings)
     pa.run()
@@ -27,7 +27,7 @@ def test_happy_path_info_json(tmp_path: Path, feed_lautsprecher: Url) -> None:
     assert len(files) == 5
 
 
-def test_happy_path_max_episodes(tmp_path: Path, feed_lautsprecher: Url, capsys: pytest.CaptureFixture[str]) -> None:
+def test_happy_path_max_episodes(tmp_path: Path, feed_lautsprecher: str, capsys: pytest.CaptureFixture[str]) -> None:
     settings = Settings(
         archive_directory=tmp_path,
         feeds=[feed_lautsprecher],
@@ -44,7 +44,7 @@ def test_happy_path_max_episodes(tmp_path: Path, feed_lautsprecher: Url, capsys:
     assert "Maximum episode count reached" in outerr.out
 
 
-def test_happy_path_files_exist(tmp_path: Path, feed_lautsprecher: Url) -> None:
+def test_happy_path_files_exist(tmp_path: Path, feed_lautsprecher: str) -> None:
     (tmp_path / "LS015 Der Sender bin ich.m4a").touch()
     settings = Settings(
         archive_directory=tmp_path,
