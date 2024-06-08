@@ -1,3 +1,9 @@
+## v1.4.2 (2024-06-08)
+
+### Fix
+
+- Avoid parsing links unless it's the enclosure (#156)
+
 ## v1.4.1 (2024-06-08)
 
 ### Fix
