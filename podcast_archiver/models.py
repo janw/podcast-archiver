@@ -10,7 +10,6 @@ from urllib.parse import urlparse
 import feedparser
 from pydantic import (
     AliasChoices,
-    AnyHttpUrl,
     BaseModel,
     ConfigDict,
     Field,
@@ -141,7 +140,6 @@ class FeedInfo(BaseModel):
     subtitle: str | None = Field(default=None, title="show.subtitle")
     author: str | None = Field(default=None, title="show.author")
     language: str | None = Field(default=None, title="show.language")
-    link: AnyHttpUrl | None = None
     links: list[Link] = []
 
     @field_validator("title", mode="after")
