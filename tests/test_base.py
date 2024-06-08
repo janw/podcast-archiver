@@ -17,5 +17,7 @@ from tests.conftest import FEED_URL, FIXTURES_DIR
 def test_add_opml(opml_file: Path) -> None:
     pa = PodcastArchiver(Settings())
     pa.add_from_opml(opml_file)
+    pa.add_from_opml(opml_file)
+    pa.add_feed(FEED_URL)
 
-    assert [str(f) for f in pa.feeds] == [FEED_URL]
+    assert pa.feeds == [FEED_URL]
