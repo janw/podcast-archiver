@@ -1,3 +1,9 @@
+## v1.4.1 (2024-06-08)
+
+### Fix
+
+- Replace slashes in slugify (#153)
+
 ## v1.4.0 (2024-04-17)
 
 ### Feat
