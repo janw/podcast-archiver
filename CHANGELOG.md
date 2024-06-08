@@ -1,3 +1,9 @@
+## v1.4.3 (2024-06-08)
+
+### Fix
+
+- Maintain order of feeds as passed in (#157)
+
 ## v1.4.2 (2024-06-08)
 
 ### Fix
