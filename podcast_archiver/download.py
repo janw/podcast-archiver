@@ -1,38 +1,36 @@
 from __future__ import annotations
 
+from contextlib import nullcontext
 from threading import Event
-from typing import IO, TYPE_CHECKING
+from typing import IO, TYPE_CHECKING, NoReturn
+
+from tqdm import tqdm
+from tqdm.contrib.logging import logging_redirect_tqdm
 
 from podcast_archiver import constants
-from podcast_archiver.console import noop_callback
 from podcast_archiver.enums import DownloadResult
 from podcast_archiver.logging import logger
 from podcast_archiver.session import session
-from podcast_archiver.types import EpisodeResult, ProgressCallback
+from podcast_archiver.types import EpisodeResult
 from podcast_archiver.utils import atomic_write
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from requests import Response
-    from rich import progress as rich_progress
 
-    from podcast_archiver.config import Settings
     from podcast_archiver.models import Episode, FeedInfo
 
 
 class DownloadJob:
     episode: Episode
     feed_info: FeedInfo
-    settings: Settings
     target: Path
     stop_event: Event
 
     _debug_partial: bool
     _write_info_json: bool
-
-    _progress: rich_progress.Progress | None = None
-    _task_id: rich_progress.TaskID | None = None
+    _no_progress: bool
 
     def __init__(
         self,
@@ -41,14 +39,14 @@ class DownloadJob:
         target: Path,
         debug_partial: bool = False,
         write_info_json: bool = False,
-        progress_callback: ProgressCallback = noop_callback,
+        no_progress: bool = False,
         stop_event: Event | None = None,
     ) -> None:
         self.episode = episode
         self.target = target
         self._debug_partial = debug_partial
         self._write_info_json = write_info_json
-        self.progress_callback = progress_callback
+        self._no_progress = no_progress
         self.stop_event = stop_event or Event()
 
     def __repr__(self) -> str:
@@ -79,27 +77,36 @@ class DownloadJob:
         )
         response.raise_for_status()
         total_size = int(response.headers.get("content-length", "0"))
-        self.progress_callback(total=total_size)
+        with (
+            logging_redirect_tqdm() if not self._no_progress else nullcontext(),
+            tqdm(
+                desc=f"{self.episode.title} ({self.episode.published_time:%Y-%m-%d})",
+                total=total_size,
+                unit_scale=True,
+                unit="B",
+                disable=self._no_progress,
+            ) as progresser,
+        ):
+            with atomic_write(self.target, mode="wb") as fp:
+                receive_complete = self.receive_data(fp, response, progresser=progresser)
 
-        with atomic_write(self.target, mode="wb") as fp:
-            receive_complete = self.receive_data(fp, response)
+            if not receive_complete:
+                self.target.unlink(missing_ok=True)
+                return EpisodeResult(self.episode, DownloadResult.ABORTED)
 
-        if not receive_complete:
-            self.target.unlink(missing_ok=True)
-            return EpisodeResult(self.episode, DownloadResult.ABORTED)
-
-        logger.info("Completed download of %s", self.target)
+            logger.info("Completed download of %s", self.target)
         return EpisodeResult(self.episode, DownloadResult.COMPLETED_SUCCESSFULLY)
 
     @property
     def infojsonfile(self) -> Path:
         return self.target.with_suffix(".info.json")
 
-    def receive_data(self, fp: IO[str], response: Response) -> bool:
+    def receive_data(self, fp: IO[str], response: Response, progresser: tqdm[NoReturn]) -> bool:
         total_written = 0
         for chunk in response.iter_content(chunk_size=constants.DOWNLOAD_CHUNK_SIZE):
-            total_written += fp.write(chunk)
-            self.progress_callback(completed=total_written)
+            written = fp.write(chunk)
+            total_written += written
+            progresser.update(written)
 
             if self._debug_partial and total_written >= constants.DEBUG_PARTIAL_SIZE:
                 logger.debug("Partial download completed.")

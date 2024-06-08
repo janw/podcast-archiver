@@ -7,12 +7,12 @@ from os import getenv
 from typing import TYPE_CHECKING, Any
 
 import rich_click as click
+from rich import get_console
 
 from podcast_archiver import __version__ as version
 from podcast_archiver import constants
 from podcast_archiver.base import PodcastArchiver
 from podcast_archiver.config import Settings, in_ci
-from podcast_archiver.console import console
 from podcast_archiver.exceptions import InvalidSettings
 from podcast_archiver.logging import configure_logging
 
@@ -284,7 +284,7 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
 @click.pass_context
 def main(ctx: click.RichContext, /, **kwargs: Any) -> int:
     configure_logging(kwargs["verbose"])
-    console.quiet = kwargs["quiet"] or kwargs["verbose"] > 1
+    get_console().quiet = kwargs["quiet"] or kwargs["verbose"] > 1
     try:
         settings = Settings.load_from_dict(kwargs)
 
