@@ -9,3 +9,40 @@ jobs:
 
   mypy:
     uses: janw/workflows/.github/workflows/poetry-mypy.yaml@main
+
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.BOT_PERSONAL_ACCESS_TOKEN }}
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Set up python environment
+        uses: actions/setup-python@v5
+        with:
+          cache: poetry
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: poetry install --no-root --sync
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-v0|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
+          save-always: true
+
+      - run: poetry run pre-commit run --show-diff-on-failure --color=always --all-files
+        shell: bash
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        if: always()
+        with:
+          commit_message: "build(lint): Auto-fix linting issues"
+          commit_user_name: "Jan Willhaus [bot]"
+          commit_user_email: "bot@janw.xyz"
+          commit_author: Jan Willhaus [bot] <bot@janw.xyz>

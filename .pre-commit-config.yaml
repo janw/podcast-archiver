@@ -11,6 +11,11 @@ default_install_hook_types:
 default_stages:
   - pre-commit
 repos:
+  - repo: https://github.com/janw/pre-commit-hooks
+    rev: v0.1.0
+    hooks:
+      - id: sync_ruff_version
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: 'v0.6.8'
     hooks:
@@ -31,6 +36,9 @@ repos:
   - repo: https://github.com/python-poetry/poetry
     rev: '1.8.0'
     hooks:
+      - id: poetry-lock
+        args:
+          - --no-update
       - id: poetry-check
 
   - repo: https://github.com/streetsidesoftware/cspell-cli
