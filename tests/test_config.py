@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pytest
-from pydantic_core import Url
 
 from podcast_archiver.config import Settings
 from podcast_archiver.exceptions import InvalidSettings
@@ -15,7 +14,7 @@ def test_load(tmp_path_cd: Path) -> None:
 
     settings = Settings.load_from_yaml(configfile)
 
-    assert Url(DUMMY_FEED) in settings.feeds
+    assert DUMMY_FEED in settings.feeds
 
 
 def test_load_invalid_yaml(tmp_path_cd: Path) -> None:

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from threading import Event
 from typing import TYPE_CHECKING
 
-from pydantic import AnyHttpUrl, ValidationError
+from pydantic import ValidationError
 from requests import HTTPError
 
 from podcast_archiver.console import ProgressDisplay, console
@@ -48,7 +48,7 @@ class FeedProcessor:
         self.progress = ProgressDisplay(settings)
         self.stop_event = Event()
 
-    def process(self, url: AnyHttpUrl) -> ProcessingResult:
+    def process(self, url: str) -> ProcessingResult:
         result = ProcessingResult()
         try:
             feed = Feed.from_url(url)

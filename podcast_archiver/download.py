@@ -72,7 +72,7 @@ class DownloadJob:
         self.write_info_json()
 
         response = session.get(
-            self.episode.enclosure.url,
+            self.episode.enclosure.href,
             stream=True,
             allow_redirects=True,
             timeout=constants.REQUESTS_TIMEOUT,

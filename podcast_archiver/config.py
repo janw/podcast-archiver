@@ -8,7 +8,6 @@ from typing import IO, Any, Text
 
 import pydantic
 from pydantic import (
-    AnyHttpUrl,
     BaseModel,
     BeforeValidator,
     DirectoryPath,
@@ -47,7 +46,7 @@ def in_ci() -> bool:
 class Settings(BaseModel):
     model_config = _ConfigDict(populate_by_name=True)
 
-    feeds: list[AnyHttpUrl] = Field(
+    feeds: list[str] = Field(
         default_factory=list,
         description="Feed URLs to archive.",
     )

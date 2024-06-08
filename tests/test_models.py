@@ -1,14 +1,40 @@
+from __future__ import annotations
+
 import time
-from typing import Any, cast
+from copy import deepcopy
+from typing import TYPE_CHECKING, Any
 
 import pytest
-from pydantic_core import Url
+from pydantic import ValidationError
+from typing_extensions import TypedDict
 
 from podcast_archiver.models import Episode
 from podcast_archiver.utils import MIMETYPE_EXTENSION_MAPPING
 
+if TYPE_CHECKING:
+
+    class EpisodeDict(TypedDict, total=False):
+        title: str
+        title_detail: dict[str, Any]
+        summary: str
+        summary_detail: dict[str, Any]
+        published: str
+        published_parsed: time.struct_time
+        links: list[dict[str, Any]]
+        id: str
+        guidislink: bool
+        authors: list[dict[str, Any]]
+        author: str
+        author_detail: dict[str, Any]
+        subtitle: str
+        subtitle_detail: dict[str, Any]
+        content: list[dict[str, Any]]
+        image: dict[str, Any]
+        itunes_explicit: bool | None
+
+
 # cSpell:ignore Napolitano, WWDC, Ritchie, Siri
-EPISODE_FIXTURE = {
+EPISODE_FIXTURE: EpisodeDict = {
     "title": "83: Linda Dong & Lia Napolitano on prototyping experience",
     "title_detail": {
         "type": "text/plain",
@@ -73,8 +99,35 @@ def test_episode_validation() -> None:
     episode = Episode.model_validate(EPISODE_FIXTURE)
 
     assert episode.title == "83: Linda Dong & Lia Napolitano on prototyping experience"
-    assert episode.enclosure.href == Url("http://traffic.libsyn.com/zenandtech/debug83.mp3")
-    assert episode.enclosure.url == "http://traffic.libsyn.com/zenandtech/debug83.mp3"
+    assert episode.enclosure.href == "http://traffic.libsyn.com/zenandtech/debug83.mp3"
+    assert episode.original_filename == "debug83.mp3"
+    assert episode.ext == "mp3"
+
+    assert episode.shownotes
+    assert episode.shownotes.startswith("<p>")
+    assert episode.shownotes.endswith("</p>")
+
+
+def test_episode_validation_invalid_enclosure() -> None:
+    fixture = deepcopy(EPISODE_FIXTURE)
+    fixture["links"][0]["href"] = "www.i-cannot-even-http.invalid"
+
+    with pytest.raises(ValidationError):
+        Episode.model_validate(fixture)
+
+
+def test_episode_validation_invalid_other_link() -> None:
+    fixture = deepcopy(EPISODE_FIXTURE)
+    fixture["links"].append(
+        {
+            "href": "www.i-cannot-even-http.invalid",
+        }
+    )
+
+    episode = Episode.model_validate(fixture)
+
+    assert episode.title == "83: Linda Dong & Lia Napolitano on prototyping experience"
+    assert episode.enclosure.href == "http://traffic.libsyn.com/zenandtech/debug83.mp3"
     assert episode.original_filename == "debug83.mp3"
     assert episode.ext == "mp3"
 
@@ -85,7 +138,7 @@ def test_episode_validation() -> None:
 
 def test_episode_validation_shownotes_fallback() -> None:
     data = EPISODE_FIXTURE.copy()
-    cast(list[dict[str, Any]], data["content"]).pop(-1)
+    data["content"].pop(-1)
 
     episode = Episode.model_validate(data)
 
@@ -111,6 +164,6 @@ def test_episode_missing_ext(mimetype: str, expected_ext: str) -> None:
         }
     )
 
-    assert episode.enclosure.url == "http://traffic.libsyn.com/zenandtech/debug83"
+    assert episode.enclosure.href == "http://traffic.libsyn.com/zenandtech/debug83"
     # assert episode.original_filename == "debug83"
     assert episode.ext == expected_ext
