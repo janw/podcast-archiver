@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import xml.etree.ElementTree as etree
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from podcast_archiver.console import console
@@ -9,6 +8,8 @@ from podcast_archiver.logging import logger
 from podcast_archiver.processor import FeedProcessor
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     import rich_click as click
 
     from podcast_archiver.config import Settings
@@ -16,7 +17,7 @@ if TYPE_CHECKING:
 
 class PodcastArchiver:
     settings: Settings
-    feeds: set[str]
+    feeds: list[str]
 
     def __init__(self, settings: Settings):
         self.settings = settings
@@ -24,7 +25,7 @@ class PodcastArchiver:
 
         logger.debug("Initializing with settings: %s", settings)
 
-        self.feeds = set()
+        self.feeds = []
         for feed in self.settings.feeds:
             self.add_feed(feed)
         for opml in self.settings.opml_files:
@@ -36,11 +37,10 @@ class PodcastArchiver:
             self.processor.shutdown()
 
     def add_feed(self, feed: Path | str) -> None:
-        if isinstance(feed, Path):
-            with open(feed, "r") as fp:
-                self.feeds.union(set(fp.read().strip().splitlines()))
-        else:
-            self.feeds.add(feed)
+        new_feeds = [feed] if isinstance(feed, str) else feed.read_text().strip().splitlines()
+        for feed in new_feeds:
+            if feed not in self.feeds:
+                self.feeds.append(feed)
 
     def add_from_opml(self, opml: Path) -> None:
         with opml.open("r") as file:
