@@ -1,3 +1,9 @@
+## v1.5.0 (2024-08-17)
+
+### Feat
+
+- Replace rich with tqdm for progress bars (#174)
+
 ## v1.4.4 (2024-06-08)
 
 ### Fix
