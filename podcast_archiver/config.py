@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pathlib
+import sys
 import textwrap
 from datetime import datetime
 from os import getenv
@@ -191,14 +192,12 @@ class Settings(BaseModel):
                 f"{name}: {to_json(value).decode()}",
             ]
 
-        contents = "\n".join(lines).strip()
+        contents = "\n".join(lines).strip() + "\n"
         if not file:
-            from podcast_archiver.console import console
-
-            console.print(contents, highlight=False)
-            return
-        with file:
-            file.write(contents + "\n")
+            sys.stdout.write(contents)
+        else:
+            with file:
+                file.write(contents)
 
     def get_database(self) -> BaseDatabase:
         if getenv("TESTING", "0").lower() in ("1", "true"):

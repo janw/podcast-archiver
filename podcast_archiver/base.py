@@ -3,7 +3,8 @@ from __future__ import annotations
 import xml.etree.ElementTree as etree
 from typing import TYPE_CHECKING
 
-from podcast_archiver.console import console
+from rich import print as rprint
+
 from podcast_archiver.logging import logger
 from podcast_archiver.processor import FeedProcessor
 
@@ -57,5 +58,5 @@ class PodcastArchiver:
             result = self.processor.process(url)
             failures += result.failures
 
-        console.print("\n[bar.finished]Done.[/]\n")
+        rprint("\n[bar.finished]Done.[/]\n")
         return failures

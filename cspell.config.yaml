@@ -1,5 +1,5 @@
 files:
-  - "**/*"
+  - '**/*'
 useGitignore: true
 ignorePaths:
   - archive
@@ -8,8 +8,16 @@ ignorePaths:
   - '*.xml'
   - '*.opml'
   - '*.svg'
+  - '*.mp3'
+  - '*.mp4'
+  - '*.m4a'
   - LICENSE
 allowCompoundWords: true
+dictionaries:
+  - en_US
+  - python
+  - softwareTerms
+  - misc
 words:
   # podcasts-related
   - archiver
@@ -35,9 +43,11 @@ words:
   - pytest
   - PYTHONUNBUFFERED
   - pyyaml
+  - rprint
   - subdirs
   - tini
   - tmpl
+  - tqdm
   - venv
   - virtualenv
   - willhaus
