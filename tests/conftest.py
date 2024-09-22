@@ -34,6 +34,11 @@ def feed_lautsprecher(responses: RequestsMock) -> str:
 
 
 @pytest.fixture
+def feed_lautsprecher_file() -> str:
+    return f'file:{FIXTURES_DIR/ "feed_lautsprecher.xml"}'
+
+
+@pytest.fixture
 def feed_lautsprecher_notconsumed(responses: RequestsMock) -> str:
     return FEED_URL
 
