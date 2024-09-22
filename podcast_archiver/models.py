@@ -163,9 +163,13 @@ class FeedPage(BaseModel):
 
     @classmethod
     def from_url(cls, url: str) -> FeedPage:
-        response = session.get(url, allow_redirects=True, timeout=REQUESTS_TIMEOUT)
-        response.raise_for_status()
-        feedobj = feedparser.parse(response.content)
+        parsed = urlparse(url)
+        if parsed.scheme == "file":
+            feedobj = feedparser.parse(parsed.path)
+        else:
+            response = session.get(url, allow_redirects=True, timeout=REQUESTS_TIMEOUT)
+            response.raise_for_status()
+            feedobj = feedparser.parse(response.content)
         return cls.model_validate(feedobj)
 
 
