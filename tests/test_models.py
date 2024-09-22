@@ -167,3 +167,20 @@ def test_episode_missing_ext(mimetype: str, expected_ext: str) -> None:
     assert episode.enclosure.href == "http://traffic.libsyn.com/zenandtech/debug83"
     # assert episode.original_filename == "debug83"
     assert episode.ext == expected_ext
+
+
+def test_invalid_link_length() -> None:
+    assert Episode.model_validate(
+        {
+            "title": "83: …",
+            "published_parsed": time.struct_time((2016, 12, 23, 14, 55, 9, 4, 358, 0)),
+            "links": [
+                {
+                    "length": "nonsense",
+                    "type": "audio/mpeg",
+                    "href": "http://traffic.libsyn.com/zenandtech/debug83",
+                    "rel": "enclosure",
+                }
+            ],
+        }
+    )
