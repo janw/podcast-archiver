@@ -1,3 +1,9 @@
+## v1.5.1 (2024-09-22)
+
+### Fix
+
+- Demote problems to debug logging (#180)
+
 ## v1.5.0 (2024-08-17)
 
 ### Feat
