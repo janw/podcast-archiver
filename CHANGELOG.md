@@ -1,3 +1,9 @@
+## v1.6.0 (2024-09-22)
+
+### Feat
+
+- Add support for file url scheme (#183)
+
 ## v1.5.2 (2024-09-22)
 
 ### Fix
