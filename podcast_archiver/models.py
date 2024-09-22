@@ -28,7 +28,6 @@ class Link(BaseModel):
     rel: str = ""
     link_type: str = Field("", alias="type")
     href: str
-    length: int | None = Field(None, repr=False, exclude=True)
 
 
 class Chapter(BaseModel):
