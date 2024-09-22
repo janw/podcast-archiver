@@ -53,10 +53,10 @@ class FeedProcessor:
         except HTTPError as exc:
             if exc.response is not None:
                 rprint(f"[error]Received status code {exc.response.status_code} from {url}[/]")
-            logger.error("Failed to request feed url %s", url, exc_info=exc)
+            logger.debug("Failed to request feed url %s", url, exc_info=exc)
             return result
         except ValidationError as exc:
-            logger.exception("Invalid feed", exc_info=exc)
+            logger.debug("Invalid feed", exc_info=exc)
             rprint(f"[error]Received invalid feed from {url}[/]")
             return result
 
