@@ -26,8 +26,6 @@ A fast and simple command line client to archive all episodes from your favorite
 
 Podcast Archiver takes the feed URLs of your favorite podcasts and downloads all available episodes for you—even those "hidden" in [paged feeds](https://podlove.org/paged-feeds/). You'll end up with a complete archive of your shows. The archiver also supports updating an existing archive, so that it lends itself to be set up as a cronjob.
 
-⚠️ Podcast Archiver v1.0 completely changes the available command line options uses a new format for naming files (see [changing the filename format](#changing-the-filename-format) below). Using it on an existing pre-v1.0 folder structure will re-download all episodes unless you use an equivalent template. ⚠️
-
 ## Setup
 
 Install via [pipx](https://pipx.pypa.io/stable/):
@@ -67,6 +65,12 @@ podcast-archiver -d ~/Music/Podcasts \
 ```
 
 This way, you can easily add and remove feeds to the list and let the archiver fetch the newest episodes for example by adding it to your crontab.
+
+Feeds can also be "fetched" from a local file:
+
+```bash
+podcast-archiver -f file:/Users/janw/downloaded_feed.xml
+```
 
 ### Changing the filename format
 

@@ -48,7 +48,7 @@ jobs:
 
   homebrew:
     uses: janw/workflows/.github/workflows/poetry-homebrew-formula.yaml@main
-    needs: build
+    needs: pypi
     with:
       formula-name: podcast-archiver
     secrets:

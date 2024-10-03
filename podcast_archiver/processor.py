@@ -5,10 +5,10 @@ from dataclasses import dataclass
 from threading import Event
 from typing import TYPE_CHECKING
 
-from pydantic import AnyHttpUrl, ValidationError
+from pydantic import ValidationError
 from requests import HTTPError
+from rich import print as rprint
 
-from podcast_archiver.console import ProgressDisplay, console
 from podcast_archiver.download import DownloadJob
 from podcast_archiver.enums import DownloadResult, QueueCompletionType
 from podcast_archiver.logging import logger
@@ -37,7 +37,6 @@ class FeedProcessor:
     filename_formatter: FilenameFormatter
 
     pool_executor: ThreadPoolExecutor
-    progress: ProgressDisplay
     stop_event: Event
 
     def __init__(self, settings: Settings) -> None:
@@ -45,42 +44,38 @@ class FeedProcessor:
         self.filename_formatter = FilenameFormatter(settings)
         self.database = settings.get_database()
         self.pool_executor = ThreadPoolExecutor(max_workers=self.settings.concurrency)
-        self.progress = ProgressDisplay(settings)
         self.stop_event = Event()
 
-    def process(self, url: AnyHttpUrl) -> ProcessingResult:
+    def process(self, url: str) -> ProcessingResult:
         result = ProcessingResult()
         try:
             feed = Feed.from_url(url)
         except HTTPError as exc:
             if exc.response is not None:
-                console.print(f"[error]Received status code {exc.response.status_code} from {url}[/]")
-            logger.error("Failed to request feed url %s", url, exc_info=exc)
+                rprint(f"[error]Received status code {exc.response.status_code} from {url}[/]")
+            logger.debug("Failed to request feed url %s", url, exc_info=exc)
             return result
         except ValidationError as exc:
-            logger.exception("Invalid feed", exc_info=exc)
-            console.print(f"[error]Received invalid feed from {url}[/]")
+            logger.debug("Invalid feed", exc_info=exc)
+            rprint(f"[error]Received invalid feed from {url}[/]")
             return result
 
         result.feed = feed
-        console.print(f"\n[bold bright_magenta]Downloading archive for: {feed.info.title}[/]\n")
+        rprint(f"\n[bold bright_magenta]Downloading archive for: {feed.info.title}[/]\n")
 
-        with self.progress:
-            episode_results, completion_msg = self._process_episodes(feed=feed)
-            self._handle_results(episode_results, result=result)
+        episode_results, completion_msg = self._process_episodes(feed=feed)
+        self._handle_results(episode_results, result=result)
 
-        console.print(f"\n[bar.finished]✔ {completion_msg}[/]")
+        rprint(f"\n[bar.finished]✔ {completion_msg}[/]")
         return result
 
     def _preflight_check(self, episode: Episode, target: Path) -> DownloadResult | None:
         if self.database.exists(episode):
             logger.debug("Pre-flight check on episode '%s': already in database.", episode.title)
-            self.progress.completed(episode)
             return DownloadResult.ALREADY_EXISTS
 
         if target.exists():
             logger.debug("Pre-flight check on episode '%s': already on disk.", episode.title)
-            self.progress.completed(episode)
             return DownloadResult.ALREADY_EXISTS
 
         return None
@@ -102,6 +97,7 @@ class FeedProcessor:
     ) -> QueueCompletionType | None:
         target = self.filename_formatter.format(episode=episode, feed_info=feed_info)
         if result := self._preflight_check(episode, target):
+            rprint(f"[bar.finished]✔ {result}: {episode.title} ({episode.published_time.strftime('%Y-%m-%d')})[/]")
             results.append(EpisodeResult(episode, result))
             if self.settings.update_archive:
                 logger.info("Up to date with %r", episode)
@@ -116,7 +112,7 @@ class FeedProcessor:
                     target=target,
                     debug_partial=self.settings.debug_partial,
                     write_info_json=self.settings.write_info_json,
-                    progress_callback=self.progress.get_callback(episode),
+                    no_progress=self.settings.verbose > 2 or self.settings.quiet,
                     stop_event=self.stop_event,
                 )
             )
@@ -138,6 +134,5 @@ class FeedProcessor:
     def shutdown(self) -> None:
         self.stop_event.set()
         self.pool_executor.shutdown(cancel_futures=True)
-        self.progress.shutdown()
 
         logger.debug("Completed processor shutdown")

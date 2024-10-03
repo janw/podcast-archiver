@@ -1,3 +1,51 @@
+## v1.6.0 (2024-09-22)
+
+### Feat
+
+- Add support for file url scheme (#183)
+
+## v1.5.2 (2024-09-22)
+
+### Fix
+
+- Ignore unused link length (#182)
+
+## v1.5.1 (2024-09-22)
+
+### Fix
+
+- Demote problems to debug logging (#180)
+
+## v1.5.0 (2024-08-17)
+
+### Feat
+
+- Replace rich with tqdm for progress bars (#174)
+
+## v1.4.4 (2024-06-08)
+
+### Fix
+
+- Remove unnecessary parsing of feed link (#159)
+
+## v1.4.3 (2024-06-08)
+
+### Fix
+
+- Maintain order of feeds as passed in (#157)
+
+## v1.4.2 (2024-06-08)
+
+### Fix
+
+- Avoid parsing links unless it's the enclosure (#156)
+
+## v1.4.1 (2024-06-08)
+
+### Fix
+
+- Replace slashes in slugify (#153)
+
 ## v1.4.0 (2024-04-17)
 
 ### Feat

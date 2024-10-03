@@ -13,10 +13,10 @@ class QueueCompletionType(StrEnum):
 
 
 class DownloadResult(StrEnum):
-    ALREADY_EXISTS = "File already exists."
-    COMPLETED_SUCCESSFULLY = "Completed successfully."
-    FAILED = "Failed."
-    ABORTED = "Aborted."
+    ALREADY_EXISTS = "Exists"
+    COMPLETED_SUCCESSFULLY = "Completed"
+    FAILED = "Failed"
+    ABORTED = "Aborted"
 
     def __str__(self) -> str:
         return self.value

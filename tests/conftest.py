@@ -4,11 +4,10 @@ import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Any, Iterable
 
 import feedparser
 import pytest
-from pydantic_core import Url
 
 from podcast_archiver.models import Episode, Link
 
@@ -28,38 +27,43 @@ FEED_OBJ = feedparser.parse(FEED_CONTENT)
 
 
 @pytest.fixture
-def feed_lautsprecher(responses: RequestsMock) -> Url:
+def feed_lautsprecher(responses: RequestsMock) -> str:
     responses.add(responses.GET, FEED_URL, FEED_CONTENT)
     responses.add(responses.GET, MEDIA_URL, b"BLOB")
-    return Url(FEED_URL)
+    return FEED_URL
 
 
 @pytest.fixture
-def feed_lautsprecher_notconsumed(responses: RequestsMock) -> Url:
-    return Url(FEED_URL)
+def feed_lautsprecher_file() -> str:
+    return f'file:{FIXTURES_DIR/ "feed_lautsprecher.xml"}'
 
 
 @pytest.fixture
-def feed_lautsprecher_onlyfeed(responses: RequestsMock) -> Url:
+def feed_lautsprecher_notconsumed(responses: RequestsMock) -> str:
+    return FEED_URL
+
+
+@pytest.fixture
+def feed_lautsprecher_onlyfeed(responses: RequestsMock) -> str:
     responses.add(responses.GET, FEED_URL, FEED_CONTENT)
-    return Url(FEED_URL)
+    return FEED_URL
 
 
 @pytest.fixture
-def feed_lautsprecher_empty(responses: RequestsMock) -> Url:
+def feed_lautsprecher_empty(responses: RequestsMock) -> str:
     responses.add(responses.GET, FEED_URL, FEED_CONTENT_EMPTY)
-    return Url(FEED_URL)
+    return FEED_URL
 
 
 @pytest.fixture
-def feedobj_lautsprecher(responses: RequestsMock) -> Url:
+def feedobj_lautsprecher(responses: RequestsMock) -> dict[str, Any]:
     responses.assert_all_requests_are_fired = False
     responses.add(responses.GET, MEDIA_URL, b"BLOB")
     return FEED_OBJ
 
 
 @pytest.fixture
-def feedobj_lautsprecher_notconsumed(responses: RequestsMock) -> Url:
+def feedobj_lautsprecher_notconsumed(responses: RequestsMock) -> dict[str, Any]:
     return FEED_OBJ
 
 
@@ -77,9 +81,11 @@ def episode() -> Episode:
         subtitle="The unreleased version",
         author="Janw",
         published_parsed=datetime(2023, 3, 12, 12, 34, 56, tzinfo=timezone.utc),
-        enclosure=Link(
-            rel="enclosure",
-            link_type="audio/mpeg",
-            href="http://nowhere.invalid/file.mp3",
-        ),
+        links=[
+            Link(
+                rel="enclosure",
+                link_type="audio/mpeg",
+                href="http://nowhere.invalid/file.mp3",
+            ),
+        ],
     )

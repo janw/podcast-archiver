@@ -5,11 +5,11 @@ from functools import cached_property
 from pathlib import Path
 from time import mktime, struct_time
 from typing import Any, Iterator
+from urllib.parse import urlparse
 
 import feedparser
 from pydantic import (
     AliasChoices,
-    AnyHttpUrl,
     BaseModel,
     ConfigDict,
     Field,
@@ -17,8 +17,7 @@ from pydantic import (
     model_validator,
 )
 
-from podcast_archiver import quirks
-from podcast_archiver.constants import MAX_TITLE_LENGTH, REQUESTS_TIMEOUT, SUPPORTED_LINK_TYPES_RE
+from podcast_archiver.constants import MAX_TITLE_LENGTH, REQUESTS_TIMEOUT
 from podcast_archiver.exceptions import MissingDownloadUrl
 from podcast_archiver.logging import logger
 from podcast_archiver.session import session
@@ -28,12 +27,7 @@ from podcast_archiver.utils import get_generic_extension, truncate
 class Link(BaseModel):
     rel: str = ""
     link_type: str = Field("", alias="type")
-    href: quirks.LenientUrl
-    length: int | None = Field(None, repr=False, exclude=True)
-
-    @property
-    def url(self) -> str:
-        return str(self.href)
+    href: str
 
 
 class Chapter(BaseModel):
@@ -50,7 +44,6 @@ class Episode(BaseModel):
     title: str = Field(default="Untitled Episode", title="episode.title")
     subtitle: str = Field("", repr=False, title="episode.subtitle")
     author: str = Field("", repr=False)
-    link: quirks.LenientUrl | None = None
     links: list[Link] = Field(default_factory=list)
     enclosure: Link = Field(default=None, repr=False)  # type: ignore[assignment]
     published_time: datetime = Field(alias="published_parsed", title="episode.published_time")
@@ -109,27 +102,24 @@ class Episode(BaseModel):
 
     @model_validator(mode="after")
     def populate_enclosure(self) -> Episode:
-        if not self.enclosure:
-            self.enclosure = self._get_enclosure_url()
-        self.original_filename = Path(self.enclosure.href.path).name if self.enclosure.href.path else ""
-        return self
+        for link in self.links:
+            if link.rel != "enclosure":
+                continue
+            parsed_url = urlparse(link.href)
+            if parsed_url.scheme and parsed_url.netloc:
+                self.enclosure = link
+                self.original_filename = Path(parsed_url.path).name if parsed_url.path else ""
+                return self
+
+        raise MissingDownloadUrl(f"Episode {self} did not have a supported download URL")
 
     @model_validator(mode="after")
     def ensure_guid(self) -> Episode:
         if not self.guid:
             # If no GUID is given, use the enclosure url instead
             # See https://help.apple.com/itc/podcasts_connect/#/itcb54353390
-            self.guid = self.enclosure.url
-        self.original_filename = Path(self.enclosure.href.path).name if self.enclosure.href.path else ""
+            self.guid = self.enclosure.href
         return self
-
-    def _get_enclosure_url(self) -> Link:
-        for link in self.links:
-            if (
-                SUPPORTED_LINK_TYPES_RE.match(link.link_type) or link.rel == "enclosure"
-            ) and link.href.host != quirks.INVALID_URL_PLACEHOLDER:
-                return link
-        raise MissingDownloadUrl(f"Episode {self} did not have a supported download URL")
 
     @cached_property
     def ext(self) -> str:
@@ -149,7 +139,6 @@ class FeedInfo(BaseModel):
     subtitle: str | None = Field(default=None, title="show.subtitle")
     author: str | None = Field(default=None, title="show.author")
     language: str | None = Field(default=None, title="show.language")
-    link: AnyHttpUrl | None = None
     links: list[Link] = []
 
     @field_validator("title", mode="after")
@@ -173,20 +162,24 @@ class FeedPage(BaseModel):
     bozo_exception: Exception | None = None
 
     @classmethod
-    def from_url(cls, url: AnyHttpUrl) -> FeedPage:
-        response = session.get(str(url), allow_redirects=True, timeout=REQUESTS_TIMEOUT)
-        response.raise_for_status()
-        feedobj = feedparser.parse(response.content)
+    def from_url(cls, url: str) -> FeedPage:
+        parsed = urlparse(url)
+        if parsed.scheme == "file":
+            feedobj = feedparser.parse(parsed.path)
+        else:
+            response = session.get(url, allow_redirects=True, timeout=REQUESTS_TIMEOUT)
+            response.raise_for_status()
+            feedobj = feedparser.parse(response.content)
         return cls.model_validate(feedobj)
 
 
 class Feed:
     info: FeedInfo
-    url: AnyHttpUrl
+    url: str
 
     _page: FeedPage | None
 
-    def __init__(self, page: FeedPage, url: AnyHttpUrl) -> None:
+    def __init__(self, page: FeedPage, url: str) -> None:
         self.info = page.feed
         self.url = url
         self._page = page
@@ -200,7 +193,7 @@ class Feed:
         return f"{self.info.title}"
 
     @classmethod
-    def from_url(cls, url: AnyHttpUrl) -> Feed:
+    def from_url(cls, url: str) -> Feed:
         logger.info("Parsing feed %s", url)
         return cls(page=FeedPage.from_url(url), url=url)
 

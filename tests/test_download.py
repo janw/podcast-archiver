@@ -21,13 +21,10 @@ if TYPE_CHECKING:
 def test_download_job(tmp_path_cd: Path, feedobj_lautsprecher: dict[str, Any]) -> None:
     feed = FeedPage.model_validate(feedobj_lautsprecher)
     episode = feed.episodes[0]
-    mock_progress = mock.Mock(return_value=None)
-    job = download.DownloadJob(episode=episode, target=Path("file.mp3"), progress_callback=mock_progress)
+    job = download.DownloadJob(episode=episode, target=Path("file.mp3"))
     result = job()
 
     assert result == (episode, DownloadResult.COMPLETED_SUCCESSFULLY)
-    mock_progress.assert_called()
-    assert mock_progress.call_count == 2
 
 
 def test_download_already_exists(tmp_path_cd: Path, feedobj_lautsprecher_notconsumed: dict[str, Any]) -> None:
