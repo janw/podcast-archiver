@@ -41,11 +41,11 @@ tqdm = "^4.66.4"
 [tool.poetry.group.dev.dependencies]
 ipython = "<8.18"
 ipdb = "*"
-ruff = ">=0.1.11,<0.4.0"
-pre-commit = "^3.6.0"
-commitizen = "^3.13.0"
-rich-codex = "^1.2.6"
-mypy = "^1.8.0"
+ruff = ">=0.6.8"
+pre-commit = "^3"
+commitizen = "^3"
+rich-codex = "^1"
+mypy = "^1"
 types-tqdm = "^4.66.0.20240417"
 
 [tool.poetry.group.tests.dependencies]
