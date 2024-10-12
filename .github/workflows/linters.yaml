@@ -7,9 +7,6 @@ jobs:
   commitizen:
     uses: janw/workflows/.github/workflows/commitizen.yaml@main
 
-  mypy:
-    uses: janw/workflows/.github/workflows/poetry-mypy.yaml@main
-
   pre-commit:
     runs-on: ubuntu-latest
     steps:
