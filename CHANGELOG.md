@@ -1,3 +1,9 @@
+## v1.6.1 (2024-10-12)
+
+### Fix
+
+- Fix docker minor version tagging
+
 ## v1.6.0 (2024-09-22)
 
 ### Feat
