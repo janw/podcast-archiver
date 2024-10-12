@@ -23,6 +23,7 @@ jobs:
           tags: |
             type=ref,event=pr
             type=semver,pattern=v{{major}}
+            type=semver,pattern=v{{major}}.{{minor}}
             type=semver,pattern=v{{version}}
             type=raw,value=edge,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
 
