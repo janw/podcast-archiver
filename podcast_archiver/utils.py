@@ -4,11 +4,13 @@ import os
 import re
 from contextlib import contextmanager
 from string import Formatter
-from typing import IO, TYPE_CHECKING, Any, Iterable, Iterator, TypedDict
+from typing import IO, TYPE_CHECKING, Any, Generator, Iterable, Iterator, TypedDict
 
+from pydantic import ValidationError
+from requests import HTTPError
 from slugify import slugify as _slugify
 
-from podcast_archiver.logging import logger
+from podcast_archiver.logging import logger, rprint
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -119,3 +121,24 @@ def atomic_write(target: Path, mode: str = "w") -> Iterator[IO[Any]]:
         os.rename(tempfile, target)
     finally:
         tempfile.unlink(missing_ok=True)
+
+
+@contextmanager
+def handle_feed_request(url: str) -> Generator[None, Any, None]:
+    try:
+        yield
+    except HTTPError as exc:
+        logger.debug("Failed to request feed url %s", url, exc_info=exc)
+        if (response := getattr(exc, "response", None)) is None:
+            rprint(f"[error]Failed to retrieve feed {url}: {exc}[/]")
+            return
+
+        rprint(f"[error]Received status code {response.status_code} from {url}[/]")
+
+    except ValidationError as exc:
+        logger.debug("Feed validation failed for %s", url, exc_info=exc)
+        rprint(f"[error]Received invalid feed from {url}[/]")
+
+    except Exception as exc:
+        logger.debug("Unexpected error for url %s", url, exc_info=exc)
+        rprint(f"[error]Failed to retrieve feed {url}: {exc}[/]")
