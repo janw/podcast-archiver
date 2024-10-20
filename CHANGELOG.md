@@ -1,3 +1,9 @@
+## v1.6.2 (2024-10-20)
+
+### Fix
+
+- Improve failure handling and logging (#189)
+
 ## v1.6.1 (2024-10-12)
 
 ### Fix
