@@ -5,7 +5,7 @@ from podcast_archiver.models import Episode, FeedInfo
 from podcast_archiver.utils import FilenameFormatter
 
 FEED_INFO = FeedInfo(
-    title="That\Show",
+    title="That\\Show",
     subtitle="The one that never comes/came to be",
     author="TheJanwShow",
     language="de-DE",

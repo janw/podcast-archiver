@@ -59,7 +59,8 @@ class DownloadJob:
         try:
             return self.run()
         except Exception as exc:
-            logger.error("Download failed", exc_info=exc)
+            logger.error(f"Download failed: {exc}")
+            logger.debug("Exception while downloading", exc_info=exc)
             return EpisodeResult(self.episode, DownloadResult.FAILED)
 
     def run(self) -> EpisodeResult:
@@ -73,7 +74,6 @@ class DownloadJob:
             self.episode.enclosure.href,
             stream=True,
             allow_redirects=True,
-            timeout=constants.REQUESTS_TIMEOUT,
         )
         response.raise_for_status()
         total_size = int(response.headers.get("content-length", "0"))

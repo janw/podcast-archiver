@@ -77,13 +77,22 @@ def test_download_failed(
         responses.add(responses.GET, MEDIA_URL, b"BLOB")
 
     job = download.DownloadJob(episode=episode, target=Path("file.mp3"))
-    with failure_mode(side_effect=side_effect), caplog.at_level(logging.ERROR):
+    with failure_mode(side_effect=side_effect), caplog.at_level(logging.DEBUG):
         result = job()
 
     assert result == (episode, DownloadResult.FAILED)
     failure_rec = None
     for record in caplog.records:
-        if record.message == "Download failed":
+        if record.message.startswith("Download failed: "):
+            failure_rec = record
+            break
+
+    assert failure_rec
+    assert not failure_rec.exc_info
+
+    failure_rec = None
+    for record in caplog.records:
+        if record.message == "Exception while downloading":
             failure_rec = record
             break
 

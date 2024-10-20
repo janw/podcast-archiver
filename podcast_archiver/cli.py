@@ -283,8 +283,8 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
 )
 @click.pass_context
 def main(ctx: click.RichContext, /, **kwargs: Any) -> int:
+    get_console().quiet = kwargs["quiet"]
     configure_logging(kwargs["verbose"])
-    get_console().quiet = kwargs["quiet"] or kwargs["verbose"] > 1
     try:
         settings = Settings.load_from_dict(kwargs)
 

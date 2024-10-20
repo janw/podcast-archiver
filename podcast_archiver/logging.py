@@ -2,18 +2,25 @@ from __future__ import annotations
 
 import logging
 import logging.config
+from typing import Any
 
 from rich import get_console
+from rich import print as _print
 from rich.logging import RichHandler
 
 logger = logging.getLogger("podcast_archiver")
 
 
+def rprint(*objects: Any, sep: str = " ", end: str = "\n", **kwargs: Any) -> None:
+    if logger.level == logging.NOTSET or logger.level >= logging.WARNING:
+        _print(*objects, sep=sep, end=end, **kwargs)
+        return
+    logger.info(objects[0].strip(), *objects[1:])
+
+
 def configure_logging(verbosity: int) -> None:
-    if verbosity > 2:
+    if verbosity > 1:
         level = logging.DEBUG
-    elif verbosity == 2:
-        level = logging.INFO
     elif verbosity == 1:
         level = logging.WARNING
     else:
@@ -35,4 +42,5 @@ def configure_logging(verbosity: int) -> None:
             )
         ],
     )
+    logger.setLevel(level)
     logger.debug("Running in debug mode.")

@@ -5,16 +5,12 @@ from dataclasses import dataclass
 from threading import Event
 from typing import TYPE_CHECKING
 
-from pydantic import ValidationError
-from requests import HTTPError
-from rich import print as rprint
-
 from podcast_archiver.download import DownloadJob
 from podcast_archiver.enums import DownloadResult, QueueCompletionType
-from podcast_archiver.logging import logger
+from podcast_archiver.logging import logger, rprint
 from podcast_archiver.models import Episode, Feed, FeedInfo
 from podcast_archiver.types import EpisodeResult, EpisodeResultsList
-from podcast_archiver.utils import FilenameFormatter
+from podcast_archiver.utils import FilenameFormatter, handle_feed_request
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -48,25 +44,15 @@ class FeedProcessor:
 
     def process(self, url: str) -> ProcessingResult:
         result = ProcessingResult()
-        try:
-            feed = Feed.from_url(url)
-        except HTTPError as exc:
-            if exc.response is not None:
-                rprint(f"[error]Received status code {exc.response.status_code} from {url}[/]")
-            logger.debug("Failed to request feed url %s", url, exc_info=exc)
-            return result
-        except ValidationError as exc:
-            logger.debug("Invalid feed", exc_info=exc)
-            rprint(f"[error]Received invalid feed from {url}[/]")
-            return result
+        with handle_feed_request(url):
+            result.feed = Feed.from_url(url)
 
-        result.feed = feed
-        rprint(f"\n[bold bright_magenta]Downloading archive for: {feed.info.title}[/]\n")
+        if result.feed:
+            rprint(f"\n[bold bright_magenta]Downloading archive for: {result.feed.info.title}[/]\n")
+            episode_results, completion_msg = self._process_episodes(feed=result.feed)
+            self._handle_results(episode_results, result=result)
 
-        episode_results, completion_msg = self._process_episodes(feed=feed)
-        self._handle_results(episode_results, result=result)
-
-        rprint(f"\n[bar.finished]✔ {completion_msg}[/]")
+            rprint(f"\n[bar.finished]✔ {completion_msg}[/]")
         return result
 
     def _preflight_check(self, episode: Episode, target: Path) -> DownloadResult | None:

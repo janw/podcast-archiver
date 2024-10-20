@@ -3,9 +3,7 @@ from __future__ import annotations
 import xml.etree.ElementTree as etree
 from typing import TYPE_CHECKING
 
-from rich import print as rprint
-
-from podcast_archiver.logging import logger
+from podcast_archiver.logging import logger, rprint
 from podcast_archiver.processor import FeedProcessor
 
 if TYPE_CHECKING:
