@@ -2,14 +2,17 @@ from __future__ import annotations
 
 import time
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol
 
 import pytest
 from pydantic import ValidationError
+from responses import RequestsMock
 from typing_extensions import TypedDict
 
-from podcast_archiver.models import Episode
+from podcast_archiver.exceptions import NotModified
+from podcast_archiver.models import Episode, Feed, FeedInfo, FeedPage
 from podcast_archiver.utils import MIMETYPE_EXTENSION_MAPPING
+from tests.conftest import FEED_CONTENT
 
 if TYPE_CHECKING:
 
@@ -147,8 +150,9 @@ def test_episode_validation_shownotes_fallback() -> None:
     assert episode.shownotes.endswith("Grab a beverage and hit play!")
 
 
+@pytest.mark.parametrize("urlpath", ["", "zenandtech/debug83"])
 @pytest.mark.parametrize("mimetype,expected_ext", list(MIMETYPE_EXTENSION_MAPPING.items()))
-def test_episode_missing_ext(mimetype: str, expected_ext: str) -> None:
+def test_episode_missing_ext(urlpath: str, mimetype: str, expected_ext: str) -> None:
     episode = Episode.model_validate(
         {
             "title": "83: …",
@@ -157,15 +161,14 @@ def test_episode_missing_ext(mimetype: str, expected_ext: str) -> None:
                 {
                     "length": "85468157",
                     "type": mimetype,
-                    "href": "http://traffic.libsyn.com/zenandtech/debug83",
+                    "href": f"http://traffic.libsyn.com/{urlpath}",
                     "rel": "enclosure",
                 }
             ],
         }
     )
 
-    assert episode.enclosure.href == "http://traffic.libsyn.com/zenandtech/debug83"
-    # assert episode.original_filename == "debug83"
+    assert episode.enclosure.href == f"http://traffic.libsyn.com/{urlpath}"
     assert episode.ext == expected_ext
 
 
@@ -184,3 +187,36 @@ def test_invalid_link_length() -> None:
             ],
         }
     )
+
+
+class FeedConstructor(Protocol):
+    def __call__(self, url: str, *, known_info: FeedInfo | None = None) -> object: ...
+
+
+@pytest.mark.parametrize("constructor", [FeedPage.from_url, Feed])
+def test_feed_with_known_info_not_modified(constructor: FeedConstructor, feed_lautsprecher_onlyfeed: str) -> None:
+    info = FeedPage.from_url(feed_lautsprecher_onlyfeed).feed
+    info.last_modified = "sometime"
+
+    with RequestsMock() as responses, pytest.raises(NotModified):
+        responses.get(feed_lautsprecher_onlyfeed, status=304)
+        constructor(feed_lautsprecher_onlyfeed, known_info=info)
+
+
+@pytest.mark.parametrize("constructor", [FeedPage.from_url, Feed])
+def test_feed_with_known_info_updated_time(constructor: FeedConstructor, feed_lautsprecher_onlyfeed: str) -> None:
+    info = FeedPage.from_url(feed_lautsprecher_onlyfeed).feed
+    info.last_modified = None
+
+    with RequestsMock() as responses, pytest.raises(NotModified):
+        responses.get(feed_lautsprecher_onlyfeed, FEED_CONTENT)
+        constructor(feed_lautsprecher_onlyfeed, known_info=info)
+
+
+@pytest.mark.parametrize("constructor", [FeedPage.from_url, Feed])
+def test_feed_with_known_info_updated_time_empty(constructor: FeedConstructor, feed_lautsprecher_onlyfeed: str) -> None:
+    info = FeedPage.from_url(feed_lautsprecher_onlyfeed).feed
+    info.updated_time = None
+    with RequestsMock() as responses:
+        responses.get(feed_lautsprecher_onlyfeed, FEED_CONTENT)
+        assert constructor(feed_lautsprecher_onlyfeed, known_info=info)

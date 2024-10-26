@@ -15,6 +15,8 @@ DEBUG_PARTIAL_SIZE = DOWNLOAD_CHUNK_SIZE * 4
 
 MAX_TITLE_LENGTH = 96
 
+
+DEFAULT_DATETIME_FORMAT = "%Y-%m-%d"
 DEFAULT_ARCHIVE_DIRECTORY = pathlib.Path(".")
 DEFAULT_FILENAME_TEMPLATE = "{show.title}/{episode.published_time:%Y-%m-%d} - {episode.title}.{ext}"
 DEFAULT_CONCURRENCY = 4

@@ -7,9 +7,9 @@ class StrEnum(str, Enum):
 
 
 class QueueCompletionType(StrEnum):
-    COMPLETED = "Archived all episodes."
-    FOUND_EXISTING = "Archive is up to date."
-    MAX_EPISODES = "Maximum episode count reached."
+    COMPLETED = "Archived all episodes"
+    FOUND_EXISTING = "Archive is up to date"
+    MAX_EPISODES = "Maximum episode count reached"
 
 
 class DownloadResult(StrEnum):

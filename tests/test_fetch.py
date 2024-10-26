@@ -8,7 +8,7 @@ FILE_FIXTURE = Path(__file__).parent / "fixtures" / "feed_lautsprecher.xml"
 
 
 def test_fetch_from_http(feed_lautsprecher_onlyfeed: str) -> None:
-    assert Feed.from_url(feed_lautsprecher_onlyfeed)
+    assert Feed(feed_lautsprecher_onlyfeed)
 
 
 @pytest.mark.parametrize(
@@ -19,4 +19,4 @@ def test_fetch_from_http(feed_lautsprecher_onlyfeed: str) -> None:
     ],
 )
 def test_fetch_from_file(url: str) -> None:
-    assert Feed.from_url(url)
+    assert Feed(url)

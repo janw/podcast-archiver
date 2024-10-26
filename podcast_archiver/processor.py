@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from threading import Event
 from typing import TYPE_CHECKING
 
+from podcast_archiver import constants
 from podcast_archiver.download import DownloadJob
 from podcast_archiver.enums import DownloadResult, QueueCompletionType
 from podcast_archiver.logging import logger, rprint
@@ -35,33 +36,36 @@ class FeedProcessor:
     pool_executor: ThreadPoolExecutor
     stop_event: Event
 
+    known_feeds: dict[str, FeedInfo]
+
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
         self.filename_formatter = FilenameFormatter(settings)
         self.database = settings.get_database()
         self.pool_executor = ThreadPoolExecutor(max_workers=self.settings.concurrency)
         self.stop_event = Event()
+        self.known_feeds = {}
 
     def process(self, url: str) -> ProcessingResult:
         result = ProcessingResult()
         with handle_feed_request(url):
-            result.feed = Feed.from_url(url)
+            result.feed = Feed(url=url, known_info=self.known_feeds.get(url))
 
         if result.feed:
-            rprint(f"\n[bold bright_magenta]Downloading archive for: {result.feed.info.title}[/]\n")
+            rprint(f"\n[bold bright_magenta]Downloading archive for: {result.feed}[/]\n")
             episode_results, completion_msg = self._process_episodes(feed=result.feed)
             self._handle_results(episode_results, result=result)
 
-            rprint(f"\n[bar.finished]✔ {completion_msg}[/]")
+            rprint(f"\n[bar.finished]✔ {completion_msg} for: {result.feed}[/]")
         return result
 
     def _preflight_check(self, episode: Episode, target: Path) -> DownloadResult | None:
         if self.database.exists(episode):
-            logger.debug("Pre-flight check on episode '%s': already in database.", episode.title)
+            logger.debug("Pre-flight check on episode '%s': already in database.", episode)
             return DownloadResult.ALREADY_EXISTS
 
         if target.exists():
-            logger.debug("Pre-flight check on episode '%s': already on disk.", episode.title)
+            logger.debug("Pre-flight check on episode '%s': already on disk.", episode)
             return DownloadResult.ALREADY_EXISTS
 
         return None
@@ -73,7 +77,7 @@ class FeedProcessor:
                 return results, completion
 
             if (max_count := self.settings.maximum_episode_count) and idx == max_count:
-                logger.info("Reached requested maximum episode count of %s", max_count)
+                logger.debug("Reached requested maximum episode count of %s", max_count)
                 return results, QueueCompletionType.MAX_EPISODES
 
         return results, QueueCompletionType.COMPLETED
@@ -83,22 +87,21 @@ class FeedProcessor:
     ) -> QueueCompletionType | None:
         target = self.filename_formatter.format(episode=episode, feed_info=feed_info)
         if result := self._preflight_check(episode, target):
-            rprint(f"[bar.finished]✔ {result}: {episode.title} ({episode.published_time.strftime('%Y-%m-%d')})[/]")
+            rprint(f"[bar.finished]✔ {result}: {episode}[/]")
             results.append(EpisodeResult(episode, result))
             if self.settings.update_archive:
-                logger.info("Up to date with %r", episode)
+                logger.debug("Up to date with %r", episode)
                 return QueueCompletionType.FOUND_EXISTING
             return None
 
-        logger.info("Queueing download for %r", episode)
+        logger.debug("Queueing download for %r", episode)
         results.append(
             self.pool_executor.submit(
                 DownloadJob(
                     episode,
                     target=target,
-                    debug_partial=self.settings.debug_partial,
+                    max_download_bytes=constants.DEBUG_PARTIAL_SIZE if self.settings.debug_partial else None,
                     write_info_json=self.settings.write_info_json,
-                    no_progress=self.settings.verbose > 2 or self.settings.quiet,
                     stop_event=self.stop_event,
                 )
             )
@@ -106,6 +109,8 @@ class FeedProcessor:
         return None
 
     def _handle_results(self, episode_results: EpisodeResultsList, *, result: ProcessingResult) -> None:
+        if not result.feed:
+            return
         for episode_result in episode_results:
             if not isinstance(episode_result, EpisodeResult):
                 try:
@@ -116,9 +121,11 @@ class FeedProcessor:
                     continue
             self.database.add(episode_result.episode)
             result.success += 1
+        self.known_feeds[result.feed.url] = result.feed.info
 
     def shutdown(self) -> None:
-        self.stop_event.set()
-        self.pool_executor.shutdown(cancel_futures=True)
+        if not self.stop_event.is_set():
+            self.stop_event.set()
+            self.pool_executor.shutdown(cancel_futures=True)
 
-        logger.debug("Completed processor shutdown")
+            logger.debug("Completed processor shutdown")

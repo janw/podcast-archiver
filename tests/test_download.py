@@ -39,6 +39,23 @@ def test_download_already_exists(tmp_path_cd: Path, feedobj_lautsprecher_notcons
     assert result == (episode, DownloadResult.ALREADY_EXISTS)
 
 
+def test_download_partial(
+    tmp_path_cd: Path,
+    feedobj_lautsprecher: dict[str, Any],
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    feed = FeedPage.model_validate(feedobj_lautsprecher)
+    episode = feed.episodes[0]
+
+    job = download.DownloadJob(episode=episode, target=Path("file.mp3"), max_download_bytes=2)
+    with caplog.at_level(logging.DEBUG, "podcast_archiver"):
+        result = job()
+
+    assert result == (episode, DownloadResult.COMPLETED_SUCCESSFULLY)
+    assert "Partial download of first 2 bytes completed." in caplog.messages
+    assert len(job.target.read_bytes())
+
+
 def test_download_aborted(tmp_path_cd: Path, feedobj_lautsprecher: dict[str, Any]) -> None:
     feed = FeedPage.model_validate(feedobj_lautsprecher)
     episode = feed.episodes[0]

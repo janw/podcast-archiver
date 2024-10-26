@@ -1,0 +1,17 @@
+services:
+  podcast-archiver:
+    restart: always
+    image: ghcr.io/janw/podcast-archiver:v1
+    build:
+      context: .
+      dockerfile: Dockerfile
+      cache_from:
+        - ghcr.io/janw/podcast-archiver:edge
+        - ghcr.io/janw/podcast-archiver:latest
+    volumes:
+      - ./archive:/archive
+    command:
+      - --sleep-seconds=3600
+      - --ignore-database
+      - --feed=https://feeds.feedburner.com/TheAnthropoceneReviewed
+      - --feed=https://feeds.megaphone.fm/heavyweight-spot

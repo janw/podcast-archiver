@@ -4,12 +4,13 @@ import os
 import re
 from contextlib import contextmanager
 from string import Formatter
-from typing import IO, TYPE_CHECKING, Any, Generator, Iterable, Iterator, TypedDict
+from typing import IO, TYPE_CHECKING, Any, Generator, Iterable, Iterator, Literal, TypedDict, overload
 
 from pydantic import ValidationError
 from requests import HTTPError
 from slugify import slugify as _slugify
 
+from podcast_archiver.exceptions import NotModified
 from podcast_archiver.logging import logger, rprint
 
 if TYPE_CHECKING:
@@ -109,16 +110,29 @@ class FilenameFormatter(Formatter):
         return self._path_root / self.vformat(self._template, args=(), kwargs=kwargs)
 
 
+@overload
 @contextmanager
-def atomic_write(target: Path, mode: str = "w") -> Iterator[IO[Any]]:
+def atomic_write(target: Path, mode: Literal["w"] = "w") -> Iterator[IO[str]]: ...
+
+
+@overload
+@contextmanager
+def atomic_write(target: Path, mode: Literal["wb"]) -> Iterator[IO[bytes]]: ...
+
+
+@contextmanager
+def atomic_write(target: Path, mode: Literal["w", "wb"] = "w") -> Iterator[IO[bytes]] | Iterator[IO[str]]:
     tempfile = target.with_suffix(".part")
     try:
         with tempfile.open(mode) as fp:
             yield fp
             fp.flush()
             os.fsync(fp.fileno())
-        logger.debug("Moving file %s => %s", tempfile, target)
+        logger.debug("Moving file '%s' => '%s'", tempfile, target)
         os.rename(tempfile, target)
+    except Exception:
+        target.unlink(missing_ok=True)
+        raise
     finally:
         tempfile.unlink(missing_ok=True)
 
@@ -138,6 +152,10 @@ def handle_feed_request(url: str) -> Generator[None, Any, None]:
     except ValidationError as exc:
         logger.debug("Feed validation failed for %s", url, exc_info=exc)
         rprint(f"[error]Received invalid feed from {url}[/]")
+
+    except NotModified as exc:
+        logger.debug("Skipping retrieval for %s", exc.info)
+        rprint(f"\n[bar.finished]⏲ Feed of {exc.info} is unchanged, skipping.[/]")
 
     except Exception as exc:
         logger.debug("Unexpected error for url %s", url, exc_info=exc)

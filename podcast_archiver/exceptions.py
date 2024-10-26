@@ -1,6 +1,11 @@
-from typing import Any
+from __future__ import annotations
 
-import pydantic_core
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    import pydantic_core
+
+    from podcast_archiver.models import FeedInfo
 
 
 class PodcastArchiverException(Exception):
@@ -27,3 +32,16 @@ class InvalidSettings(PodcastArchiverException):
 
 class MissingDownloadUrl(ValueError):
     pass
+
+
+class NotCompleted(RuntimeError):
+    pass
+
+
+class NotModified(PodcastArchiverException):
+    info: FeedInfo
+    last_modified: str | None = None
+
+    def __init__(self, info: FeedInfo, *args: object) -> None:
+        super().__init__(*args)
+        self.info = info
