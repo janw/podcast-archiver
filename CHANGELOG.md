@@ -1,3 +1,9 @@
+## v1.7.0 (2024-10-27)
+
+### Feat
+
+- Add continuous mode with --sleep-seconds (#192)
+
 ## v1.6.2 (2024-10-20)
 
 ### Fix
