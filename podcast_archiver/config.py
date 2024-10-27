@@ -87,7 +87,11 @@ class Settings(BaseModel):
 
     verbose: int = Field(
         default=0,
-        description="Increase the level of verbosity while downloading.",
+        description=(
+            "Increase the level of verbosity while downloading. Can be passed multiple times. Increased verbosity and "
+            "non-interactive execution (in a cronjob, docker compose, etc.) will disable progress bars. "
+            "Non-interactive execution also always raises the verbosity unless --quiet is passed."
+        ),
     )
 
     slugify_paths: bool = Field(
@@ -133,6 +137,14 @@ class Settings(BaseModel):
         description=(
             "Ignore the episodes database when downloading. This will cause files to be downloaded again, even if they "
             "already exist in the database."
+        ),
+    )
+
+    sleep_seconds: int = Field(
+        default=0,
+        description=(
+            f"Run {constants.PROG_NAME} continuously. Set to a non-zero number of seconds to sleep after all available "
+            "episodes have been downloaded. Otherwise the application exits after all downloads have been completed."
         ),
     )
 

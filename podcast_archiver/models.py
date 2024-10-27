@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from functools import cached_property
+from http import HTTPStatus
 from pathlib import Path
 from time import mktime, struct_time
-from typing import Any, Iterator
+from typing import TYPE_CHECKING, Annotated, Any, Iterator
 from urllib.parse import urlparse
 
 import feedparser
@@ -16,12 +17,25 @@ from pydantic import (
     field_validator,
     model_validator,
 )
+from pydantic.functional_validators import BeforeValidator
 
-from podcast_archiver.constants import MAX_TITLE_LENGTH, REQUESTS_TIMEOUT
-from podcast_archiver.exceptions import MissingDownloadUrl
+from podcast_archiver.constants import DEFAULT_DATETIME_FORMAT, MAX_TITLE_LENGTH
+from podcast_archiver.exceptions import MissingDownloadUrl, NotModified
 from podcast_archiver.logging import logger
 from podcast_archiver.session import session
 from podcast_archiver.utils import get_generic_extension, truncate
+
+if TYPE_CHECKING:
+    from requests import Response
+
+
+def parse_from_struct_time(value: Any) -> Any:
+    if isinstance(value, struct_time):
+        return datetime.fromtimestamp(mktime(value)).replace(tzinfo=timezone.utc)
+    return value
+
+
+LenientDatetime = Annotated[datetime, BeforeValidator(parse_from_struct_time)]
 
 
 class Link(BaseModel):
@@ -44,9 +58,9 @@ class Episode(BaseModel):
     title: str = Field(default="Untitled Episode", title="episode.title")
     subtitle: str = Field("", repr=False, title="episode.subtitle")
     author: str = Field("", repr=False)
-    links: list[Link] = Field(default_factory=list)
+    links: list[Link] = Field(default_factory=list, repr=False)
     enclosure: Link = Field(default=None, repr=False)  # type: ignore[assignment]
-    published_time: datetime = Field(alias="published_parsed", title="episode.published_time")
+    published_time: LenientDatetime = Field(alias="published_parsed", title="episode.published_time")
 
     original_filename: str = Field(default="", repr=False, title="episode.original_filename")
 
@@ -68,18 +82,8 @@ class Episode(BaseModel):
 
     guid: str = Field(default=None, alias="id")  # type: ignore[assignment]
 
-    def __hash__(self) -> int:
-        return hash(self.guid)
-
-    def __eq__(self, other: Episode | Any) -> bool:
-        return isinstance(other, Episode) and self.guid == other.guid
-
-    @field_validator("published_time", mode="before")
-    @classmethod
-    def parse_from_struct_time(cls, value: Any) -> Any:
-        if isinstance(value, struct_time):
-            return datetime.fromtimestamp(mktime(value)).replace(tzinfo=timezone.utc)
-        return value
+    def __str__(self) -> str:
+        return f"{self.title} ({self.published_time.strftime(DEFAULT_DATETIME_FORMAT)})"
 
     @field_validator("title", mode="after")
     @classmethod
@@ -141,6 +145,12 @@ class FeedInfo(BaseModel):
     language: str | None = Field(default=None, title="show.language")
     links: list[Link] = []
 
+    updated_time: LenientDatetime | None = Field(default=None, alias="updated_parsed")
+    last_modified: str | None = Field(default=None)
+
+    def __str__(self) -> str:
+        return self.title
+
     @field_validator("title", mode="after")
     @classmethod
     def truncate_title(cls, value: str) -> str:
@@ -162,40 +172,56 @@ class FeedPage(BaseModel):
     bozo_exception: Exception | None = None
 
     @classmethod
-    def from_url(cls, url: str) -> FeedPage:
+    def from_url(cls, url: str, *, known_info: FeedInfo | None = None) -> FeedPage:
         parsed = urlparse(url)
         if parsed.scheme == "file":
             feedobj = feedparser.parse(parsed.path)
-        else:
-            response = session.get(url, allow_redirects=True, timeout=REQUESTS_TIMEOUT)
-            response.raise_for_status()
-            feedobj = feedparser.parse(response.content)
-        return cls.model_validate(feedobj)
+            return cls.model_validate(feedobj)
+
+        if not known_info:
+            return cls.from_response(session.get_and_raise(url))
+
+        response = session.get_and_raise(url, last_modified=known_info.last_modified)
+        if response.status_code == HTTPStatus.NOT_MODIFIED:
+            logger.debug("Server reported 'not modified' from %s, skipping fetch.", known_info.last_modified)
+            raise NotModified(known_info)
+
+        instance = cls.from_response(response)
+        if instance.feed.updated_time == known_info.updated_time:
+            logger.debug("Feed's updated time %s did not change, skipping fetch.", known_info.updated_time)
+            raise NotModified(known_info)
+
+        return instance
+
+    @classmethod
+    def from_response(cls, response: Response) -> FeedPage:
+        feedobj = feedparser.parse(response.content)
+        instance = cls.model_validate(feedobj)
+        instance.feed.last_modified = response.headers.get("Last-Modified")
+        return instance
 
 
 class Feed:
-    info: FeedInfo
     url: str
+    info: FeedInfo
 
-    _page: FeedPage | None
+    _page: FeedPage | None = None
 
-    def __init__(self, page: FeedPage, url: str) -> None:
-        self.info = page.feed
+    def __init__(self, url: str, *, known_info: FeedInfo | None = None) -> None:
         self.url = url
-        self._page = page
+        if known_info:
+            self.info = known_info
 
-        logger.info("Loaded feed for '%s' by %s", self.info.title, self.info.author)
+        self._page = FeedPage.from_url(url, known_info=known_info)
+        self.info = self._page.feed
+
+        logger.debug("Loaded feed for '%s' by %s from %s", self.info.title, self.info.author, url)
 
     def __repr__(self) -> str:
         return f"Feed(name='{self}', url='{self.url}')"
 
     def __str__(self) -> str:
-        return f"{self.info.title}"
-
-    @classmethod
-    def from_url(cls, url: str) -> Feed:
-        logger.info("Parsing feed %s", url)
-        return cls(page=FeedPage.from_url(url), url=url)
+        return str(self.info)
 
     def episode_iter(self, maximum_episode_count: int = 0) -> Iterator[Episode]:
         episode_count_total = 0
@@ -208,7 +234,7 @@ class Feed:
                 episode_count_page += 1
                 episode_count_total += 1
 
-            logger.info("Found %s episodes on page %s", episode_count_page, page_count)
+            logger.debug("Found %s episodes on page %s", episode_count_page, page_count)
             self._get_next_page()
 
     def _get_next_page(self) -> None:

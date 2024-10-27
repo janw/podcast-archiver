@@ -72,6 +72,25 @@ Feeds can also be "fetched" from a local file:
 podcast-archiver -f file:/Users/janw/downloaded_feed.xml
 ```
 
+#### Continuous mode
+
+When the `--sleep-seconds` option is set to a non-zero value, Podcast Archiver operates in continuous mode. After successfully populating the archive, it will not terminate but rather sleep for the given number of seconds until it refreshes the feeds again and downloads episodes that have been published in the meantime.
+
+If no new episodes have been published, no download attempts will be made, and the archiver will go to sleep again. This mode of operation is ideal to be run in a containerized setup, for example using [docker compose](https://docs.docker.com/compose/install/):
+
+```yaml
+services:
+  podcast-archiver:
+    restart: always
+    image: ghcr.io/janw/podcast-archiver
+    volumes:
+      - ./archive:/archive
+    command:
+      - --sleep-seconds=3600  # sleep for 1 hour between updates
+      - --feed=https://feeds.feedburner.com/TheAnthropoceneReviewed
+      - --feed=https://feeds.megaphone.fm/heavyweight-spot
+```
+
 ### Changing the filename format
 
 Podcast Archiver has a `--filename-template` option that allows you to change the particular naming scheme of the archive. The default value for `--filename-template`. is shown in `podcast-archiver --help`, as well as all the available variables. The basic ones are:

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import signal
+import sys
 import xml.etree.ElementTree as etree
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from podcast_archiver.logging import logger, rprint
 from podcast_archiver.processor import FeedProcessor
@@ -31,9 +33,15 @@ class PodcastArchiver:
             self.add_from_opml(opml)
 
     def register_cleanup(self, ctx: click.RichContext) -> None:
-        @ctx.call_on_close
-        def _cleanup() -> None:
+        def _cleanup(signum: int, *args: Any) -> None:
+            logger.debug("Signal %s received", signum)
+            rprint("[error]Terminating.[/]")
             self.processor.shutdown()
+            ctx.close()
+            sys.exit(0)
+
+        signal.signal(signal.SIGINT, _cleanup)
+        signal.signal(signal.SIGTERM, _cleanup)
 
     def add_feed(self, feed: Path | str) -> None:
         new_feeds = [feed] if isinstance(feed, str) else feed.read_text().strip().splitlines()

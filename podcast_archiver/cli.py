@@ -3,18 +3,18 @@ from __future__ import annotations
 import os
 import pathlib
 import stat
+import time
 from os import getenv
 from typing import TYPE_CHECKING, Any
 
 import rich_click as click
-from rich import get_console
 
 from podcast_archiver import __version__ as version
 from podcast_archiver import constants
 from podcast_archiver.base import PodcastArchiver
 from podcast_archiver.config import Settings, in_ci
 from podcast_archiver.exceptions import InvalidSettings
-from podcast_archiver.logging import configure_logging
+from podcast_archiver.logging import configure_logging, rprint
 
 if TYPE_CHECKING:
     from click.shell_completion import CompletionItem
@@ -49,6 +49,7 @@ click.rich_click.OPTION_GROUPS = {
                 "--update",
                 "--max-episodes",
                 "--ignore-database",
+                "--sleep",
             ],
         },
     ]
@@ -215,6 +216,7 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     "-v",
     "--verbose",
     count=True,
+    metavar="",
     show_envvar=True,
     help=Settings.model_fields["verbose"].description,
 )
@@ -281,10 +283,16 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     show_envvar=True,
     help=Settings.model_fields["ignore_database"].description,
 )
+@click.option(
+    "--sleep-seconds",
+    type=int,
+    default=0,
+    show_envvar=True,
+    help=Settings.model_fields["sleep_seconds"].description,
+)
 @click.pass_context
 def main(ctx: click.RichContext, /, **kwargs: Any) -> int:
-    get_console().quiet = kwargs["quiet"]
-    configure_logging(kwargs["verbose"])
+    configure_logging(kwargs["verbose"], kwargs["quiet"])
     try:
         settings = Settings.load_from_dict(kwargs)
 
@@ -296,6 +304,10 @@ def main(ctx: click.RichContext, /, **kwargs: Any) -> int:
         pa = PodcastArchiver(settings=settings)
         pa.register_cleanup(ctx)
         pa.run()
+        while settings.sleep_seconds > 0:
+            rprint(f"Sleeping for {settings.sleep_seconds} seconds.")
+            time.sleep(settings.sleep_seconds)
+            pa.run()
     except InvalidSettings as exc:
         raise click.BadParameter(f"Invalid settings: {exc}") from exc
     except KeyboardInterrupt as exc:  # pragma: no cover
