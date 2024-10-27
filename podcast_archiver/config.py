@@ -5,7 +5,7 @@ import sys
 import textwrap
 from datetime import datetime
 from os import getenv
-from typing import IO, Any, Text
+from typing import IO, TYPE_CHECKING, Any, Text
 
 import pydantic
 from pydantic import (
@@ -15,6 +15,7 @@ from pydantic import (
     Field,
     FilePath,
     NewPath,
+    model_validator,
 )
 from pydantic import ConfigDict as _ConfigDict
 from pydantic_core import to_json
@@ -25,7 +26,11 @@ from podcast_archiver import __version__ as version
 from podcast_archiver import constants
 from podcast_archiver.database import BaseDatabase, Database, DummyDatabase
 from podcast_archiver.exceptions import InvalidSettings
+from podcast_archiver.logging import rprint
 from podcast_archiver.models import ALL_FIELD_TITLES_STR
+
+if TYPE_CHECKING:
+    from pydantic.fields import FieldInfo
 
 
 def expanduser(v: pathlib.Path) -> pathlib.Path:
@@ -68,11 +73,13 @@ class Settings(BaseModel):
     )
 
     update_archive: bool = Field(
+        deprecated=True,
         default=False,
         description=(
             "Update the feeds with newly added episodes only. "
             "Adding episodes ends with the first episode already present in the download directory."
         ),
+        alias="update",
     )
 
     write_info_json: bool = Field(
@@ -154,6 +161,24 @@ class Settings(BaseModel):
     )
 
     @classmethod
+    def get_deprecated_options(cls) -> dict[str, tuple[str, FieldInfo]]:
+        return {
+            cls.get_option_name(name, field): (name, field)
+            for name, field in cls.model_fields.items()
+            if field.deprecated
+        }
+
+    @model_validator(mode="after")
+    def validate_model(self) -> Settings:
+        for opt_name, (name, field) in self.get_deprecated_options().items():
+            if getattr(self, name, field.default) == field.default:
+                continue
+            rprint(
+                f":warning: Option '{opt_name}' / setting '{name}' is deprecated and {constants.DEPRECATION_MESSAGE}."
+            )
+        return self
+
+    @classmethod
     def load_from_dict(cls, value: dict[str, Any]) -> Settings:
         try:
             return cls.model_validate(value)
@@ -176,6 +201,10 @@ class Settings(BaseModel):
         content.update(config=path)
         return cls.load_from_dict(content)
 
+    @staticmethod
+    def get_option_name(name: str, field: FieldInfo) -> str:
+        return f"--{(field.alias or name).replace('_', '-')}"
+
     @classmethod
     def generate_default_config(cls, file: IO[Text] | None = None) -> None:
         now = datetime.now().replace(microsecond=0).astimezone()
@@ -187,11 +216,11 @@ class Settings(BaseModel):
         ]
 
         for name, field in cls.model_fields.items():
-            if name in ("config",):
+            if name in ("config",) or field.deprecated:
                 continue
             cli_opt = (
-                wrapper.wrap(f"Equivalent command line option: --{field.alias.replace('_', '-')}")
-                if field.alias
+                wrapper.wrap(f"Equivalent command line option: {opt_name}")
+                if (opt_name := cls.get_option_name(name, field))
                 else []
             )
             value = field.get_default(call_default_factory=True)

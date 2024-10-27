@@ -26,6 +26,10 @@ click.rich_click.OPTIONS_PANEL_TITLE = "Miscellaneous Options"
 click.rich_click.OPTION_GROUPS = {
     constants.PROG_NAME: [
         {
+            "name": f":warning: Deprecated, {constants.DEPRECATION_MESSAGE}",
+            "options": list(Settings.get_deprecated_options().keys()),
+        },
+        {
             "name": "Basic parameters",
             "options": [
                 "--feed",
@@ -46,10 +50,9 @@ click.rich_click.OPTION_GROUPS = {
         {
             "name": "Processing parameters",
             "options": [
-                "--update",
+                "--sleep-seconds",
                 "--max-episodes",
                 "--ignore-database",
-                "--sleep",
             ],
         },
     ]
@@ -179,7 +182,6 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     "update_archive",
     type=bool,
     is_flag=True,
-    show_envvar=True,
     help=Settings.model_fields["update_archive"].description,
 )
 @click.option(

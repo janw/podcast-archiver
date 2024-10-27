@@ -1,4 +1,8 @@
 repos:
+  - repo: meta
+    hooks:
+      - id: check-hooks-apply
+
   - repo: https://github.com/janw/pre-commit-hooks
     rev: v0.1.0
     hooks:
@@ -39,6 +43,14 @@ repos:
       - id: mypy
         name: mypy
         entry: poetry run mypy
+        language: system
+        require_serial: true
+        pass_filenames: false
+        types: [python]
+
+      - id: rich-codex
+        name: rich-codex
+        entry: ./hack/rich-codex.sh
         language: system
         require_serial: true
         pass_filenames: false

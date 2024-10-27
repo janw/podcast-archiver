@@ -52,8 +52,7 @@ By default, the docker image downloads episodes to a volume mounted at `/archive
 
 Run `podcast-archiver --help` for details on how to use it:
 
-<!-- RICH-CODEX fake_command: "podcast-archiver --help" -->
-![`poetry run podcast-archiver --help`](.assets/podcast-archiver-help.svg)
+![`podcast-archiver --help`](.assets/podcast-archiver-help.svg)
 
 ### Example invocation
 
