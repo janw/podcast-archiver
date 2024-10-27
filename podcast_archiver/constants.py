@@ -21,3 +21,5 @@ DEFAULT_ARCHIVE_DIRECTORY = pathlib.Path(".")
 DEFAULT_FILENAME_TEMPLATE = "{show.title}/{episode.published_time:%Y-%m-%d} - {episode.title}.{ext}"
 DEFAULT_CONCURRENCY = 4
 DEFAULT_DATABASE_FILENAME = "podcast-archiver.db"
+
+DEPRECATION_MESSAGE = "will be removed in the next major release"
