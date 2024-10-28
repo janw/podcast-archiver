@@ -7,9 +7,9 @@ from unittest.mock import patch
 import pytest
 
 from podcast_archiver.config import Settings
-from podcast_archiver.enums import DownloadResult
+from podcast_archiver.enums import JobResult
 from podcast_archiver.models import FeedPage
-from podcast_archiver.processor import FeedProcessor, ProcessingResult
+from podcast_archiver.processor import FeedProcessor
 
 if TYPE_CHECKING:
     from pydantic_core import Url
@@ -20,8 +20,8 @@ if TYPE_CHECKING:
     "file_exists,database_exists,expected_result",
     [
         (False, False, None),
-        (True, False, DownloadResult.ALREADY_EXISTS),
-        (False, True, DownloadResult.ALREADY_EXISTS),
+        (True, False, JobResult.ALREADY_EXISTS_DISK),
+        (False, True, JobResult.ALREADY_EXISTS_DB),
     ],
 )
 def test_preflight_check(
@@ -29,7 +29,7 @@ def test_preflight_check(
     feedobj_lautsprecher: Url,
     file_exists: bool,
     database_exists: bool,
-    expected_result: DownloadResult | None,
+    expected_result: JobResult | None,
 ) -> None:
     settings = Settings()
     feed = FeedPage.model_validate(feedobj_lautsprecher)
@@ -38,7 +38,7 @@ def test_preflight_check(
     proc = FeedProcessor(settings)
     if file_exists:
         target.touch()
-    with patch.object(proc.database, "exists", return_value=database_exists):
+    with patch.object(settings.database_obj, "exists", return_value=database_exists):
         result = proc._preflight_check(episode, target=target)
 
     assert result == expected_result
@@ -48,7 +48,4 @@ def test_retrieve_failure(responses: RequestsMock) -> None:
     settings = Settings()
     proc = FeedProcessor(settings)
 
-    result = proc.process("https://broken.url.invalid")
-
-    assert result == ProcessingResult()
-    assert result.feed is None
+    assert proc.process("https://broken.url.invalid") is False

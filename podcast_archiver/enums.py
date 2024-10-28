@@ -8,12 +8,12 @@ class StrEnum(str, Enum):
 
 class QueueCompletionType(StrEnum):
     COMPLETED = "Archived all episodes"
-    FOUND_EXISTING = "Archive is up to date"
     MAX_EPISODES = "Maximum episode count reached"
 
 
-class DownloadResult(StrEnum):
-    ALREADY_EXISTS = "Exists"
+class JobResult(StrEnum):
+    ALREADY_EXISTS_DB = "Exists in database"
+    ALREADY_EXISTS_DISK = "Exists on disk"
     COMPLETED_SUCCESSFULLY = "Completed"
     FAILED = "Failed"
     ABORTED = "Aborted"

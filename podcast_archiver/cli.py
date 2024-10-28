@@ -14,7 +14,7 @@ from podcast_archiver import constants
 from podcast_archiver.base import PodcastArchiver
 from podcast_archiver.config import Settings, in_ci
 from podcast_archiver.exceptions import InvalidSettings
-from podcast_archiver.logging import configure_logging, rprint
+from podcast_archiver.logging import out
 
 if TYPE_CHECKING:
     from click.shell_completion import CompletionItem
@@ -177,14 +177,6 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     help=Settings.model_fields["filename_template"].description,
 )
 @click.option(
-    "-u",
-    "--update",
-    "update_archive",
-    type=bool,
-    is_flag=True,
-    help=Settings.model_fields["update_archive"].description,
-)
-@click.option(
     "--write-info-json",
     type=bool,
     is_flag=True,
@@ -294,7 +286,7 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
 )
 @click.pass_context
 def main(ctx: click.RichContext, /, **kwargs: Any) -> int:
-    configure_logging(kwargs["verbose"], kwargs["quiet"])
+    out.configure(kwargs["verbose"], kwargs["quiet"])
     try:
         settings = Settings.load_from_dict(kwargs)
 
@@ -307,7 +299,7 @@ def main(ctx: click.RichContext, /, **kwargs: Any) -> int:
         pa.register_cleanup(ctx)
         pa.run()
         while settings.sleep_seconds > 0:
-            rprint(f"Sleeping for {settings.sleep_seconds} seconds.")
+            out.info(f"Sleeping for {settings.sleep_seconds} seconds.")
             time.sleep(settings.sleep_seconds)
             pa.run()
     except InvalidSettings as exc:

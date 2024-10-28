@@ -11,7 +11,7 @@ from requests import HTTPError
 from slugify import slugify as _slugify
 
 from podcast_archiver.exceptions import NotModified
-from podcast_archiver.logging import logger, rprint
+from podcast_archiver.logging import logger, out
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -144,19 +144,19 @@ def handle_feed_request(url: str) -> Generator[None, Any, None]:
     except HTTPError as exc:
         logger.debug("Failed to request feed url %s", url, exc_info=exc)
         if (response := getattr(exc, "response", None)) is None:
-            rprint(f"[error]Failed to retrieve feed {url}: {exc}[/]")
+            out.error(f"Failed to retrieve feed {url}: {exc}")
             return
 
-        rprint(f"[error]Received status code {response.status_code} from {url}[/]")
+        out.error(f"Received status code {response.status_code} from {url}")
 
     except ValidationError as exc:
         logger.debug("Feed validation failed for %s", url, exc_info=exc)
-        rprint(f"[error]Received invalid feed from {url}[/]")
+        out.error(f"Received invalid feed from {url}")
 
     except NotModified as exc:
         logger.debug("Skipping retrieval for %s", exc.info)
-        rprint(f"\n[bar.finished]⏲ Feed of {exc.info} is unchanged, skipping.[/]")
+        out.info(f"⏲ Feed of {exc.info} is unchanged, skipping.")
 
     except Exception as exc:
         logger.debug("Unexpected error for url %s", url, exc_info=exc)
-        rprint(f"[error]Failed to retrieve feed {url}: {exc}[/]")
+        out.error(f"Failed to retrieve feed {url}: {exc}")

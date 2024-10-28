@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+from dataclasses import dataclass
 from threading import Event
 from typing import IO, TYPE_CHECKING, Generator
 
 from podcast_archiver import constants
-from podcast_archiver.enums import DownloadResult
+from podcast_archiver.enums import JobResult
 from podcast_archiver.exceptions import NotCompleted
-from podcast_archiver.logging import logger, wrapped_tqdm
+from podcast_archiver.logging import logger, out
 from podcast_archiver.session import session
-from podcast_archiver.types import EpisodeResult
 from podcast_archiver.utils import atomic_write
 
 if TYPE_CHECKING:
@@ -20,11 +20,23 @@ if TYPE_CHECKING:
     from podcast_archiver.models import Episode, FeedInfo
 
 
+stop_event = Event()
+
+
+@dataclass
+class JobResultCtx:
+    episode: Episode
+    job_result: JobResult
+
+    def result(self, timeout: float | None = None) -> JobResultCtx:
+        # Shortcut for non-future results produced by pre-flight check
+        return self
+
+
 class DownloadJob:
     episode: Episode
     feed_info: FeedInfo
     target: Path
-    stop_event: Event
 
     _max_download_bytes: int | None = None
     _write_info_json: bool
@@ -36,27 +48,26 @@ class DownloadJob:
         target: Path,
         max_download_bytes: int | None = None,
         write_info_json: bool = False,
-        stop_event: Event | None = None,
     ) -> None:
         self.episode = episode
         self.target = target
         self._max_download_bytes = max_download_bytes
         self._write_info_json = write_info_json
-        self.stop_event = stop_event or Event()
 
-    def __call__(self) -> EpisodeResult:
+    def __call__(self) -> JobResultCtx:
         try:
-            return self.run()
+            return JobResultCtx(self.episode, self.run())
         except NotCompleted:
-            return EpisodeResult(self.episode, DownloadResult.ABORTED)
+            logger.debug("Download aborted: %s", self.episode)
+            return JobResultCtx(self.episode, JobResult.ABORTED)
         except Exception as exc:
             logger.error("Download failed: %s; %s", self.episode, exc)
             logger.debug("Exception while downloading", exc_info=exc)
-            return EpisodeResult(self.episode, DownloadResult.FAILED)
+            return JobResultCtx(self.episode, JobResult.FAILED)
 
-    def run(self) -> EpisodeResult:
+    def run(self) -> JobResult:
         if self.target.exists():
-            return EpisodeResult(self.episode, DownloadResult.ALREADY_EXISTS)
+            return JobResult.ALREADY_EXISTS_DISK
 
         self.target.parent.mkdir(parents=True, exist_ok=True)
         logger.info("Downloading: %s", self.episode)
@@ -65,7 +76,7 @@ class DownloadJob:
             self.receive_data(fp, response)
 
         logger.info("Completed: %s", self.episode)
-        return EpisodeResult(self.episode, DownloadResult.COMPLETED_SUCCESSFULLY)
+        return JobResult.COMPLETED_SUCCESSFULLY
 
     @property
     def infojsonfile(self) -> Path:
@@ -75,7 +86,7 @@ class DownloadJob:
         total_size = int(response.headers.get("content-length", "0"))
         total_written = 0
         max_bytes = self._max_download_bytes
-        for chunk in wrapped_tqdm(
+        for chunk in out.progress_bar(
             response.iter_content(chunk_size=constants.DOWNLOAD_CHUNK_SIZE),
             desc=str(self.episode),
             total=total_size,
@@ -87,8 +98,7 @@ class DownloadJob:
                 logger.debug("Partial download of first %s bytes completed.", max_bytes)
                 return
 
-            if self.stop_event.is_set():
-                logger.debug("Stop event is set, bailing on %s.", self.episode)
+            if stop_event.is_set():
                 raise NotCompleted
 
     @contextmanager

@@ -5,7 +5,7 @@ import sys
 import xml.etree.ElementTree as etree
 from typing import TYPE_CHECKING, Any
 
-from podcast_archiver.logging import logger, rprint
+from podcast_archiver.logging import logger, out
 from podcast_archiver.processor import FeedProcessor
 
 if TYPE_CHECKING:
@@ -35,7 +35,6 @@ class PodcastArchiver:
     def register_cleanup(self, ctx: click.RichContext) -> None:
         def _cleanup(signum: int, *args: Any) -> None:
             logger.debug("Signal %s received", signum)
-            rprint("[error]Terminating.[/]")
             self.processor.shutdown()
             ctx.close()
             sys.exit(0)
@@ -58,11 +57,7 @@ class PodcastArchiver:
             if url := elem.get("xmlUrl"):
                 self.add_feed(url)
 
-    def run(self) -> int:
-        failures = 0
-        for url in self.feeds:
-            result = self.processor.process(url)
-            failures += result.failures
-
-        rprint("\n[bar.finished]Done.[/]\n")
-        return failures
+    def run(self) -> dict[str, bool]:
+        results = {url: self.processor.process(url) for url in self.feeds}
+        out.success("Done.")
+        return results

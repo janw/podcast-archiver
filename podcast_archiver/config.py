@@ -4,6 +4,7 @@ import pathlib
 import sys
 import textwrap
 from datetime import datetime
+from functools import cached_property
 from os import getenv
 from typing import IO, TYPE_CHECKING, Any, Text
 
@@ -18,6 +19,7 @@ from pydantic import (
     model_validator,
 )
 from pydantic import ConfigDict as _ConfigDict
+from pydantic.fields import FieldInfo
 from pydantic_core import to_json
 from typing_extensions import Annotated
 from yaml import YAMLError, safe_load
@@ -26,7 +28,7 @@ from podcast_archiver import __version__ as version
 from podcast_archiver import constants
 from podcast_archiver.database import BaseDatabase, Database, DummyDatabase
 from podcast_archiver.exceptions import InvalidSettings
-from podcast_archiver.logging import rprint
+from podcast_archiver.logging import out
 from podcast_archiver.models import ALL_FIELD_TITLES_STR
 
 if TYPE_CHECKING:
@@ -70,16 +72,6 @@ class Settings(BaseModel):
             "Directory to which to download the podcast archive. "
             "By default, the archive will be created in the current working directory  ('.')."
         ),
-    )
-
-    update_archive: bool = Field(
-        deprecated=True,
-        default=False,
-        description=(
-            "Update the feeds with newly added episodes only. "
-            "Adding episodes ends with the first episode already present in the download directory."
-        ),
-        alias="update",
     )
 
     write_info_json: bool = Field(
@@ -173,9 +165,7 @@ class Settings(BaseModel):
         for opt_name, (name, field) in self.get_deprecated_options().items():
             if getattr(self, name, field.default) == field.default:
                 continue
-            rprint(
-                f":warning: Option '{opt_name}' / setting '{name}' is deprecated and {constants.DEPRECATION_MESSAGE}."
-            )
+            out.warning(f"Option '{opt_name}' / setting '{name}' is deprecated and {constants.DEPRECATION_MESSAGE}.")
         return self
 
     @classmethod
@@ -240,7 +230,8 @@ class Settings(BaseModel):
             with file:
                 file.write(contents)
 
-    def get_database(self) -> BaseDatabase:
+    @cached_property
+    def database_obj(self) -> BaseDatabase:
         if getenv("TESTING", "0").lower() in ("1", "true"):
             return DummyDatabase()
 

@@ -38,6 +38,10 @@ class NotCompleted(RuntimeError):
     pass
 
 
+class MaxEpisodes(PodcastArchiverException):
+    pass
+
+
 class NotModified(PodcastArchiverException):
     info: FeedInfo
     last_modified: str | None = None

@@ -65,7 +65,7 @@ class Database(BaseDatabase):
                     (episode.guid, episode.title),
                 )
             except sqlite3.IntegrityError:
-                logger.debug(f"Episode exists: {episode}")
+                logger.debug(f"Episode exists in DB: {episode}")
 
     def exists(self, episode: Episode) -> bool:
         if self.ignore_existing:

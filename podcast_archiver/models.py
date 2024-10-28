@@ -10,17 +10,19 @@ from urllib.parse import urlparse
 
 import feedparser
 from pydantic import (
+    AfterValidator,
     AliasChoices,
     BaseModel,
     ConfigDict,
     Field,
+    ValidationInfo,
     field_validator,
     model_validator,
 )
 from pydantic.functional_validators import BeforeValidator
 
 from podcast_archiver.constants import DEFAULT_DATETIME_FORMAT, MAX_TITLE_LENGTH
-from podcast_archiver.exceptions import MissingDownloadUrl, NotModified
+from podcast_archiver.exceptions import MaxEpisodes, MissingDownloadUrl, NotModified
 from podcast_archiver.logging import logger
 from podcast_archiver.session import session
 from podcast_archiver.utils import get_generic_extension, truncate
@@ -36,6 +38,17 @@ def parse_from_struct_time(value: Any) -> Any:
 
 
 LenientDatetime = Annotated[datetime, BeforeValidator(parse_from_struct_time)]
+
+
+def bail_on_known_updated_time(value: FeedInfo, info: ValidationInfo) -> FeedInfo:
+    if (
+        (context := info.context)
+        and (known_updated_time := context.get("known_updated_time"))
+        and value.updated_time == known_updated_time
+    ):
+        raise NotModified(value)
+
+    return value
 
 
 class Link(BaseModel):
@@ -164,7 +177,7 @@ class FeedInfo(BaseModel):
 class FeedPage(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    feed: FeedInfo
+    feed: Annotated[FeedInfo, AfterValidator(bail_on_known_updated_time)]
 
     episodes: list[Episode] = Field(default_factory=list, validation_alias=AliasChoices("entries", "items"))
 
@@ -186,7 +199,7 @@ class FeedPage(BaseModel):
             logger.debug("Server reported 'not modified' from %s, skipping fetch.", known_info.last_modified)
             raise NotModified(known_info)
 
-        instance = cls.from_response(response)
+        instance = cls.from_response(response, updated_time=known_info.updated_time)
         if instance.feed.updated_time == known_info.updated_time:
             logger.debug("Feed's updated time %s did not change, skipping fetch.", known_info.updated_time)
             raise NotModified(known_info)
@@ -194,9 +207,9 @@ class FeedPage(BaseModel):
         return instance
 
     @classmethod
-    def from_response(cls, response: Response) -> FeedPage:
+    def from_response(cls, response: Response, updated_time: datetime | None = None) -> FeedPage:
         feedobj = feedparser.parse(response.content)
-        instance = cls.model_validate(feedobj)
+        instance = cls.model_validate(feedobj, context={"known_updated_time": updated_time})
         instance.feed.last_modified = response.headers.get("Last-Modified")
         return instance
 
@@ -233,6 +246,9 @@ class Feed:
                 yield episode
                 episode_count_page += 1
                 episode_count_total += 1
+
+                if maximum_episode_count > 0 and maximum_episode_count == episode_count_total:
+                    raise MaxEpisodes
 
             logger.debug("Found %s episodes on page %s", episode_count_page, page_count)
             self._get_next_page()
