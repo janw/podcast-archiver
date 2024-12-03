@@ -17,4 +17,5 @@ class ProgressCallback(Protocol):
     def __call__(self, total: int | None = None, completed: int | None = None) -> None: ...
 
 
-EpisodeResultsList: TypeAlias = list[Future[EpisodeResult] | EpisodeResult]
+FutureEpisodeResult: TypeAlias = Future[EpisodeResult] | EpisodeResult
+EpisodeResultsList: TypeAlias = list[FutureEpisodeResult]
