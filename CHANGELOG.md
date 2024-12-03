@@ -1,3 +1,9 @@
+## v1.7.2 (2024-12-03)
+
+### Fix
+
+- Don't add episode to DB if they failed downloading (#209, #210)
+
 ## v1.7.1 (2024-10-27)
 
 ### Fix
