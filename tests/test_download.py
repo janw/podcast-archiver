@@ -12,6 +12,7 @@ from requests import HTTPError
 from podcast_archiver import download, utils
 from podcast_archiver.enums import DownloadResult
 from podcast_archiver.models import FeedPage
+from podcast_archiver.types import EpisodeResult
 from tests.conftest import MEDIA_URL
 
 if TYPE_CHECKING:
@@ -21,22 +22,25 @@ if TYPE_CHECKING:
 def test_download_job(tmp_path_cd: Path, feedobj_lautsprecher: dict[str, Any]) -> None:
     feed = FeedPage.model_validate(feedobj_lautsprecher)
     episode = feed.episodes[0]
+    assert episode
     job = download.DownloadJob(episode=episode, target=Path("file.mp3"))
     result = job()
 
-    assert result == (episode, DownloadResult.COMPLETED_SUCCESSFULLY)
+    assert result == EpisodeResult(episode, DownloadResult.COMPLETED_SUCCESSFULLY)
 
 
-def test_download_already_exists(tmp_path_cd: Path, feedobj_lautsprecher_notconsumed: dict[str, Any]) -> None:
-    feed = FeedPage.model_validate(feedobj_lautsprecher_notconsumed)
+def test_download_already_exists(tmp_path_cd: Path, feedobj_lautsprecher: dict[str, Any]) -> None:
+    feed = FeedPage.model_validate(feedobj_lautsprecher)
     episode = feed.episodes[0]
+    assert episode
 
     job = download.DownloadJob(episode=episode, target=Path("file.mp3"))
     job.target.parent.mkdir(exist_ok=True)
     job.target.touch()
     result = job()
 
-    assert result == (episode, DownloadResult.ALREADY_EXISTS)
+    # behavioral change: DownloadJob no longer cares if the file exists; relies on DB only.
+    assert result == EpisodeResult(episode, DownloadResult.COMPLETED_SUCCESSFULLY)
 
 
 def test_download_partial(
@@ -46,12 +50,13 @@ def test_download_partial(
 ) -> None:
     feed = FeedPage.model_validate(feedobj_lautsprecher)
     episode = feed.episodes[0]
+    assert episode
 
     job = download.DownloadJob(episode=episode, target=Path("file.mp3"), max_download_bytes=2)
     with caplog.at_level(logging.DEBUG, "podcast_archiver"):
         result = job()
 
-    assert result == (episode, DownloadResult.COMPLETED_SUCCESSFULLY)
+    assert result == EpisodeResult(episode, DownloadResult.COMPLETED_SUCCESSFULLY)
     assert "Partial download of first 2 bytes completed." in caplog.messages
     assert len(job.target.read_bytes())
 
@@ -59,12 +64,13 @@ def test_download_partial(
 def test_download_aborted(tmp_path_cd: Path, feedobj_lautsprecher: dict[str, Any]) -> None:
     feed = FeedPage.model_validate(feedobj_lautsprecher)
     episode = feed.episodes[0]
+    assert episode
 
     job = download.DownloadJob(episode=episode, target=Path("file.mp3"))
     job.stop_event.set()
     result = job()
 
-    assert result == (episode, DownloadResult.ABORTED)
+    assert result == EpisodeResult(episode, DownloadResult.ABORTED)
 
 
 class PartialObjectMock(Protocol):
@@ -92,12 +98,13 @@ def test_download_failed(
     episode = feed.episodes[0]
     if should_download:
         responses.add(responses.GET, MEDIA_URL, b"BLOB")
+    assert episode
 
     job = download.DownloadJob(episode=episode, target=Path("file.mp3"))
     with failure_mode(side_effect=side_effect), caplog.at_level(logging.DEBUG):
         result = job()
 
-    assert result == (episode, DownloadResult.FAILED)
+    assert result == EpisodeResult(episode, DownloadResult.FAILED)
     failure_rec = None
     for record in caplog.records:
         if record.message.startswith("Download failed: "):
@@ -123,8 +130,10 @@ def test_download_failed(
 def test_download_info_json(tmp_path_cd: Path, feedobj_lautsprecher: dict[str, Any], write_info_json: bool) -> None:
     feed = FeedPage.model_validate(feedobj_lautsprecher)
     episode = feed.episodes[0]
+    assert episode
+
     job = download.DownloadJob(episode=episode, target=tmp_path_cd / "file.mp3", write_info_json=write_info_json)
     result = job()
 
-    assert result == (episode, DownloadResult.COMPLETED_SUCCESSFULLY)
+    assert result == EpisodeResult(episode, DownloadResult.COMPLETED_SUCCESSFULLY)
     assert job.infojsonfile.exists() == write_info_json

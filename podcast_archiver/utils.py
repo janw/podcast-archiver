@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from podcast_archiver.config import Settings
-    from podcast_archiver.models import Episode, FeedInfo
+    from podcast_archiver.models import EpisodeSkeleton, FeedInfo
 
 filename_safe_re = re.compile(r'[/\\?%*:|"<>]')
 slug_safe_re = re.compile(r"[^A-Za-z0-9-_\.]+")
@@ -65,7 +65,7 @@ def truncate(value: str, max_length: int) -> str:
 
 
 class FormatterKwargs(TypedDict, total=False):
-    episode: Episode
+    episode: EpisodeSkeleton
     show: FeedInfo
     ext: str
 
@@ -101,7 +101,7 @@ class FilenameFormatter(Formatter):
             return slugify(formatted)
         return make_filename_safe(formatted)
 
-    def format(self, episode: Episode, feed_info: FeedInfo) -> Path:  # type: ignore[override]
+    def format(self, episode: EpisodeSkeleton, feed_info: FeedInfo) -> Path:  # type: ignore[override]
         kwargs: FormatterKwargs = {
             "episode": episode,
             "show": feed_info,

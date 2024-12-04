@@ -39,7 +39,7 @@ python-slugify = "^8.0.1"
 tqdm = "^4.66.4"
 
 [tool.poetry.group.dev.dependencies]
-ipython = "<8.30"
+ipython = "^8"
 ipdb = "*"
 ruff = "0.6.8"
 pre-commit = ">=3,<5"
@@ -88,6 +88,9 @@ lint.ignore = [
     "SIM108", # if-else-block-instead-of-if-exp
     "ISC001", # single-line-implicit-string-concatenation
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"compat.py" = ["F401"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -147,6 +150,9 @@ module = [
 ]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = ["podcast_archiver.compat.*"]
+implicit_reexport = true
 
 [build-system]
 requires = ["poetry-core"]

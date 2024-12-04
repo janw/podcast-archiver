@@ -1,15 +1,17 @@
 from __future__ import annotations
 
 from concurrent.futures import Future
-from typing import TYPE_CHECKING, NamedTuple, Protocol, TypeAlias
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Protocol, TypeAlias
 
 if TYPE_CHECKING:
     from podcast_archiver.enums import DownloadResult
-    from podcast_archiver.models import Episode
+    from podcast_archiver.models import EpisodeSkeleton
 
 
-class EpisodeResult(NamedTuple):
-    episode: Episode
+@dataclass(slots=True, frozen=True)
+class EpisodeResult:
+    episode: EpisodeSkeleton
     result: DownloadResult
 
 

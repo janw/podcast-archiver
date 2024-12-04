@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest import mock
@@ -7,7 +8,9 @@ from unittest.mock import patch
 
 import pytest
 
-from podcast_archiver.enums import DownloadResult
+from podcast_archiver import compat
+from podcast_archiver.database import EpisodeInDb
+from podcast_archiver.enums import DownloadResult, QueueCompletionType
 from podcast_archiver.models import FeedPage
 from podcast_archiver.processor import FeedProcessor, ProcessingResult
 from podcast_archiver.types import EpisodeResult
@@ -23,9 +26,12 @@ if TYPE_CHECKING:
 @pytest.mark.parametrize(
     "file_exists,database_exists,expected_result",
     [
-        (False, False, None),
-        (True, False, DownloadResult.ALREADY_EXISTS),
-        (False, True, DownloadResult.ALREADY_EXISTS),
+        (False, False, False),
+        (True, False, True),
+        (False, EpisodeInDb(), True),
+        (True, EpisodeInDb(length=1), False),
+        (True, EpisodeInDb(published_time=datetime(1970, 1, 1, tzinfo=compat.UTC)), False),
+        (True, EpisodeInDb(published_time=datetime(2999, 1, 1, tzinfo=compat.UTC)), True),
     ],
 )
 def test_preflight_check(
@@ -33,16 +39,18 @@ def test_preflight_check(
     feedobj_lautsprecher: Url,
     file_exists: bool,
     database_exists: bool,
-    expected_result: DownloadResult | None,
+    expected_result: bool,
 ) -> None:
     feed = FeedPage.model_validate(feedobj_lautsprecher)
     episode = feed.episodes[0]
+    assert episode
+
     target = Path("file.mp3")
     proc = FeedProcessor()
     if file_exists:
         target.touch()
     with patch.object(proc.database, "exists", return_value=database_exists):
-        result = proc._preflight_check(episode, target=target)
+        result = proc._does_already_exist(episode, target=target)
 
     assert result == expected_result
 
@@ -52,7 +60,7 @@ def test_retrieve_failure(responses: RequestsMock) -> None:
 
     result = proc.process("https://broken.url.invalid")
 
-    assert result == ProcessingResult()
+    assert result == ProcessingResult(None, QueueCompletionType.FAILED)
     assert result.feed is None
 
 
@@ -61,7 +69,7 @@ def test_download_success(tmp_path_cd: Path, feed_lautsprecher: str) -> None:
 
     result = proc.process(feed_lautsprecher)
 
-    assert result != ProcessingResult()
+    assert result != ProcessingResult(None, QueueCompletionType.COMPLETED)
     assert result.success == 5
     assert result.feed
     assert result.feed.url == feed_lautsprecher

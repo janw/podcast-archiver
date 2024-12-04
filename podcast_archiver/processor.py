@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass
 from threading import Event
 from typing import TYPE_CHECKING
@@ -10,7 +10,7 @@ from podcast_archiver.config import Settings
 from podcast_archiver.download import DownloadJob
 from podcast_archiver.enums import DownloadResult, QueueCompletionType
 from podcast_archiver.logging import logger, rprint
-from podcast_archiver.models import Episode, Feed, FeedInfo
+from podcast_archiver.models import EpisodeSkeleton, Feed, FeedInfo
 from podcast_archiver.types import EpisodeResult, EpisodeResultsList, FutureEpisodeResult
 from podcast_archiver.utils import FilenameFormatter, handle_feed_request
 
@@ -20,10 +20,10 @@ if TYPE_CHECKING:
     from podcast_archiver.database import BaseDatabase
 
 
-@dataclass
+@dataclass(slots=True, frozen=True)
 class ProcessingResult:
-    feed: Feed | None = None
-    started: int = 0
+    feed: Feed | None
+    tombstone: QueueCompletionType
     success: int = 0
     failures: int = 0
 
@@ -48,11 +48,11 @@ class FeedProcessor:
 
     def process(self, url: str) -> ProcessingResult:
         if not (feed := self.load_feed(url, known_feeds=self.known_feeds)):
-            return ProcessingResult()
+            return ProcessingResult(feed=None, tombstone=QueueCompletionType.FAILED)
 
-        result, tombstone = self.process_feed(feed=feed)
+        result = self.process_feed(feed=feed)
 
-        rprint(f"\n[bar.finished]✔ {tombstone} for: {feed}[/]")
+        rprint(f"\n[bar.finished]✔ {result.tombstone} for: {feed}[/]")
         return result
 
     def load_feed(self, url: str, known_feeds: dict[str, FeedInfo]) -> Feed | None:
@@ -61,37 +61,70 @@ class FeedProcessor:
             known_feeds[feed.url] = feed.info
             return feed
 
-    def _preflight_check(self, episode: Episode, target: Path) -> DownloadResult | None:
-        if self.database.exists(episode):
-            logger.debug("Pre-flight check on episode '%s': already in database.", episode)
-            return DownloadResult.ALREADY_EXISTS
+    def _does_already_exist(self, episode: EpisodeSkeleton, *, target: Path) -> bool:
+        if not (existing := self.database.exists(episode)):
+            # NOTE on backwards-compatibility: if the episode is not in the DB we'd normally
+            # download it again outright. This might cause a complete replacement of
+            # episodes on disk for existing users who either used pre-v1.4 until now or
+            # always have `ignore_database` enabled.
+            #
+            # To avoid that, we fall back to the on-disk check if the episode is not in
+            # the DB (or ignored via `ignore_database`). Only if the episode is indeed
+            # in the DB, we do the additional checks to possibly re-download an episode
+            # if it was republished/changed.
+            if target.exists():
+                logger.debug("Episode '%s': not in db but on disk", episode)
+                return True
+            logger.debug("Episode '%s': not in db", episode)
+            return False
 
-        if target.exists():
-            logger.debug("Pre-flight check on episode '%s': already on disk.", episode)
-            return DownloadResult.ALREADY_EXISTS
+        if existing.length and episode.enclosure.length and existing.length != episode.enclosure.length:
+            logger.debug(
+                "Episode '%s': length differs in feed: %s (%s in db)",
+                episode,
+                episode.enclosure.length,
+                existing.length,
+            )
+            return False
 
-        return None
+        if existing.published_time and episode.published_time and episode.published_time > existing.published_time:
+            logger.debug(
+                "Episode '%s': is newer in feed: %s (by %s sec)",
+                episode,
+                episode.published_time,
+                (episode.published_time - existing.published_time).total_seconds(),
+            )
+            return False
 
-    def process_feed(self, feed: Feed) -> tuple[ProcessingResult, QueueCompletionType]:
+        logger.debug("Episode '%s': already in database.", episode)
+        return True
+
+    def process_feed(self, feed: Feed) -> ProcessingResult:
         rprint(f"\n[bold bright_magenta]Downloading archive for: {feed}[/]\n")
         tombstone = QueueCompletionType.COMPLETED
         results: EpisodeResultsList = []
-        for idx, episode in enumerate(feed.episode_iter(self.settings.maximum_episode_count), 1):
+        for idx, episode in enumerate(feed.episodes, 1):
+            if episode is None:
+                logger.debug("Skipping invalid episode at idx %s", idx)
+                continue
             if (enqueued := self._enqueue_episode(episode, feed.info)) is None:
                 tombstone = QueueCompletionType.FOUND_EXISTING
                 break
+
             results.append(enqueued)
+
             if (max_count := self.settings.maximum_episode_count) and idx == max_count:
                 logger.debug("Reached requested maximum episode count of %s", max_count)
                 tombstone = QueueCompletionType.MAX_EPISODES
                 break
 
         success, failures = self._handle_results(results)
-        return ProcessingResult(feed=feed, success=success, failures=failures), tombstone
+        return ProcessingResult(feed=feed, success=success, failures=failures, tombstone=tombstone)
 
-    def _enqueue_episode(self, episode: Episode, feed_info: FeedInfo) -> FutureEpisodeResult | None:
+    def _enqueue_episode(self, episode: EpisodeSkeleton, feed_info: FeedInfo) -> FutureEpisodeResult | None:
         target = self.filename_formatter.format(episode=episode, feed_info=feed_info)
-        if result := self._preflight_check(episode, target):
+        if self._does_already_exist(episode, target=target):
+            result = DownloadResult.ALREADY_EXISTS
             rprint(f"[bar.finished]✔ {result}: {episode}[/]")
             if self.settings.update_archive:
                 logger.debug("Up to date with %r", episode)
@@ -112,14 +145,15 @@ class FeedProcessor:
     def _handle_results(self, episode_results: EpisodeResultsList) -> tuple[int, int]:
         failures = success = 0
         for episode_result in episode_results:
-            if not isinstance(episode_result, EpisodeResult):
+            if isinstance(episode_result, Future):
                 try:
                     episode_result = episode_result.result()
                 except Exception as exc:
                     logger.debug("Got exception from future %s", episode_result, exc_info=exc)
+                    failures += 1
                     continue
 
-            if episode_result.result not in (DownloadResult.COMPLETED_SUCCESSFULLY, DownloadResult.ALREADY_EXISTS):
+            if episode_result.result not in DownloadResult.successful():
                 failures += 1
                 continue
 

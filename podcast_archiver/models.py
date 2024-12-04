@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from contextlib import suppress
+from dataclasses import dataclass, field
+from datetime import datetime
 from functools import cached_property
 from http import HTTPStatus
 from pathlib import Path
 from time import mktime, struct_time
 from typing import TYPE_CHECKING, Annotated, Any, Iterator
 from urllib.parse import urlparse
+from xml.sax import SAXParseException
 
 import feedparser
 from pydantic import (
@@ -14,14 +17,18 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    ValidationError,
+    ValidatorFunctionWrapHandler,
+    WrapValidator,
     field_validator,
     model_validator,
 )
 from pydantic.functional_validators import BeforeValidator
 
+from podcast_archiver import compat
 from podcast_archiver.constants import DEFAULT_DATETIME_FORMAT, MAX_TITLE_LENGTH
 from podcast_archiver.exceptions import MissingDownloadUrl, NotModified
-from podcast_archiver.logging import logger
+from podcast_archiver.logging import logger, rprint
 from podcast_archiver.session import session
 from podcast_archiver.utils import get_generic_extension, truncate
 
@@ -29,19 +36,31 @@ if TYPE_CHECKING:
     from requests import Response
 
 
-def parse_from_struct_time(value: Any) -> Any:
+def parse_from_struct_time(value: struct_time | datetime) -> datetime:
     if isinstance(value, struct_time):
-        return datetime.fromtimestamp(mktime(value)).replace(tzinfo=timezone.utc)
+        value = datetime.fromtimestamp(mktime(value))
+    if not value.tzinfo:
+        value = value.replace(tzinfo=compat.UTC)
     return value
 
 
+def val_or_none(value: Any, handler: ValidatorFunctionWrapHandler) -> Any:
+    with suppress(ValidationError):
+        return handler(value)
+    return None
+
+
+FallbackToNone = WrapValidator(val_or_none)
+
 LenientDatetime = Annotated[datetime, BeforeValidator(parse_from_struct_time)]
+LenientInt = Annotated[int | None, FallbackToNone]
 
 
 class Link(BaseModel):
     rel: str = ""
     link_type: str = Field("", alias="type")
     href: str
+    length: LenientInt = None
 
 
 class Chapter(BaseModel):
@@ -54,15 +73,57 @@ class Content(BaseModel):
     value: str = Field("")
 
 
-class Episode(BaseModel):
+class EpisodeSkeleton(BaseModel):
     title: str = Field(default="Untitled Episode", title="episode.title")
-    subtitle: str = Field("", repr=False, title="episode.subtitle")
-    author: str = Field("", repr=False)
     links: list[Link] = Field(default_factory=list, repr=False)
     enclosure: Link = Field(default=None, repr=False)  # type: ignore[assignment]
     published_time: LenientDatetime = Field(alias="published_parsed", title="episode.published_time")
 
     original_filename: str = Field(default="", repr=False, title="episode.original_filename")
+
+    guid: str = Field(default=None, alias="id")  # type: ignore[assignment]
+
+    def __str__(self) -> str:
+        return f"{self.title} ({self.published_time.strftime(DEFAULT_DATETIME_FORMAT)})"
+
+    @field_validator("title", mode="after")
+    @classmethod
+    def truncate_title(cls, value: str) -> str:
+        return truncate(value, MAX_TITLE_LENGTH)
+
+    @model_validator(mode="after")
+    def populate_enclosure(self) -> EpisodeSkeleton:
+        for link in self.links:
+            if link.rel != "enclosure":
+                continue
+            parsed_url = urlparse(link.href)
+            if parsed_url.scheme and parsed_url.netloc:
+                self.enclosure = link
+                self.original_filename = Path(parsed_url.path).name if parsed_url.path else ""
+                return self
+
+        raise MissingDownloadUrl(f"Episode {self} did not have a supported download URL")
+
+    @model_validator(mode="after")
+    def ensure_guid(self) -> EpisodeSkeleton:
+        if not self.guid:
+            # If no GUID is given, use the enclosure url instead
+            # See https://help.apple.com/itc/podcasts_connect/#/itcb54353390
+            self.guid = self.enclosure.href
+        return self
+
+    @cached_property
+    def ext(self) -> str:
+        if fname := self.original_filename:
+            stem, sep, suffix = fname.rpartition(".")
+            if stem and sep and suffix:
+                return suffix
+        return get_generic_extension(self.enclosure.link_type)
+
+
+class Episode(EpisodeSkeleton):
+    subtitle: str = Field("", repr=False, title="episode.subtitle")
+    author: str = Field("", repr=False)
 
     # Extended metadata for .info.json
     episode_number: int | None = Field(None, repr=False, alias="itunes_episode")
@@ -80,16 +141,6 @@ class Episode(BaseModel):
     shownotes: str | None = Field(None, repr=False)
     content: list[Content] | None = Field(None, repr=False, alias="content", exclude=True)
 
-    guid: str = Field(default=None, alias="id")  # type: ignore[assignment]
-
-    def __str__(self) -> str:
-        return f"{self.title} ({self.published_time.strftime(DEFAULT_DATETIME_FORMAT)})"
-
-    @field_validator("title", mode="after")
-    @classmethod
-    def truncate_title(cls, value: str) -> str:
-        return truncate(value, MAX_TITLE_LENGTH)
-
     @model_validator(mode="after")
     def populate_shownotes(self) -> Episode:
         fallback = ""
@@ -104,38 +155,12 @@ class Episode(BaseModel):
             self.shownotes = fallback
         return self
 
-    @model_validator(mode="after")
-    def populate_enclosure(self) -> Episode:
-        for link in self.links:
-            if link.rel != "enclosure":
-                continue
-            parsed_url = urlparse(link.href)
-            if parsed_url.scheme and parsed_url.netloc:
-                self.enclosure = link
-                self.original_filename = Path(parsed_url.path).name if parsed_url.path else ""
-                return self
-
-        raise MissingDownloadUrl(f"Episode {self} did not have a supported download URL")
-
-    @model_validator(mode="after")
-    def ensure_guid(self) -> Episode:
-        if not self.guid:
-            # If no GUID is given, use the enclosure url instead
-            # See https://help.apple.com/itc/podcasts_connect/#/itcb54353390
-            self.guid = self.enclosure.href
-        return self
-
-    @cached_property
-    def ext(self) -> str:
-        if fname := self.original_filename:
-            stem, sep, suffix = fname.rpartition(".")
-            if stem and sep and suffix:
-                return suffix
-        return get_generic_extension(self.enclosure.link_type)
-
     @classmethod
     def field_titles(cls) -> list[str]:
         return [field.title for field in cls.model_fields.values() if field.title]
+
+
+EpisodeOrFallback = Annotated[Episode | EpisodeSkeleton | None, FallbackToNone]
 
 
 class FeedInfo(BaseModel):
@@ -164,29 +189,39 @@ class FeedInfo(BaseModel):
 class FeedPage(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    feed: FeedInfo
-
-    episodes: list[Episode] = Field(default_factory=list, validation_alias=AliasChoices("entries", "items"))
-
+    # Bozo first so that following fields can access it in ValidationInfo context
     bozo: bool | int = False
     bozo_exception: Exception | None = None
+
+    feed: FeedInfo
+
+    episodes: list[EpisodeOrFallback] = Field(default_factory=list, validation_alias=AliasChoices("entries", "items"))
+
+    @classmethod
+    def parse_feed(cls, source: str | bytes, alt_url: str | None) -> FeedPage:
+        feedobj = feedparser.parse(source)
+        obj = cls.model_validate(feedobj)
+        if obj.bozo and (exc := obj.bozo_exception) and isinstance(exc, SAXParseException):
+            url = source if isinstance(source, str) and not alt_url else alt_url
+            rprint(f"[orange1]Feed content is not well-formed for {url}[/]")
+            rprint(f"[orange1 dim]Continuing processing but here be dragons ({exc.getMessage()})[/]")
+        return obj
 
     @classmethod
     def from_url(cls, url: str, *, known_info: FeedInfo | None = None) -> FeedPage:
         parsed = urlparse(url)
         if parsed.scheme == "file":
-            feedobj = feedparser.parse(parsed.path)
-            return cls.model_validate(feedobj)
+            return cls.parse_feed(parsed.path, None)
 
         if not known_info:
-            return cls.from_response(session.get_and_raise(url))
+            return cls.from_response(session.get_and_raise(url), alt_url=url)
 
         response = session.get_and_raise(url, last_modified=known_info.last_modified)
         if response.status_code == HTTPStatus.NOT_MODIFIED:
             logger.debug("Server reported 'not modified' from %s, skipping fetch.", known_info.last_modified)
             raise NotModified(known_info)
 
-        instance = cls.from_response(response)
+        instance = cls.from_response(response, alt_url=url)
         if instance.feed.updated_time == known_info.updated_time:
             logger.debug("Feed's updated time %s did not change, skipping fetch.", known_info.updated_time)
             raise NotModified(known_info)
@@ -194,28 +229,24 @@ class FeedPage(BaseModel):
         return instance
 
     @classmethod
-    def from_response(cls, response: Response) -> FeedPage:
-        feedobj = feedparser.parse(response.content)
-        instance = cls.model_validate(feedobj)
+    def from_response(cls, response: Response, alt_url: str | None) -> FeedPage:
+        instance = cls.parse_feed(response.content, alt_url=alt_url)
         instance.feed.last_modified = response.headers.get("Last-Modified")
         return instance
 
 
+@dataclass(slots=True)
 class Feed:
     url: str
-    info: FeedInfo
+    known_info: FeedInfo | None = field(repr=False)
+    info: FeedInfo = field(init=False)
 
-    _page: FeedPage | None = None
+    _page: FeedPage | None = field(init=False)
 
-    def __init__(self, url: str, *, known_info: FeedInfo | None = None) -> None:
-        self.url = url
-        if known_info:
-            self.info = known_info
-
-        self._page = FeedPage.from_url(url, known_info=known_info)
+    def __post_init__(self) -> None:
+        self._page = FeedPage.from_url(self.url, known_info=self.known_info)
         self.info = self._page.feed
-
-        logger.debug("Loaded feed for '%s' by %s from %s", self.info.title, self.info.author, url)
+        logger.debug("Loaded feed for '%s' by %s from %s", self.info.title, self.info.author, self.url)
 
     def __repr__(self) -> str:
         return f"Feed(name='{self}', url='{self.url}')"
@@ -223,7 +254,8 @@ class Feed:
     def __str__(self) -> str:
         return str(self.info)
 
-    def episode_iter(self, maximum_episode_count: int = 0) -> Iterator[Episode]:
+    @property
+    def episodes(self) -> Iterator[EpisodeOrFallback]:
         episode_count_total = 0
         page_count = 0
         while self._page:

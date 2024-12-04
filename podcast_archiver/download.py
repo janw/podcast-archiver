@@ -17,11 +17,11 @@ if TYPE_CHECKING:
 
     from requests import Response
 
-    from podcast_archiver.models import Episode, FeedInfo
+    from podcast_archiver.models import EpisodeSkeleton, FeedInfo
 
 
 class DownloadJob:
-    episode: Episode
+    episode: EpisodeSkeleton
     feed_info: FeedInfo
     target: Path
     stop_event: Event
@@ -31,7 +31,7 @@ class DownloadJob:
 
     def __init__(
         self,
-        episode: Episode,
+        episode: EpisodeSkeleton,
         *,
         target: Path,
         max_download_bytes: int | None = None,
@@ -55,9 +55,6 @@ class DownloadJob:
             return EpisodeResult(self.episode, DownloadResult.FAILED)
 
     def run(self) -> EpisodeResult:
-        if self.target.exists():
-            return EpisodeResult(self.episode, DownloadResult.ALREADY_EXISTS)
-
         self.target.parent.mkdir(parents=True, exist_ok=True)
         logger.info("Downloading: %s", self.episode)
         response = session.get_and_raise(self.episode.enclosure.href, stream=True)
