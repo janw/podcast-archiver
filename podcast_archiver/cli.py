@@ -177,14 +177,6 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     help=Settings.model_fields["filename_template"].description,
 )
 @click.option(
-    "-u",
-    "--update",
-    "update_archive",
-    type=bool,
-    is_flag=True,
-    help=Settings.model_fields["update_archive"].description,
-)
-@click.option(
     "--write-info-json",
     type=bool,
     is_flag=True,

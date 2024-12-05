@@ -126,9 +126,6 @@ class FeedProcessor:
         if self._does_already_exist(episode, target=target):
             result = DownloadResult.ALREADY_EXISTS
             rprint(f"[bar.finished]✔ {result}: {episode}[/]")
-            if self.settings.update_archive:
-                logger.debug("Up to date with %r", episode)
-                return None
             return EpisodeResult(episode, result)
 
         logger.debug("Queueing download for %r", episode)

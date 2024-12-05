@@ -72,16 +72,6 @@ class Settings(BaseModel):
         ),
     )
 
-    update_archive: bool = Field(
-        deprecated=True,
-        default=False,
-        description=(
-            "Update the feeds with newly added episodes only. "
-            "Adding episodes ends with the first episode already present in the download directory."
-        ),
-        alias="update",
-    )
-
     write_info_json: bool = Field(
         default=False,
         description="Write episode metadata to a .info.json file next to the media file itself.",

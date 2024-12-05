@@ -64,7 +64,7 @@ def test_happy_path_update(tmp_path: Path, feed_lautsprecher: Url) -> None:
     settings = Settings(
         archive_directory=tmp_path,
         feeds=[feed_lautsprecher],
-        update_archive=True,
+        update_archive=True,  # is being ignored now
         filename_template="{episode.title}.{ext}",
     )
     pa = PodcastArchiver(settings)
@@ -72,16 +72,15 @@ def test_happy_path_update(tmp_path: Path, feed_lautsprecher: Url) -> None:
     pa.run()
 
     files = list(tmp_path.glob("**/*.m4a"))
-    assert len(files) == 3
-    assert not list(tmp_path.glob("LS016*.m4a"))
-    assert not list(tmp_path.glob("LS015*.m4a"))
+    assert len(files) == 5
+    assert list(tmp_path.glob("LS016*.m4a"))
+    assert list(tmp_path.glob("LS015*.m4a"))
 
 
 def test_happy_path_empty_feed(tmp_path: Path, feed_lautsprecher_empty: Url) -> None:
     settings = Settings(
         archive_directory=tmp_path,
         feeds=[feed_lautsprecher_empty],
-        update_archive=True,
     )
     pa = PodcastArchiver(settings)
 
