@@ -4,47 +4,26 @@ import logging
 import logging.config
 import sys
 from os import environ
-from typing import Any, Generator, Iterable
+from typing import Any
 
-from rich import print as _print
 from rich.logging import RichHandler
 from rich.text import Text
-from tqdm import tqdm
-from tqdm.contrib.logging import logging_redirect_tqdm
+
+from podcast_archiver.console import console
 
 logger = logging.getLogger("podcast_archiver")
 
 
-_REDIRECT_VIA_TQDM: bool = False
-_REDIRECT_VIA_LOGGING: bool = False
+REDIRECT_VIA_LOGGING: bool = False
 
 
 def rprint(msg: str, **kwargs: Any) -> None:
-    if not _REDIRECT_VIA_TQDM and not _REDIRECT_VIA_LOGGING:
-        _print(msg, **kwargs)
+    if not REDIRECT_VIA_LOGGING:
+        console.print(msg, **kwargs)
         return
 
     text = Text.from_markup(msg.strip()).plain.strip()
     logger.info(text)
-
-
-def wrapped_tqdm(iterable: Iterable[bytes], desc: str, total: int) -> Generator[bytes, None, None]:
-    if _REDIRECT_VIA_LOGGING:
-        yield from iterable
-        return
-
-    with (
-        logging_redirect_tqdm(),
-        tqdm(desc=desc, total=total, unit_scale=True, unit="B") as progress,
-    ):
-        global _REDIRECT_VIA_TQDM
-        _REDIRECT_VIA_TQDM = True
-        try:
-            for chunk in iterable:
-                progress.update(len(chunk))
-                yield chunk
-        finally:
-            _REDIRECT_VIA_TQDM = False
 
 
 def is_interactive() -> bool:
@@ -52,10 +31,10 @@ def is_interactive() -> bool:
 
 
 def configure_level(verbosity: int, quiet: bool) -> int:
-    global _REDIRECT_VIA_LOGGING
+    global REDIRECT_VIA_LOGGING
     interactive = is_interactive()
     if not interactive or quiet or verbosity > 0:
-        _REDIRECT_VIA_LOGGING = True
+        REDIRECT_VIA_LOGGING = True
 
     if verbosity > 1 and not quiet:
         return logging.DEBUG

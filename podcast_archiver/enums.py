@@ -16,9 +16,9 @@ class QueueCompletionType(StrEnum):
 
 
 class DownloadResult(StrEnum):
-    ALREADY_EXISTS = "Exists"
-    COMPLETED_SUCCESSFULLY = "Completed"
-    FAILED = "Failed"
+    ALREADY_EXISTS = "Present"
+    COMPLETED_SUCCESSFULLY = "Archived"
+    FAILED = " Failed"
     ABORTED = "Aborted"
 
     @classmethod

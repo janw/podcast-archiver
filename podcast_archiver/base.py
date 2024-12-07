@@ -5,24 +5,26 @@ import sys
 import xml.etree.ElementTree as etree
 from typing import TYPE_CHECKING, Any
 
+from podcast_archiver.config import Settings
 from podcast_archiver.logging import logger, rprint
 from podcast_archiver.processor import FeedProcessor
+from podcast_archiver.utils.progress import progress_manager
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     import rich_click as click
 
-    from podcast_archiver.config import Settings
+    from podcast_archiver.database import BaseDatabase
 
 
 class PodcastArchiver:
     settings: Settings
     feeds: list[str]
 
-    def __init__(self, settings: Settings):
-        self.settings = settings
-        self.processor = FeedProcessor(settings=self.settings)
+    def __init__(self, settings: Settings | None = None, database: BaseDatabase | None = None):
+        self.settings = settings or Settings()
+        self.processor = FeedProcessor(settings=self.settings, database=database)
 
         logger.debug("Initializing with settings: %s", settings)
 
@@ -35,8 +37,9 @@ class PodcastArchiver:
     def register_cleanup(self, ctx: click.RichContext) -> None:
         def _cleanup(signum: int, *args: Any) -> None:
             logger.debug("Signal %s received", signum)
-            rprint("[error]Terminating.[/]")
+            rprint("[error]✘ Terminating.[/]")
             self.processor.shutdown()
+            progress_manager.stop()
             ctx.close()
             sys.exit(0)
 
@@ -64,5 +67,5 @@ class PodcastArchiver:
             result = self.processor.process(url)
             failures += result.failures
 
-        rprint("\n[bar.finished]Done.[/]\n")
+        rprint("\n[completed]Done.[/]\n")
         return failures

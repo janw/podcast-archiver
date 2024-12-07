@@ -53,6 +53,7 @@ pytest = "^8"
 pytest-cov = "^5"
 pytest-responses = "^0.5.1"
 pytest-env = "1.1.5"
+coverage-conditional-plugin = "^0.9.0"
 
 [tool.commitizen]
 version_scheme = "semver"
@@ -117,9 +118,12 @@ TESTING = 1
 
 [tool.coverage.run]
 branch = true
-source = [
-    "podcast_archiver",
-]
+source = ["podcast_archiver"]
+plugins = ["coverage_conditional_plugin"]
+
+[tool.coverage.coverage_conditional_plugin.rules]
+no-cover-gte-311 = "sys_version_info >= (3, 11)"
+no-cover-lt-311 = "sys_version_info < (3, 11)"
 
 [tool.coverage.report]
 exclude_also = [

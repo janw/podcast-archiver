@@ -5,9 +5,11 @@ from abc import abstractmethod
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 from threading import Lock
-from typing import TYPE_CHECKING, Iterator
+from typing import TYPE_CHECKING, Iterator, Literal
 
+from podcast_archiver import constants
 from podcast_archiver.logging import logger
 
 if TYPE_CHECKING:
@@ -33,6 +35,15 @@ class EpisodeInDb:
 
 
 class BaseDatabase:
+    filename: str
+    ignore_existing: bool
+
+    __slots__ = ("filename", "ignore_existing")
+
+    def __init__(self, filename: str, ignore_existing: bool = False) -> None:
+        self.filename = filename
+        self.ignore_existing = ignore_existing
+
     @abstractmethod
     def add(self, episode: BaseEpisode) -> None:
         pass  # pragma: no cover
@@ -51,19 +62,20 @@ class DummyDatabase(BaseDatabase):
 
 
 class Database(BaseDatabase):
-    filename: str
-    ignore_existing: bool
+    lock: Lock
+    conn: sqlite3.Connection
 
-    lock = Lock()
+    __slots__ = ("lock", "conn")
 
     def __init__(self, filename: str, ignore_existing: bool) -> None:
-        self.filename = filename
-        self.ignore_existing = ignore_existing
+        super().__init__(filename=filename, ignore_existing=ignore_existing)
+        self.lock = Lock()
+        self.conn = sqlite3.connect(self.filename, detect_types=sqlite3.PARSE_DECLTYPES)
         self.migrate()
 
     @contextmanager
     def get_conn(self) -> Iterator[sqlite3.Connection]:
-        with self.lock, sqlite3.connect(self.filename, detect_types=sqlite3.PARSE_DECLTYPES) as conn:
+        with self.lock, self.conn as conn:
             conn.row_factory = sqlite3.Row
             yield conn
 
@@ -74,12 +86,12 @@ class Database(BaseDatabase):
                 """\
                 CREATE TABLE IF NOT EXISTS episodes(
                     guid TEXT UNIQUE NOT NULL,
-                    title TEXT,
-                    length UNSIGNED BIG INT,
-                    published_time TIMESTAMP
+                    title TEXT
                 )"""
             )
 
+        # NOTE: This is is a rudimentary migration system. It's not perfect but it's
+        # good enough for now, and does not require additional dependencies.
         self._add_column_if_missing(
             "length",
             "ALTER TABLE episodes ADD COLUMN length UNSIGNED BIG INT",
@@ -127,3 +139,14 @@ class Database(BaseDatabase):
             )
             match = result.fetchone()
         return EpisodeInDb(**match) if match else None
+
+
+def get_database(path: Path | Literal[":memory:"] | None, ignore_existing: bool = False) -> Database:
+    if path is None:
+        db_path = constants.DEFAULT_DATABASE_FILENAME
+    elif isinstance(path, Path) and path.is_dir():
+        db_path = str(path / constants.DEFAULT_DATABASE_FILENAME)
+    else:
+        db_path = str(path)
+
+    return Database(filename=db_path, ignore_existing=ignore_existing)

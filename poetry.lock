@@ -321,6 +321,21 @@ tomli = {version = "*", optional = true, markers = "python_full_version <= \"3.1
 toml = ["tomli"]
 
 [[package]]
+name = "coverage-conditional-plugin"
+version = "0.9.0"
+description = "Conditional coverage based on any rules you define!"
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "coverage_conditional_plugin-0.9.0-py3-none-any.whl", hash = "sha256:1b37bc469019d2ab5b01f5eee453abe1846b3431e64e209720c2a9ec4afb8130"},
+    {file = "coverage_conditional_plugin-0.9.0.tar.gz", hash = "sha256:6893dab0542695dbd5ea714281dae0dfec8d0e36480ba32d839e9fa7344f8215"},
+]
+
+[package.dependencies]
+coverage = ">=7,<8"
+packaging = ">=20.4"
+
+[[package]]
 name = "decli"
 version = "0.6.2"
 description = "Minimal, easy-to-use, declarative cli tool"
@@ -1940,4 +1955,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "1e962779676c2fbe07ccd76fd7458aa0a3294579cd4dfa23ca011043e7dfeb86"
+content-hash = "8982f2d35c5ec171275597019c3f6bef718180dbbe0dd369d73330453b70607c"

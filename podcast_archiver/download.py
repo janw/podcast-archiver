@@ -8,10 +8,11 @@ from typing import IO, TYPE_CHECKING, Generator
 from podcast_archiver import constants
 from podcast_archiver.enums import DownloadResult
 from podcast_archiver.exceptions import NotCompleted
-from podcast_archiver.logging import logger, wrapped_tqdm
+from podcast_archiver.logging import logger, rprint
 from podcast_archiver.session import session
 from podcast_archiver.types import EpisodeResult
 from podcast_archiver.utils import atomic_write
+from podcast_archiver.utils.progress import progress_manager
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -33,11 +34,14 @@ class DownloadJob:
         try:
             return self.run()
         except NotCompleted:
-            return EpisodeResult(self.episode, DownloadResult.ABORTED)
+            res = EpisodeResult(self.episode, DownloadResult.ABORTED)
         except Exception as exc:
             logger.error("Download failed: %s; %s", self.episode, exc)
             logger.debug("Exception while downloading", exc_info=exc)
-            return EpisodeResult(self.episode, DownloadResult.FAILED)
+            res = EpisodeResult(self.episode, DownloadResult.FAILED)
+
+        rprint(f"[error]✘ {res.result}:[/] {res.episode}")
+        return res
 
     def run(self) -> EpisodeResult:
         self.target.parent.mkdir(parents=True, exist_ok=True)
@@ -47,6 +51,7 @@ class DownloadJob:
             self.receive_data(fp, response)
 
         logger.info("Completed: %s", self.episode)
+        rprint(f"[dark_cyan]✔ {DownloadResult.COMPLETED_SUCCESSFULLY}:[/] {self.episode}")
         return EpisodeResult(self.episode, DownloadResult.COMPLETED_SUCCESSFULLY)
 
     @property
@@ -57,9 +62,9 @@ class DownloadJob:
         total_size = int(response.headers.get("content-length", "0"))
         total_written = 0
         max_bytes = self.max_download_bytes
-        for chunk in wrapped_tqdm(
+        for chunk in progress_manager.track(
             response.iter_content(chunk_size=constants.DOWNLOAD_CHUNK_SIZE),
-            desc=str(self.episode),
+            description=str(self.episode),
             total=total_size,
         ):
             total_written += fp.write(chunk)
