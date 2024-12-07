@@ -7,14 +7,15 @@ from typing import TYPE_CHECKING, Any, Protocol
 import pytest
 from pydantic import ValidationError
 from responses import RequestsMock
-from typing_extensions import TypedDict
 
 from podcast_archiver.exceptions import NotModified
-from podcast_archiver.models import Episode, Feed, FeedInfo, FeedPage
+from podcast_archiver.models.episode import Episode
+from podcast_archiver.models.feed import Feed, FeedInfo, FeedPage
 from podcast_archiver.utils import MIMETYPE_EXTENSION_MAPPING
 from tests.conftest import FEED_CONTENT
 
 if TYPE_CHECKING:
+    from typing_extensions import TypedDict
 
     class EpisodeDict(TypedDict, total=False):
         title: str

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     import pydantic_core
 
-    from podcast_archiver.models import FeedInfo
+    from podcast_archiver.models.feed import FeedInfo
 
 
 class PodcastArchiverException(Exception):

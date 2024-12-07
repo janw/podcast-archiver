@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Iterator
 from podcast_archiver.logging import logger
 
 if TYPE_CHECKING:
-    from podcast_archiver.models import EpisodeSkeleton
+    from podcast_archiver.models.episode import BaseEpisode
 
 
 def adapt_datetime_iso(val: datetime) -> str:
@@ -34,19 +34,19 @@ class EpisodeInDb:
 
 class BaseDatabase:
     @abstractmethod
-    def add(self, episode: EpisodeSkeleton) -> None:
+    def add(self, episode: BaseEpisode) -> None:
         pass  # pragma: no cover
 
     @abstractmethod
-    def exists(self, episode: EpisodeSkeleton) -> EpisodeInDb | None:
+    def exists(self, episode: BaseEpisode) -> EpisodeInDb | None:
         pass  # pragma: no cover
 
 
 class DummyDatabase(BaseDatabase):
-    def add(self, episode: EpisodeSkeleton) -> None:
+    def add(self, episode: BaseEpisode) -> None:
         pass
 
-    def exists(self, episode: EpisodeSkeleton) -> EpisodeInDb | None:
+    def exists(self, episode: BaseEpisode) -> EpisodeInDb | None:
         return None
 
 
@@ -102,7 +102,7 @@ class Database(BaseDatabase):
         )
         return bool(result.fetchone()[0])
 
-    def add(self, episode: EpisodeSkeleton) -> None:
+    def add(self, episode: BaseEpisode) -> None:
         with self.get_conn() as conn:
             try:
                 conn.execute(
@@ -117,7 +117,7 @@ class Database(BaseDatabase):
             except sqlite3.DatabaseError as exc:
                 logger.debug("Error adding %s to db", episode, exc_info=exc)
 
-    def exists(self, episode: EpisodeSkeleton) -> EpisodeInDb | None:
+    def exists(self, episode: BaseEpisode) -> EpisodeInDb | None:
         if self.ignore_existing:
             return None
         with self.get_conn() as conn:

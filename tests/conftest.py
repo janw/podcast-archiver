@@ -9,7 +9,8 @@ from typing import TYPE_CHECKING, Any, Iterable
 import feedparser
 import pytest
 
-from podcast_archiver.models import Episode, Link
+from podcast_archiver.models.episode import Episode
+from podcast_archiver.models.misc import Link
 
 if TYPE_CHECKING:
     from responses import RequestsMock

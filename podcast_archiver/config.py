@@ -27,7 +27,7 @@ from podcast_archiver import constants
 from podcast_archiver.database import BaseDatabase, Database, DummyDatabase
 from podcast_archiver.exceptions import InvalidSettings
 from podcast_archiver.logging import rprint
-from podcast_archiver.models import ALL_FIELD_TITLES_STR
+from podcast_archiver.utils import get_field_titles
 
 if TYPE_CHECKING:
     from pydantic.fields import FieldInfo
@@ -100,7 +100,7 @@ class Settings(BaseModel):
         default=constants.DEFAULT_FILENAME_TEMPLATE,
         description=(
             "Template to be used when generating filenames. Available template variables are: "
-            f"{ALL_FIELD_TITLES_STR}, and 'ext' (the filename extension)"
+            f"{get_field_titles()}, and 'ext' (the filename extension)"
         ),
     )
 

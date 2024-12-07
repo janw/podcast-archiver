@@ -11,7 +11,7 @@ from requests import HTTPError
 
 from podcast_archiver import download, utils
 from podcast_archiver.enums import DownloadResult
-from podcast_archiver.models import FeedPage
+from podcast_archiver.models.feed import FeedPage
 from podcast_archiver.types import EpisodeResult
 from tests.conftest import MEDIA_URL
 
@@ -132,7 +132,7 @@ def test_download_info_json(tmp_path_cd: Path, feedobj_lautsprecher: dict[str, A
     episode = feed.episodes[0]
     assert episode
 
-    job = download.DownloadJob(episode=episode, target=tmp_path_cd / "file.mp3", write_info_json=write_info_json)
+    job = download.DownloadJob(episode=episode, target=tmp_path_cd / "file.mp3", add_info_json=write_info_json)
     result = job()
 
     assert result == EpisodeResult(episode, DownloadResult.COMPLETED_SUCCESSFULLY)

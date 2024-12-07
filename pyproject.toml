@@ -70,7 +70,9 @@ gpg_sign = true
 [tool.ruff]
 line-length = 120
 target-version = "py310"
-lint.extend-select = [
+
+[tool.ruff.lint]
+extend-select = [
     "I",   # isort
     "B",   # bugbear
     "A",   # builtins
@@ -84,7 +86,7 @@ lint.extend-select = [
     "TCH", # type-checking
     "RUF", # ruff-specific
 ]
-lint.ignore = [
+ignore = [
     "SIM108", # if-else-block-instead-of-if-exp
     "ISC001", # single-line-implicit-string-concatenation
 ]
@@ -92,11 +94,17 @@ lint.ignore = [
 [tool.ruff.lint.per-file-ignores]
 "compat.py" = ["F401"]
 
-[tool.ruff.format]
-quote-style = "double"
+[tool.ruff.lint.flake8-type-checking]
+runtime-evaluated-base-classes = ["pydantic.BaseModel"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
 
 [tool.ruff.lint.mccabe]
 max-complexity = 8
+
+[tool.ruff.format]
+quote-style = "double"
 
 [tool.pytest.ini_options]
 minversion = "6.0"

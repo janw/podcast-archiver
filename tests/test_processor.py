@@ -11,15 +11,15 @@ import pytest
 from podcast_archiver import compat
 from podcast_archiver.database import EpisodeInDb
 from podcast_archiver.enums import DownloadResult, QueueCompletionType
-from podcast_archiver.models import FeedPage
-from podcast_archiver.processor import FeedProcessor, ProcessingResult
-from podcast_archiver.types import EpisodeResult
+from podcast_archiver.models.feed import FeedPage
+from podcast_archiver.processor import FeedProcessor
+from podcast_archiver.types import EpisodeResult, ProcessingResult
 
 if TYPE_CHECKING:
     from pydantic_core import Url
     from responses import RequestsMock
 
-    from podcast_archiver.models import Episode
+    from podcast_archiver.models.episode import Episode
     from podcast_archiver.types import EpisodeResultsList
 
 
