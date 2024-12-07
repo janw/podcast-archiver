@@ -4,12 +4,15 @@ import logging
 import logging.config
 import sys
 from os import environ
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from rich.logging import RichHandler
 from rich.text import Text
 
 from podcast_archiver.console import console
+
+if TYPE_CHECKING:
+    from rich.console import RenderableType
 
 logger = logging.getLogger("podcast_archiver")
 
@@ -17,13 +20,14 @@ logger = logging.getLogger("podcast_archiver")
 REDIRECT_VIA_LOGGING: bool = False
 
 
-def rprint(msg: str, **kwargs: Any) -> None:
+def rprint(*msg: RenderableType, **kwargs: Any) -> None:
     if not REDIRECT_VIA_LOGGING:
-        console.print(msg, **kwargs)
+        console.print(*msg, **kwargs)
         return
 
-    text = Text.from_markup(msg.strip()).plain.strip()
-    logger.info(text)
+    for m in msg:
+        if isinstance(m, Text):
+            logger.info(m.plain.strip())
 
 
 def is_interactive() -> bool:
