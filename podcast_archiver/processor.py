@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from concurrent.futures import Future, ThreadPoolExecutor
-from dataclasses import dataclass
 from threading import Event
 from typing import TYPE_CHECKING
 
@@ -10,22 +9,15 @@ from podcast_archiver.config import Settings
 from podcast_archiver.download import DownloadJob
 from podcast_archiver.enums import DownloadResult, QueueCompletionType
 from podcast_archiver.logging import logger, rprint
-from podcast_archiver.models import EpisodeSkeleton, Feed, FeedInfo
-from podcast_archiver.types import EpisodeResult, EpisodeResultsList, FutureEpisodeResult
+from podcast_archiver.models.feed import Feed, FeedInfo
+from podcast_archiver.types import EpisodeResult, EpisodeResultsList, FutureEpisodeResult, ProcessingResult
 from podcast_archiver.utils import FilenameFormatter, handle_feed_request
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from podcast_archiver.database import BaseDatabase
-
-
-@dataclass(slots=True, frozen=True)
-class ProcessingResult:
-    feed: Feed | None
-    tombstone: QueueCompletionType
-    success: int = 0
-    failures: int = 0
+    from podcast_archiver.models.episode import BaseEpisode
 
 
 class FeedProcessor:
@@ -61,7 +53,7 @@ class FeedProcessor:
             known_feeds[feed.url] = feed.info
             return feed
 
-    def _does_already_exist(self, episode: EpisodeSkeleton, *, target: Path) -> bool:
+    def _does_already_exist(self, episode: BaseEpisode, *, target: Path) -> bool:
         if not (existing := self.database.exists(episode)):
             # NOTE on backwards-compatibility: if the episode is not in the DB we'd normally
             # download it again outright. This might cause a complete replacement of
@@ -121,7 +113,7 @@ class FeedProcessor:
         success, failures = self._handle_results(results)
         return ProcessingResult(feed=feed, success=success, failures=failures, tombstone=tombstone)
 
-    def _enqueue_episode(self, episode: EpisodeSkeleton, feed_info: FeedInfo) -> FutureEpisodeResult | None:
+    def _enqueue_episode(self, episode: BaseEpisode, feed_info: FeedInfo) -> FutureEpisodeResult | None:
         target = self.filename_formatter.format(episode=episode, feed_info=feed_info)
         if self._does_already_exist(episode, target=target):
             result = DownloadResult.ALREADY_EXISTS
@@ -134,7 +126,7 @@ class FeedProcessor:
                 episode,
                 target=target,
                 max_download_bytes=constants.DEBUG_PARTIAL_SIZE if self.settings.debug_partial else None,
-                write_info_json=self.settings.write_info_json,
+                add_info_json=self.settings.write_info_json,
                 stop_event=self.stop_event,
             )
         )
@@ -143,12 +135,7 @@ class FeedProcessor:
         failures = success = 0
         for episode_result in episode_results:
             if isinstance(episode_result, Future):
-                try:
-                    episode_result = episode_result.result()
-                except Exception as exc:
-                    logger.debug("Got exception from future %s", episode_result, exc_info=exc)
-                    failures += 1
-                    continue
+                episode_result = episode_result.result()
 
             if episode_result.result not in DownloadResult.successful():
                 failures += 1

@@ -304,12 +304,10 @@ def main(ctx: click.RichContext, /, **kwargs: Any) -> int:
             pa.run()
     except InvalidSettings as exc:
         raise click.BadParameter(f"Invalid settings: {exc}") from exc
-    except KeyboardInterrupt as exc:  # pragma: no cover
-        raise click.Abort("Interrupted by user") from exc
     except FileNotFoundError as exc:
         raise click.Abort(exc) from exc
     return 0
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main.main(prog_name=constants.PROG_NAME)

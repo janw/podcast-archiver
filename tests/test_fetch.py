@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from podcast_archiver.models import Feed
+from podcast_archiver.models.feed import Feed
 
 FILE_FIXTURE = Path(__file__).parent / "fixtures" / "feed_lautsprecher.xml"
 

@@ -17,7 +17,8 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from podcast_archiver.config import Settings
-    from podcast_archiver.models import EpisodeSkeleton, FeedInfo
+    from podcast_archiver.models.episode import BaseEpisode
+    from podcast_archiver.models.feed import FeedInfo
 
 filename_safe_re = re.compile(r'[/\\?%*:|"<>]')
 slug_safe_re = re.compile(r"[^A-Za-z0-9-_\.]+")
@@ -65,7 +66,7 @@ def truncate(value: str, max_length: int) -> str:
 
 
 class FormatterKwargs(TypedDict, total=False):
-    episode: EpisodeSkeleton
+    episode: BaseEpisode
     show: FeedInfo
     ext: str
 
@@ -101,7 +102,7 @@ class FilenameFormatter(Formatter):
             return slugify(formatted)
         return make_filename_safe(formatted)
 
-    def format(self, episode: EpisodeSkeleton, feed_info: FeedInfo) -> Path:  # type: ignore[override]
+    def format(self, episode: BaseEpisode, feed_info: FeedInfo) -> Path:  # type: ignore[override]
         kwargs: FormatterKwargs = {
             "episode": episode,
             "show": feed_info,
@@ -160,3 +161,11 @@ def handle_feed_request(url: str) -> Generator[None, Any, None]:
     except Exception as exc:
         logger.debug("Unexpected error for url %s", url, exc_info=exc)
         rprint(f"[error]Failed to retrieve feed {url}: {exc}[/]")
+
+
+def get_field_titles() -> str:
+    from podcast_archiver.models.episode import Episode
+    from podcast_archiver.models.feed import FeedInfo
+
+    all_field_titles = Episode.field_titles() + FeedInfo.field_titles()
+    return "'" + ", '".join(all_field_titles) + "'"

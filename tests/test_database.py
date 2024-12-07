@@ -7,7 +7,7 @@ from podcast_archiver.database import Database
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from podcast_archiver.models import Episode
+    from podcast_archiver.models.episode import Episode
 
 
 def test_add(tmp_path_cd: Path, episode: Episode) -> None:

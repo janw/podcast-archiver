@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+from dataclasses import dataclass, field
 from threading import Event
 from typing import IO, TYPE_CHECKING, Generator
 
@@ -17,32 +18,16 @@ if TYPE_CHECKING:
 
     from requests import Response
 
-    from podcast_archiver.models import EpisodeSkeleton, FeedInfo
+    from podcast_archiver.models.episode import BaseEpisode
 
 
+@dataclass(slots=True)
 class DownloadJob:
-    episode: EpisodeSkeleton
-    feed_info: FeedInfo
+    episode: BaseEpisode
     target: Path
-    stop_event: Event
-
-    _max_download_bytes: int | None = None
-    _write_info_json: bool
-
-    def __init__(
-        self,
-        episode: EpisodeSkeleton,
-        *,
-        target: Path,
-        max_download_bytes: int | None = None,
-        write_info_json: bool = False,
-        stop_event: Event | None = None,
-    ) -> None:
-        self.episode = episode
-        self.target = target
-        self._max_download_bytes = max_download_bytes
-        self._write_info_json = write_info_json
-        self.stop_event = stop_event or Event()
+    add_info_json: bool = False
+    stop_event: Event = field(default_factory=Event)
+    max_download_bytes: int | None = None
 
     def __call__(self) -> EpisodeResult:
         try:
@@ -71,7 +56,7 @@ class DownloadJob:
     def receive_data(self, fp: IO[bytes], response: Response) -> None:
         total_size = int(response.headers.get("content-length", "0"))
         total_written = 0
-        max_bytes = self._max_download_bytes
+        max_bytes = self.max_download_bytes
         for chunk in wrapped_tqdm(
             response.iter_content(chunk_size=constants.DOWNLOAD_CHUNK_SIZE),
             desc=str(self.episode),
@@ -90,7 +75,7 @@ class DownloadJob:
 
     @contextmanager
     def write_info_json(self) -> Generator[None, None, None]:
-        if not self._write_info_json:
+        if not self.add_info_json:
             yield
             return
         with atomic_write(self.infojsonfile) as fp:

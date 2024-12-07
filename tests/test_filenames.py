@@ -1,7 +1,8 @@
 import pytest
 
 from podcast_archiver.config import Settings
-from podcast_archiver.models import Episode, FeedInfo
+from podcast_archiver.models.episode import Episode
+from podcast_archiver.models.feed import FeedInfo
 from podcast_archiver.utils import FilenameFormatter
 
 FEED_INFO = FeedInfo(
