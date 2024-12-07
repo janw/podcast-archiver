@@ -4,6 +4,9 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from threading import Event
 from typing import TYPE_CHECKING
 
+from rich.console import Group
+from rich.text import Text
+
 from podcast_archiver import constants
 from podcast_archiver.config import Settings
 from podcast_archiver.database import get_database
@@ -11,7 +14,12 @@ from podcast_archiver.download import DownloadJob
 from podcast_archiver.enums import DownloadResult, QueueCompletionType
 from podcast_archiver.logging import logger, rprint
 from podcast_archiver.models.feed import Feed, FeedInfo
-from podcast_archiver.types import EpisodeResult, EpisodeResultsList, FutureEpisodeResult, ProcessingResult
+from podcast_archiver.types import (
+    EpisodeResult,
+    EpisodeResultsList,
+    FutureEpisodeResult,
+    ProcessingResult,
+)
 from podcast_archiver.utils import FilenameFormatter, handle_feed_request
 from podcast_archiver.utils.pretty_printing import PrettyPrintEpisodeRange
 
@@ -48,7 +56,7 @@ class FeedProcessor:
             return ProcessingResult(feed=None, tombstone=QueueCompletionType.FAILED)
 
         result = self.process_feed(feed=feed)
-        rprint(f"[completed]{result.tombstone}[/]")
+        rprint(result.tombstone, style="completed")
         return result
 
     def load_feed(self, url: str, known_feeds: dict[str, FeedInfo]) -> Feed | None:
@@ -116,11 +124,11 @@ class FeedProcessor:
         success, failures = self._handle_results(results)
         return ProcessingResult(feed=feed, success=success, failures=failures, tombstone=tombstone)
 
-    def _enqueue_episode(self, episode: BaseEpisode, feed_info: FeedInfo) -> FutureEpisodeResult | EpisodeResult:
+    def _enqueue_episode(self, episode: BaseEpisode, feed_info: FeedInfo) -> FutureEpisodeResult:
         target = self.filename_formatter.format(episode=episode, feed_info=feed_info)
         if self._does_already_exist(episode, target=target):
             result = DownloadResult.ALREADY_EXISTS
-            return EpisodeResult(episode, result)
+            return EpisodeResult(episode, result, is_eager=True)
 
         logger.debug("Queueing download for %r", episode)
         return self.pool_executor.submit(
@@ -139,12 +147,20 @@ class FeedProcessor:
             if isinstance(episode_result, Future):
                 episode_result = episode_result.result()
 
-            if episode_result.result not in DownloadResult.successful():
-                failures += 1
+            if episode_result.is_eager:
+                success += 1
+                self.database.add(episode_result.episode)
                 continue
 
-            self.database.add(episode_result.episode)
-            success += 1
+            if episode_result.result in DownloadResult.successful():
+                prefix = Text(f"✔ {episode_result.result} ", style="success", end=" ")
+                success += 1
+                self.database.add(episode_result.episode)
+            else:
+                prefix = Text(f"✖ {episode_result.result} ", style="error", end=" ")
+                failures += 1
+
+            rprint(Group(prefix, episode_result.episode))
         return success, failures
 
     def shutdown(self) -> None:

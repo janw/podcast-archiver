@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 class EpisodeResult:
     episode: BaseEpisode
     result: DownloadResult
+    is_eager: bool = False
 
 
 @dataclass(slots=True, frozen=True)

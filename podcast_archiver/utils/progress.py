@@ -1,22 +1,63 @@
 from __future__ import annotations
 
+from functools import partial
 from threading import Event, Lock, Thread
-from typing import Iterable
+from typing import TYPE_CHECKING, Iterable
 
 from rich import progress as rp
+from rich.table import Column
 
 from podcast_archiver.console import console
 from podcast_archiver.logging import REDIRECT_VIA_LOGGING
 
-PROGRESS_COLUMNS: tuple[rp.ProgressColumn, ...] = (
-    rp.SpinnerColumn(finished_text="[success]✔[/]"),
-    rp.TextColumn("{task.description}"),
-    rp.BarColumn(bar_width=25),
-    rp.TaskProgressColumn(),
-    rp.TimeRemainingColumn(),
-    rp.DownloadColumn(),
-    rp.TransferSpeedColumn(),
+if TYPE_CHECKING:
+    from rich.console import RenderableType
+
+    from podcast_archiver.models.episode import BaseEpisode
+
+
+class EpisodeColumn(rp.RenderableColumn):
+    def render(self, task: rp.Task) -> RenderableType:
+        return task.fields["episode"]
+
+
+_Column = partial(
+    Column,
+    no_wrap=True,
+    overflow="ignore",
+    highlight=False,
 )
+
+PROGRESS_COLUMNS: tuple[rp.ProgressColumn, ...] = (
+    rp.SpinnerColumn(
+        table_column=_Column(width=4),
+    ),
+    rp.TimeRemainingColumn(
+        compact=True,
+        table_column=_Column(width=11, justify="center"),
+    ),
+    EpisodeColumn(
+        table_column=_Column(
+            overflow="ellipsis",
+            min_width=40,
+        ),
+    ),
+    rp.BarColumn(
+        bar_width=20,
+        table_column=_Column(width=20),
+    ),
+    rp.TaskProgressColumn(
+        table_column=_Column(width=5),
+    ),
+    rp.TransferSpeedColumn(
+        table_column=_Column(width=10),
+    ),
+)
+
+
+_widths = sum(col.get_table_column().width or 0 for col in [*PROGRESS_COLUMNS[:1], *PROGRESS_COLUMNS[3:]])
+description_col = PROGRESS_COLUMNS[2].get_table_column()
+description_col.width = max(console.width - _widths, description_col.min_width or 0)
 
 
 class _ProgressRefreshThread(Thread):
@@ -61,13 +102,13 @@ class ProgressManager:
             refresh_per_second=8,
         )
 
-    def track(self, iterable: Iterable[bytes], description: str, total: int) -> Iterable[bytes]:
+    def track(self, iterable: Iterable[bytes], total: int, episode: BaseEpisode) -> Iterable[bytes]:
         if REDIRECT_VIA_LOGGING:
             yield from iterable
             return
 
         self.start()
-        task_id = self._progress.add_task(description=description, total=total)
+        task_id = self._progress.add_task("downloading", total=total, episode=episode)
         try:
             for it in iterable:
                 yield it
