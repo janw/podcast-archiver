@@ -6,12 +6,14 @@ from typing import TYPE_CHECKING
 
 from podcast_archiver import constants
 from podcast_archiver.config import Settings
+from podcast_archiver.database import get_database
 from podcast_archiver.download import DownloadJob
 from podcast_archiver.enums import DownloadResult, QueueCompletionType
 from podcast_archiver.logging import logger, rprint
 from podcast_archiver.models.feed import Feed, FeedInfo
 from podcast_archiver.types import EpisodeResult, EpisodeResultsList, FutureEpisodeResult, ProcessingResult
 from podcast_archiver.utils import FilenameFormatter, handle_feed_request
+from podcast_archiver.utils.pretty_printing import PrettyPrintEpisodeRange
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -30,10 +32,13 @@ class FeedProcessor:
 
     known_feeds: dict[str, FeedInfo]
 
-    def __init__(self, settings: Settings | None = None) -> None:
+    __slots__ = ("settings", "database", "filename_formatter", "pool_executor", "stop_event", "known_feeds")
+
+    def __init__(self, settings: Settings | None = None, database: BaseDatabase | None = None) -> None:
         self.settings = settings or Settings()
+        database_path = self.settings.database or (self.settings.config.parent if self.settings.config else None)
+        self.database = database or get_database(database_path, ignore_existing=self.settings.ignore_database)
         self.filename_formatter = FilenameFormatter(self.settings)
-        self.database = self.settings.get_database()
         self.pool_executor = ThreadPoolExecutor(max_workers=self.settings.concurrency)
         self.stop_event = Event()
         self.known_feeds = {}
@@ -43,8 +48,7 @@ class FeedProcessor:
             return ProcessingResult(feed=None, tombstone=QueueCompletionType.FAILED)
 
         result = self.process_feed(feed=feed)
-
-        rprint(f"\n[bar.finished]✔ {result.tombstone} for: {feed}[/]")
+        rprint(f"[completed]{result.tombstone}[/]")
         return result
 
     def load_feed(self, url: str, known_feeds: dict[str, FeedInfo]) -> Feed | None:
@@ -92,32 +96,30 @@ class FeedProcessor:
         return True
 
     def process_feed(self, feed: Feed) -> ProcessingResult:
-        rprint(f"\n[bold bright_magenta]Downloading archive for: {feed}[/]\n")
+        rprint(f"\n[bold bright_magenta]Archiving: {feed}[/]\n")
         tombstone = QueueCompletionType.COMPLETED
         results: EpisodeResultsList = []
-        for idx, episode in enumerate(feed.episodes, 1):
-            if episode is None:
-                logger.debug("Skipping invalid episode at idx %s", idx)
-                continue
-            if (enqueued := self._enqueue_episode(episode, feed.info)) is None:
-                tombstone = QueueCompletionType.FOUND_EXISTING
-                break
+        with PrettyPrintEpisodeRange() as pretty_range:
+            for idx, episode in enumerate(feed.episodes, 1):
+                if episode is None:
+                    logger.debug("Skipping invalid episode at idx %s", idx)
+                    continue
+                enqueued = self._enqueue_episode(episode, feed.info)
+                pretty_range.update(isinstance(enqueued, EpisodeResult), episode)
+                results.append(enqueued)
 
-            results.append(enqueued)
-
-            if (max_count := self.settings.maximum_episode_count) and idx == max_count:
-                logger.debug("Reached requested maximum episode count of %s", max_count)
-                tombstone = QueueCompletionType.MAX_EPISODES
-                break
+                if (max_count := self.settings.maximum_episode_count) and idx == max_count:
+                    logger.debug("Reached requested maximum episode count of %s", max_count)
+                    tombstone = QueueCompletionType.MAX_EPISODES
+                    break
 
         success, failures = self._handle_results(results)
         return ProcessingResult(feed=feed, success=success, failures=failures, tombstone=tombstone)
 
-    def _enqueue_episode(self, episode: BaseEpisode, feed_info: FeedInfo) -> FutureEpisodeResult | None:
+    def _enqueue_episode(self, episode: BaseEpisode, feed_info: FeedInfo) -> FutureEpisodeResult | EpisodeResult:
         target = self.filename_formatter.format(episode=episode, feed_info=feed_info)
         if self._does_already_exist(episode, target=target):
             result = DownloadResult.ALREADY_EXISTS
-            rprint(f"[bar.finished]✔ {result}: {episode}[/]")
             return EpisodeResult(episode, result)
 
         logger.debug("Queueing download for %r", episode)

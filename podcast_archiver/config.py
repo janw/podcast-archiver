@@ -24,7 +24,6 @@ from yaml import YAMLError, safe_load
 
 from podcast_archiver import __version__ as version
 from podcast_archiver import constants
-from podcast_archiver.database import BaseDatabase, Database, DummyDatabase
 from podcast_archiver.exceptions import InvalidSettings
 from podcast_archiver.logging import rprint
 from podcast_archiver.utils import get_field_titles
@@ -229,16 +228,3 @@ class Settings(BaseModel):
         else:
             with file:
                 file.write(contents)
-
-    def get_database(self) -> BaseDatabase:
-        if getenv("TESTING", "0").lower() in ("1", "true"):
-            return DummyDatabase()
-
-        if self.database:
-            db_path = str(self.database)
-        elif self.config:
-            db_path = str(self.config.parent / constants.DEFAULT_DATABASE_FILENAME)
-        else:
-            db_path = constants.DEFAULT_DATABASE_FILENAME
-
-        return Database(filename=db_path, ignore_existing=self.ignore_database)

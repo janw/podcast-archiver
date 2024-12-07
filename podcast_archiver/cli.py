@@ -13,6 +13,7 @@ from podcast_archiver import __version__ as version
 from podcast_archiver import constants
 from podcast_archiver.base import PodcastArchiver
 from podcast_archiver.config import Settings, in_ci
+from podcast_archiver.console import console
 from podcast_archiver.exceptions import InvalidSettings
 from podcast_archiver.logging import configure_logging, rprint
 
@@ -117,9 +118,7 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
 
 
 @click.command(
-    context_settings={
-        "auto_envvar_prefix": constants.ENVVAR_PREFIX,
-    },
+    context_settings={"auto_envvar_prefix": constants.ENVVAR_PREFIX, "rich_console": console},
     help="Archive all of your favorite podcasts",
 )
 @click.help_option("-h", "--help")

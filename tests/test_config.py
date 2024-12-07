@@ -1,4 +1,6 @@
+from os import environ
 from pathlib import Path
+from unittest import mock
 
 import pytest
 
@@ -6,15 +8,28 @@ from podcast_archiver.config import Settings
 from podcast_archiver.exceptions import InvalidSettings
 
 DUMMY_FEED = "http://localhost/feed.rss"
+DUMMY_CONFIG = f"""
+
+feeds: [{DUMMY_FEED}]
+archive_directory: '~'
+opml_files: [~/an_opml.xml]
+
+"""
 
 
 def test_load(tmp_path_cd: Path) -> None:
     configfile = tmp_path_cd / "configtmp.yaml"
-    configfile.write_text(f"feeds: [{DUMMY_FEED}]")
+    configfile.write_text(DUMMY_CONFIG)
 
-    settings = Settings.load_from_yaml(configfile)
+    opml_file = tmp_path_cd / "an_opml.xml"
+    opml_file.touch()
+
+    with mock.patch.dict(environ, {"HOME": str(tmp_path_cd)}):
+        settings = Settings.load_from_yaml(configfile)
 
     assert DUMMY_FEED in settings.feeds
+    assert opml_file in settings.opml_files
+    assert settings.archive_directory == tmp_path_cd
 
 
 def test_load_invalid_yaml(tmp_path_cd: Path) -> None:

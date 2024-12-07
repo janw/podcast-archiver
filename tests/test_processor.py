@@ -9,7 +9,7 @@ from unittest.mock import patch
 import pytest
 
 from podcast_archiver import compat
-from podcast_archiver.database import EpisodeInDb
+from podcast_archiver.database import Database, EpisodeInDb
 from podcast_archiver.enums import DownloadResult, QueueCompletionType
 from podcast_archiver.models.feed import FeedPage
 from podcast_archiver.processor import FeedProcessor
@@ -49,7 +49,7 @@ def test_preflight_check(
     proc = FeedProcessor()
     if file_exists:
         target.touch()
-    with patch.object(proc.database, "exists", return_value=database_exists):
+    with patch.object(Database, "exists", return_value=database_exists):
         result = proc._does_already_exist(episode, target=target)
 
     assert result == expected_result
@@ -82,7 +82,7 @@ def test_handle_results_mixed(episode: Episode) -> None:
         EpisodeResult(episode=episode, result=DownloadResult.FAILED),
     ]
 
-    with mock.patch.object(proc.database, "add", return_value=None) as mock_add:
+    with mock.patch.object(Database, "add", return_value=None) as mock_add:
         success, failures = proc._handle_results(episodes)
 
     assert success == 1
@@ -94,7 +94,7 @@ def test_handle_results_failure(episode: Episode) -> None:
     proc = FeedProcessor()
     episodes: EpisodeResultsList = [EpisodeResult(episode=episode, result=DownloadResult.ABORTED)]
 
-    with mock.patch.object(proc.database, "add", return_value=None) as mock_add:
+    with mock.patch.object(Database, "add", return_value=None) as mock_add:
         success, failures = proc._handle_results(episodes)
 
     assert success == 0
@@ -106,7 +106,7 @@ def test_handle_results_failed_future(episode: Episode) -> None:
     proc = FeedProcessor()
     episodes: EpisodeResultsList = [EpisodeResult(episode=episode, result=DownloadResult.ABORTED)]
 
-    with mock.patch.object(proc.database, "add", return_value=None) as mock_add:
+    with mock.patch.object(Database, "add", return_value=None) as mock_add:
         success, failures = proc._handle_results(episodes)
 
     assert success == 0
