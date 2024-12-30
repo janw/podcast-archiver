@@ -82,14 +82,17 @@ class PrettyPrintEpisodeRange:
                 Text("╶┬╴" if pair.length > 1 else "   ", style=pair.style),
                 pair.first,
             )
-            if pair.length == 1:
-                continue
+            if pair.length > 2:
+                grid.add_row(
+                    "",
+                    Text(" │ ", style=pair.style),
+                    Text("    ︙", style="dim"),
+                )
             if pair.length > 1:
-                grid.add_row("", " │ ", "", style=pair.style)
-            grid.add_row(
-                "",
-                Text(" ╰╴" if pair.last else "   ", style=pair.style),
-                pair.last,
-            )
+                grid.add_row(
+                    "",
+                    Text(" ╰╴", style=pair.style),
+                    pair.last,
+                )
             grid.add_row("", "", "")
         return grid

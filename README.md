@@ -26,6 +26,8 @@ A fast and simple command line client to archive all episodes from your favorite
 
 Podcast Archiver takes the feed URLs of your favorite podcasts and downloads all available episodes for you—even those "hidden" in [paged feeds](https://podlove.org/paged-feeds/). You'll end up with a complete archive of your shows. The archiver also supports updating an existing archive, so that it lends itself to be set up as a cronjob.
 
+![Demo of podcast-archiver](.assets/demo.gif)
+
 ## Setup
 
 Install via [pipx](https://pipx.pypa.io/stable/):
@@ -56,10 +58,10 @@ Run `podcast-archiver --help` for details on how to use it:
 
 ### Example invocation
 
-```bash
+```sh
 podcast-archiver -d ~/Music/Podcasts \
-    -f http://logbuch-netzpolitik.de/feed/m4a \
-    -f http://raumzeit-podcast.de/feed/m4a/ \
+    -f https://logbuch-netzpolitik.de/feed/mp3/ \
+    -f https://raumzeit-podcast.de/feed/mp3/ \
     -f https://feeds.lagedernation.org/feeds/ldn-mp3.xml
 ```
 
