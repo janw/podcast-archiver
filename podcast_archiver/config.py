@@ -144,6 +144,14 @@ class Settings(BaseModel):
         ),
     )
 
+    check_for_update_days: int = Field(
+        default=0,
+        description=(
+            f"Check if an update of {constants.PROG_NAME} is available at most every N days. "
+            "Set to 0 to disable update checks."
+        ),
+    )
+
     config: FilePath | None = Field(
         default=None,
         exclude=True,
