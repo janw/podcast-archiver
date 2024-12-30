@@ -1,3 +1,26 @@
+## v2.0.0 (2024-12-30)
+
+### BREAKING CHANGE
+
+- the --update option ('update_archive' in settings) has
+been removed. Feeds are now always processed in full (unless running in
+continuous mode).
+
+### Feat
+
+- Improve progress display and episodes report (#215)
+- Improve progress display and episodes report (#213)
+- Remove --update option (#211)
+- Allow downloading republished episodes (#208)
+
+### Fix
+
+- Refine pretty-printing of episode ranges (#221)
+
+### Refactor
+
+- Move models into package (#214)
+
 ## v1.7.2 (2024-12-03)
 
 ### Fix
