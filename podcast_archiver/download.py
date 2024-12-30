@@ -8,7 +8,7 @@ from typing import IO, TYPE_CHECKING, Generator
 from podcast_archiver import constants
 from podcast_archiver.enums import DownloadResult
 from podcast_archiver.exceptions import NotCompleted
-from podcast_archiver.logging import logger, rprint
+from podcast_archiver.logging import logger
 from podcast_archiver.session import session
 from podcast_archiver.types import EpisodeResult
 from podcast_archiver.utils import atomic_write
@@ -32,27 +32,24 @@ class DownloadJob:
 
     def __call__(self) -> EpisodeResult:
         try:
-            return self.run()
+            self.run()
+            result = DownloadResult.COMPLETED_SUCCESSFULLY
         except NotCompleted:
-            res = EpisodeResult(self.episode, DownloadResult.ABORTED)
+            result = DownloadResult.ABORTED
         except Exception as exc:
             logger.error("Download failed: %s; %s", self.episode, exc)
             logger.debug("Exception while downloading", exc_info=exc)
-            res = EpisodeResult(self.episode, DownloadResult.FAILED)
+            result = DownloadResult.FAILED
 
-        rprint(f"[error]✘ {res.result}:[/] {res.episode}")
-        return res
+        return EpisodeResult(self.episode, result)
 
-    def run(self) -> EpisodeResult:
+    def run(self) -> None:
         self.target.parent.mkdir(parents=True, exist_ok=True)
         logger.info("Downloading: %s", self.episode)
         response = session.get_and_raise(self.episode.enclosure.href, stream=True)
         with self.write_info_json(), atomic_write(self.target, mode="wb") as fp:
             self.receive_data(fp, response)
-
         logger.info("Completed: %s", self.episode)
-        rprint(f"[dark_cyan]✔ {DownloadResult.COMPLETED_SUCCESSFULLY}:[/] {self.episode}")
-        return EpisodeResult(self.episode, DownloadResult.COMPLETED_SUCCESSFULLY)
 
     @property
     def infojsonfile(self) -> Path:
@@ -64,7 +61,7 @@ class DownloadJob:
         max_bytes = self.max_download_bytes
         for chunk in progress_manager.track(
             response.iter_content(chunk_size=constants.DOWNLOAD_CHUNK_SIZE),
-            description=str(self.episode),
+            episode=self.episode,
             total=total_size,
         ):
             total_written += fp.write(chunk)

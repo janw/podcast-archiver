@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from functools import cached_property
 from pathlib import Path
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 from urllib.parse import urlparse
 
 from pydantic import (
@@ -11,12 +11,17 @@ from pydantic import (
     field_validator,
     model_validator,
 )
+from rich.table import Table
+from rich.text import Text
 
 from podcast_archiver.constants import DEFAULT_DATETIME_FORMAT, MAX_TITLE_LENGTH
 from podcast_archiver.exceptions import MissingDownloadUrl
 from podcast_archiver.models.field_types import FallbackToNone, LenientDatetime
 from podcast_archiver.models.misc import Link
 from podcast_archiver.utils import get_generic_extension, truncate
+
+if TYPE_CHECKING:
+    from rich.console import RenderableType
 
 
 class Chapter(BaseModel):
@@ -36,11 +41,23 @@ class BaseEpisode(BaseModel):
     published_time: LenientDatetime = Field(alias="published_parsed", title="episode.published_time")
 
     original_filename: str = Field(default="", repr=False, title="episode.original_filename")
+    original_title: str = Field(default="Untitled Episode", repr=False, validation_alias="title")
 
     guid: str = Field(default=None, alias="id")  # type: ignore[assignment]
 
     def __str__(self) -> str:
-        return f"{self.title} ({self.published_time.strftime(DEFAULT_DATETIME_FORMAT)})"
+        return f"{self.published_time.strftime(DEFAULT_DATETIME_FORMAT)} {self.title}"
+
+    def __rich__(self) -> RenderableType:
+        """Makes the Progress class itself renderable."""
+        grid = Table.grid()
+        grid.add_column(style="dim")
+        grid.add_column()
+        grid.add_row(
+            Text(f"{self.published_time:%Y-%m-%d} "),
+            Text(self.title, overflow="ellipsis", no_wrap=True),
+        )
+        return grid
 
     @field_validator("title", mode="after")
     @classmethod

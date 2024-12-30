@@ -7,7 +7,7 @@ _theme = Theme(
     {
         "error": "bold dark_red",
         "warning": "magenta",
-        "missing": "orange1",
+        "missing": "orange1 bold",
         "completed": "bold dark_cyan",
         "success": "dark_cyan",
     }
