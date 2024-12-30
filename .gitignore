@@ -5,6 +5,7 @@
 *.m4a
 *.yaml
 *.db
+*.cast
 !.github/**/*.yaml
 
 archive/
