@@ -16,6 +16,7 @@ from podcast_archiver.config import Settings, in_ci
 from podcast_archiver.console import console
 from podcast_archiver.exceptions import InvalidSettings
 from podcast_archiver.logging import configure_logging, rprint
+from podcast_archiver.utils.version_check import check_for_updates
 
 if TYPE_CHECKING:
     from click.shell_completion import CompletionItem
@@ -106,7 +107,7 @@ class ConfigFile(click.ParamType):
 def get_default_config_path() -> pathlib.Path | None:
     if getenv("TESTING", "0").lower() in ("1", "true"):
         return None
-    return (pathlib.Path(click.get_app_dir(constants.PROG_NAME)) / "config.yaml").resolve()  # pragma: no cover
+    return (constants.APP_DIR / "config.yaml").resolve()  # pragma: no cover
 
 
 def generate_default_config(ctx: click.Context, param: click.Parameter, value: bool) -> None:
@@ -288,6 +289,9 @@ def main(ctx: click.RichContext, /, **kwargs: Any) -> int:
     configure_logging(kwargs["verbose"], kwargs["quiet"])
     try:
         settings = Settings.load_from_dict(kwargs)
+
+        if days := settings.check_for_update_days:
+            check_for_updates(current_version=version, interval=days)
 
         # Replicate click's `no_args_is_help` behavior but only when config file does not contain feeds/OPMLs
         if not (settings.feeds or settings.opml_files):

@@ -124,6 +124,7 @@ class ProgressManager:
             self._progress.start()
             self._refresher = _ProgressRefreshThread(self._progress)
             self._refresher.start()
+            console.show_cursor(False)
             self._started = True
 
     def stop(self) -> None:
@@ -131,8 +132,9 @@ class ProgressManager:
             if not self._started:
                 return
             self._progress.stop()
-            self._started = False
             self._refresher.stop()
+            console.show_cursor(True)
+            self._started = False
 
 
 progress_manager = ProgressManager()

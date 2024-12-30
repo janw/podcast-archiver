@@ -1,11 +1,15 @@
 import pathlib
 import re
 
+import click
+
 from podcast_archiver import __version__
 
+GH_REPO = "janw/podcast-archiver"
 PROG_NAME = "podcast-archiver"
-USER_AGENT = f"{PROG_NAME}/{__version__} (https://github.com/janw/podcast-archiver)"
+USER_AGENT = f"{PROG_NAME}/{__version__} (https://github.com/{GH_REPO})"
 ENVVAR_PREFIX = "PODCAST_ARCHIVER"
+APP_DIR = pathlib.Path(click.get_app_dir(PROG_NAME))
 
 REQUESTS_TIMEOUT = 30
 

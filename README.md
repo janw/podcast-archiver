@@ -92,6 +92,10 @@ services:
       - --feed=https://feeds.megaphone.fm/heavyweight-spot
 ```
 
+#### Check for app updates periodically
+
+Podcast Archiver can be configured to check for updates of itself periodically. This is disabled by default and must be enabled via the `check_for_update_days` setting. For example, adding `check_for_update_days: 7` to your config file will check for updates at most every 7 days. The update check will use a single HTTPS request to the GitHub API to fetch the latest release.
+
 ### Changing the filename format
 
 Podcast Archiver has a `--filename-template` option that allows you to change the particular naming scheme of the archive. The default value for `--filename-template`. is shown in `podcast-archiver --help`, as well as all the available variables. The basic ones are:
