@@ -1,0 +1,109 @@
+## Podcast-Archiver configuration
+## Generated using podcast-archiver v2.0.0
+
+# Field 'feeds': Feed URLs to archive.
+#
+# Equivalent command line option: --feeds
+#
+feeds: []
+
+# Field 'opml_files': OPML files containing feed URLs to archive. OPML files can
+#   be exported from a variety of podcatchers.
+#
+# Equivalent command line option: --opml-files
+#
+opml_files: []
+
+# Field 'archive_directory': Directory to which to download the podcast archive.
+#   By default, the archive will be created in the current working directory
+#   ('.').
+#
+# Equivalent command line option: --archive-directory
+#
+archive_directory: "."
+
+# Field 'write_info_json': Write episode metadata to a .info.json file next to
+#   the media file itself.
+#
+# Equivalent command line option: --write-info-json
+#
+write_info_json: false
+
+# Field 'quiet': Print only minimal progress information. Errors will always be
+#   emitted.
+#
+# Equivalent command line option: --quiet
+#
+quiet: false
+
+# Field 'verbose': Increase the level of verbosity while downloading. Can be
+#   passed multiple times. Increased verbosity and non-interactive execution (in
+#   a cronjob, docker compose, etc.) will disable progress bars. Non-interactive
+#   execution also always raises the verbosity unless --quiet is passed.
+#
+# Equivalent command line option: --verbose
+#
+verbose: 0
+
+# Field 'slugify_paths': Format filenames in the most compatible way, replacing
+#   all special characters.
+#
+# Equivalent command line option: --slugify-paths
+#
+slugify_paths: false
+
+# Field 'filename_template': Template to be used when generating filenames.
+#   Available template variables are: 'episode.title, 'episode.published_time,
+#   'episode.original_filename, 'episode.subtitle, 'show.title, 'show.subtitle,
+#   'show.author, 'show.language', and 'ext' (the filename extension)
+#
+# Equivalent command line option: --filename-template
+#
+filename_template: "{show.title}/{episode.published_time:%Y-%m-%d} - {episode.title}.{ext}"
+
+# Field 'maximum_episode_count': Only download the given number of episodes per
+#   podcast feed. Useful if you don't really need the entire backlog.
+#
+# Equivalent command line option: --maximum-episode-count
+#
+maximum_episode_count: 0
+
+# Field 'concurrency': Maximum number of simultaneous downloads.
+#
+# Equivalent command line option: --concurrency
+#
+concurrency: 4
+
+# Field 'debug_partial': Download only the first 1048576 bytes of episodes for
+#   debugging purposes.
+#
+# Equivalent command line option: --debug-partial
+#
+debug_partial: false
+
+# Field 'database': Location of the database to keep track of downloaded
+#   episodes. By default, the database will be created as 'podcast-archiver.db'
+#   in the directory of the config file.
+#
+# Equivalent command line option: --database
+#
+database: null
+
+# Field 'ignore_database': Ignore the episodes database when downloading. This
+#   will cause files to be downloaded again, even if they already exist in the
+#   database.
+#
+# Equivalent command line option: --ignore-database
+#
+ignore_database: false
+
+# Field 'sleep_seconds': Run podcast-archiver continuously. Set to a non-zero
+#   number of seconds to sleep after all available episodes have been
+#   downloaded. Otherwise the application exits after all downloads have been
+#   completed.
+#
+# Equivalent command line option: --sleep-seconds
+#
+sleep_seconds: 0
+
+# vim:syntax=yaml
