@@ -52,20 +52,15 @@ By default, the docker image downloads episodes to a volume mounted at `/archive
 
 ## Usage
 
-Run `podcast-archiver --help` for details on how to use it:
-
-![`podcast-archiver --help`](.assets/podcast-archiver-help.svg)
-
-### Example invocation
+Podcast Archiver supports command line arguments, environment variables, and a config file to set it up. The most simple invocation, passing feeds as command line arguments, would like like this:
 
 ```sh
-podcast-archiver -d ~/Music/Podcasts \
-    -f https://logbuch-netzpolitik.de/feed/mp3/ \
-    -f https://raumzeit-podcast.de/feed/mp3/ \
-    -f https://feeds.lagedernation.org/feeds/ldn-mp3.xml
+podcast-archiver --dir ~/Podcasts --feed https://feeds.feedburner.com/TheAnthropoceneReviewed
 ```
 
-This way, you can easily add and remove feeds to the list and let the archiver fetch the newest episodes for example by adding it to your crontab.
+### What constitutes a "feed"
+
+Podcast Archiver expects values to its `--feed/-f` argument to be URLs pointing to an [RSS feed of a podcast](https://archive.is/jYk3E).
 
 Feeds can also be "fetched" from a local file:
 
@@ -73,7 +68,45 @@ Feeds can also be "fetched" from a local file:
 podcast-archiver -f file:/Users/janw/downloaded_feed.xml
 ```
 
-#### Continuous mode
+### Using a config file
+
+Podcast Archiver can be configured using a YAML config file as well. This way you can easily add and remove feeds to the list and let the archiver fetch the newest episodes, for example using a daily cronjob.
+
+A simple config file can look like this:
+
+```yaml
+archive_directory: ~/Podcasts
+filename_template: '{show.title}/{episode.published_time:%Y-%m-%d} - {episode.title}.{ext}'
+write_info_json: true
+feeds:
+  - https://feeds.feedburner.com/TheAnthropoceneReviewed  # The Anthropocene Reviewed
+  - https://feeds.megaphone.fm/heavyweight-spot  # Heavyweight
+```
+
+To create a config file, you may use `podcast-archiver --config-generate` to emit an example configuration locally. You can also find a [pre-populated config file here](https://github.com/janw/podcast-archiver/blob/main/config.yaml.example). The example config contains descriptions and default values for all available parameters. After modifying it to your liking, you can invoke the archiver by bassing the config file as a command line argument:
+
+```sh
+podcast-archiver --config config.yaml
+```
+
+Alternatively (for example, if you're running `podcast-archiver` in Docker), you may point it to the config file using the `PODCAST_ARCHIVER_CONFIG=path/to/config.yaml` environment variable.
+
+If the `--config` parameter is omitted, the archiver will look for a config file in its app config directory. The location of this directory is OS-specific; it is printed with the `podcast-archiver --help` output (next to the `--config` option help text).
+
+### Using environment variables
+
+Most settings of Podcast Archiver are available as environment variables, too. Check `podcast-archiver --help` for options with `env var: …` next to them.
+
+```sh
+export PODCAST_ARCHIVER_FEEDS='https://feeds.feedburner.com/TheAnthropoceneReviewed'  # multiple must be space-separated
+export PODCAST_ARCHIVER_ARCHIVE_DIRECTORY="$HOME/Podcasts"
+
+podcast-archiver
+```
+
+## Advanced use
+
+### Continuous mode
 
 When the `--sleep-seconds` option is set to a non-zero value, Podcast Archiver operates in continuous mode. After successfully populating the archive, it will not terminate but rather sleep for the given number of seconds until it refreshes the feeds again and downloads episodes that have been published in the meantime.
 
@@ -127,22 +160,8 @@ Note here that `episode.published_time` is a Python-native datetime, so its exac
 
   Results in `…/That Show/2023-03-12 ts001-episodefilename.mp3`
 
-### Using a config file
+### All available options
 
-Command line arguments can be replaced with entries in a YAML configuration file. An example config can be generated with
+Run `podcast-archiver --help` to see all available parameters and the corresponding environment variables.
 
-```bash
-podcast-archiver --config-generate > config.yaml
-```
-
-After modifying the settings to your liking, `podcast-archiver` can be run with
-
-```bash
-podcast-archiver --config config.yaml
-```
-
-Alternatively (for example, if you're running `podcast-archiver` in Docker), you may point it to the config file using the `PODCAST_ARCHIVER_CONFIG=path/to/config.yaml` environment variable.
-
-### Using environment variables
-
-Some settings of Podcast Archiver are available as environment variables, too. Check `podcast-archiver --help` for options with `env var: …` next to them.
+![`podcast-archiver --help`](.assets/podcast-archiver-help.svg)

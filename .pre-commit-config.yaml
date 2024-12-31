@@ -55,3 +55,12 @@ repos:
         require_serial: true
         pass_filenames: false
         types: [python]
+
+      - id: config-generate
+        name: config-generate
+        entry: ./hack/config-generate.sh
+        language: system
+        require_serial: true
+        pass_filenames: false
+        files: ^podcast_archiver/config\.py$
+        types: [python]

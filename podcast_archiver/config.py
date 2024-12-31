@@ -3,7 +3,6 @@ from __future__ import annotations
 import pathlib
 import sys
 import textwrap
-from datetime import datetime
 from os import getenv
 from typing import IO, TYPE_CHECKING, Any, Text
 
@@ -196,12 +195,11 @@ class Settings(BaseModel):
 
     @classmethod
     def generate_default_config(cls, file: IO[Text] | None = None) -> None:
-        now = datetime.now().replace(microsecond=0).astimezone()
         wrapper = textwrap.TextWrapper(width=80, initial_indent="# ", subsequent_indent="#   ")
 
         lines = [
             f"## {constants.PROG_NAME.title()} configuration",
-            f"## Generated with {constants.PROG_NAME} {version} at {now}",
+            f"## Generated using {constants.PROG_NAME} {version}",
         ]
 
         for name, field in cls.model_fields.items():
