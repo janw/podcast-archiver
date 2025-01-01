@@ -50,7 +50,9 @@ def rprint(msg: RenderableType, style: str | None = None, new_line_start: bool =
 
 
 def is_interactive() -> bool:
-    return sys.stdout.isatty() and environ.get("TERM", "").lower() not in ("dumb", "unknown")
+    return (sys.stdout.isatty() and environ.get("TERM", "").lower() not in ("dumb", "unknown")) or environ.get(
+        "FORCE_INTERACTIVE", ""
+    ) == "1"
 
 
 def configure_level(verbosity: int, quiet: bool) -> int:

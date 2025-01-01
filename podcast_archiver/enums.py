@@ -16,6 +16,7 @@ class StrEnum(str, Enum):
 
 class QueueCompletionType(StrEnum):
     COMPLETED = "✔ Archived all episodes"
+    DRY_RUN = "✔ Dry-run completed"
     FOUND_EXISTING = "✔ Archive is up to date"
     MAX_EPISODES = "✔ Maximum episode count reached"
     FAILED = "✘ Failed"
@@ -30,6 +31,7 @@ class QueueCompletionType(StrEnum):
     def successful(cls) -> set[QueueCompletionType]:
         return {
             cls.COMPLETED,
+            cls.DRY_RUN,
             cls.FOUND_EXISTING,
             cls.MAX_EPISODES,
         }

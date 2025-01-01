@@ -75,6 +75,20 @@ def test_download_success(tmp_path_cd: Path, feed_lautsprecher: str) -> None:
     assert result.feed.url == feed_lautsprecher
 
 
+def test_download_dry_run(tmp_path_cd: Path, feed_lautsprecher_onlyfeed: str) -> None:
+    proc = FeedProcessor()
+
+    result = proc.process(feed_lautsprecher_onlyfeed, dry_run=True)
+
+    assert result != ProcessingResult(None, QueueCompletionType.COMPLETED)
+    assert result.success == 0
+    assert result.failures == 0
+    assert result.feed
+    assert result.feed.url == feed_lautsprecher_onlyfeed
+    assert result.tombstone == QueueCompletionType.DRY_RUN
+    assert not list(tmp_path_cd.rglob("*.m4a"))
+
+
 def test_handle_results_mixed(episode: Episode) -> None:
     proc = FeedProcessor()
     episodes: EpisodeResultsList = [
@@ -87,6 +101,21 @@ def test_handle_results_mixed(episode: Episode) -> None:
 
     assert success == 1
     assert failures == 1
+    assert mock_add.call_count == 1
+
+
+def test_handle_results_mixed_dry_run(episode: Episode) -> None:
+    proc = FeedProcessor()
+    episodes: EpisodeResultsList = [
+        EpisodeResult(episode=episode, result=DownloadResult.ALREADY_EXISTS),
+        EpisodeResult(episode=episode, result=DownloadResult.MISSING, is_eager=True),
+    ]
+
+    with mock.patch.object(Database, "add", return_value=None) as mock_add:
+        success, failures = proc._handle_results(episodes)
+
+    assert success == 1
+    assert failures == 0
     assert mock_add.call_count == 1
 
 

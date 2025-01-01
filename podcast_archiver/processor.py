@@ -50,18 +50,18 @@ class FeedProcessor:
         self.stop_event = Event()
         self.known_feeds = {}
 
-    def process(self, url: str) -> ProcessingResult:
+    def process(self, url: str, dry_run: bool = False) -> ProcessingResult:
         if not (feed := self.load_feed(url, known_feeds=self.known_feeds)):
             return ProcessingResult(feed=None, tombstone=QueueCompletionType.FAILED)
 
-        result = self.process_feed(feed=feed)
+        result = self.process_feed(feed=feed, dry_run=dry_run)
         rprint(result, end="\n\n")
         return result
 
     def load_feed(self, url: str, known_feeds: dict[str, FeedInfo]) -> Feed | None:
         with handle_feed_request(url):
             feed = Feed(url=url, known_info=known_feeds.get(url))
-            known_feeds[feed.url] = feed.info
+            known_feeds[url] = feed.info
             return feed
 
     def _does_already_exist(self, episode: BaseEpisode, *, target: Path) -> bool:
@@ -102,8 +102,9 @@ class FeedProcessor:
         logger.debug("Episode '%s': already in database.", episode)
         return True
 
-    def process_feed(self, feed: Feed) -> ProcessingResult:
-        rprint(f"→ Processing: {feed}", style="title")
+    def process_feed(self, feed: Feed, dry_run: bool) -> ProcessingResult:
+        action = "Dry-run" if dry_run else "Processing"
+        rprint(f"→ {action}: {feed}", style="title")
         tombstone = QueueCompletionType.COMPLETED
         results: EpisodeResultsList = []
         with PrettyPrintEpisodeRange() as pretty_range:
@@ -111,9 +112,12 @@ class FeedProcessor:
                 if episode is None:
                     logger.debug("Skipping invalid episode at idx %s", idx)
                     continue
-                enqueued = self._enqueue_episode(episode, feed.info)
-                pretty_range.update(isinstance(enqueued, EpisodeResult), episode)
-                results.append(enqueued)
+                enqueued = self._enqueue_episode(episode, feed.info, dry_run=dry_run)
+                exists = isinstance(enqueued, EpisodeResult) and enqueued.result == DownloadResult.ALREADY_EXISTS
+                pretty_range.update(exists, episode)
+
+                if not dry_run or self.settings.verbose > 0:
+                    results.append(enqueued)
 
                 if (max_count := self.settings.maximum_episode_count) and idx == max_count:
                     logger.debug("Reached requested maximum episode count of %s", max_count)
@@ -121,15 +125,22 @@ class FeedProcessor:
                     break
 
         success, failures = self._handle_results(results)
-        return ProcessingResult(feed=feed, success=success, failures=failures, tombstone=tombstone)
+        return ProcessingResult(
+            feed=feed,
+            success=success,
+            failures=failures,
+            tombstone=tombstone if not dry_run else QueueCompletionType.DRY_RUN,
+        )
 
-    def _enqueue_episode(self, episode: BaseEpisode, feed_info: FeedInfo) -> FutureEpisodeResult:
+    def _enqueue_episode(self, episode: BaseEpisode, feed_info: FeedInfo, dry_run: bool) -> FutureEpisodeResult:
         target = self.filename_formatter.format(episode=episode, feed_info=feed_info)
         if self._does_already_exist(episode, target=target):
             result = DownloadResult.ALREADY_EXISTS
             return EpisodeResult(episode, result, is_eager=True)
 
         logger.debug("Queueing download for %r", episode)
+        if dry_run:
+            return EpisodeResult(episode, DownloadResult.MISSING, is_eager=True)
         return self.pool_executor.submit(
             DownloadJob(
                 episode,
@@ -146,15 +157,10 @@ class FeedProcessor:
             if isinstance(episode_result, Future):
                 episode_result = episode_result.result()
 
-            if episode_result.is_eager:
-                success += 1
-                self.database.add(episode_result.episode)
-                continue
-
             if episode_result.result in DownloadResult.successful():
                 success += 1
                 self.database.add(episode_result.episode)
-            else:
+            elif not episode_result.is_eager:
                 failures += 1
 
             rprint(Group(episode_result, NewLine()), new_line_start=False)

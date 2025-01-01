@@ -52,6 +52,7 @@ click.rich_click.OPTION_GROUPS = {
             "name": "Processing parameters",
             "options": [
                 "--sleep-seconds",
+                "--dry-run",
                 "--max-episodes",
                 "--ignore-database",
             ],
@@ -199,6 +200,14 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     help=Settings.model_fields["concurrency"].description,
 )
 @click.option(
+    "-n",
+    "--dry-run",
+    type=bool,
+    is_flag=True,
+    show_envvar=True,
+    help="Do not download any files, just print what would be done.",
+)
+@click.option(
     "--debug-partial",
     type=bool,
     is_flag=True,
@@ -284,7 +293,12 @@ def generate_default_config(ctx: click.Context, param: click.Parameter, value: b
     help=Settings.model_fields["sleep_seconds"].description,
 )
 @click.pass_context
-def main(ctx: click.RichContext, /, **kwargs: Any) -> int:
+def main(
+    ctx: click.RichContext,
+    /,
+    dry_run: bool,
+    **kwargs: Any,
+) -> int:
     configure_logging(kwargs["verbose"], kwargs["quiet"])
     try:
         settings = Settings.load_from_dict(kwargs)
@@ -296,7 +310,7 @@ def main(ctx: click.RichContext, /, **kwargs: Any) -> int:
 
         pa = PodcastArchiver(settings=settings)
         pa.register_cleanup(ctx)
-        pa.run()
+        pa.run(dry_run=dry_run)
         while settings.sleep_seconds > 0:
             rprint(f"Sleeping for {settings.sleep_seconds} seconds.")
             time.sleep(settings.sleep_seconds)

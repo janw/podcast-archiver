@@ -61,10 +61,10 @@ class PodcastArchiver:
             if url := elem.get("xmlUrl"):
                 self.add_feed(url)
 
-    def run(self) -> int:
+    def run(self, dry_run: bool = False) -> int:
         failures = 0
         for url in self.feeds:
-            result = self.processor.process(url)
+            result = self.processor.process(url, dry_run=dry_run)
             failures += result.failures
 
         rprint("✔ All done", style="completed")
