@@ -35,7 +35,7 @@ class QueueCompletionType(StrEnum):
         }
 
     def __rich__(self) -> RenderableType:
-        return Text(str(self), style=self.style, end="")
+        return Text(self.value, style=self.style, end="")
 
 
 class DownloadResult(StrEnum):
@@ -60,12 +60,11 @@ class DownloadResult(StrEnum):
             cls.COMPLETED_SUCCESSFULLY,
         }
 
-    @classmethod
-    def max_length(cls) -> int:
-        return max(len(v) for v in cls)
-
     def render_padded(self, padding: str = "   ") -> RenderableType:
-        return Text(f"{self:{self.max_length()}s}{padding}", style=self.style, end="")
+        return Text(f"{self.value:{RESULT_MAX_LEN}s}{padding}", style=self.style, end="")
 
     def __rich__(self) -> RenderableType:
         return self.render_padded()
+
+
+RESULT_MAX_LEN = max(len(result.value) for result in DownloadResult)

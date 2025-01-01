@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Iterator
 from rich.console import Group, NewLine, group
 from rich.text import Text
 
-from podcast_archiver.enums import DownloadResult
+from podcast_archiver.enums import RESULT_MAX_LEN, DownloadResult
 from podcast_archiver.logging import rprint
 
 if TYPE_CHECKING:
@@ -16,7 +16,6 @@ if TYPE_CHECKING:
     from podcast_archiver.models.episode import BaseEpisode
 
 
-_PREFIX_LEN = DownloadResult.max_length()
 NEWLINE = NewLine()
 
 
@@ -49,12 +48,12 @@ class _ValPair:
         yield NEWLINE
 
         if self.length > 2:
-            yield text(" " * _PREFIX_LEN + " │ ")
+            yield text(" " * RESULT_MAX_LEN + " │ ")
             yield text("    ︙", style="dim")
             yield NEWLINE
 
         if self.length > 1 and self.last:
-            yield text(" " * _PREFIX_LEN + " ╰╴")
+            yield text(" " * RESULT_MAX_LEN + " ╰╴")
             yield self.last
             yield NEWLINE
             yield NEWLINE
