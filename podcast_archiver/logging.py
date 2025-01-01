@@ -6,8 +6,9 @@ import sys
 from os import environ
 from typing import TYPE_CHECKING, Any
 
+from rich.console import Console
+from rich.highlighter import NullHighlighter
 from rich.logging import RichHandler
-from rich.text import Text
 
 from podcast_archiver.console import console
 
@@ -16,18 +17,36 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger("podcast_archiver")
 
+plain_console = Console(
+    color_system=None,
+    no_color=True,
+    width=999999,
+    highlighter=NullHighlighter(),
+)
 
 REDIRECT_VIA_LOGGING: bool = False
 
 
-def rprint(*msg: RenderableType, **kwargs: Any) -> None:
+def _make_plain(msg: RenderableType) -> str:
+    with plain_console.capture() as capture:
+        plain_console.print(msg, no_wrap=True)
+    return capture.get().rstrip("\n")
+
+
+def rprint(msg: RenderableType, style: str | None = None, new_line_start: bool = True, **kwargs: Any) -> None:
     if not REDIRECT_VIA_LOGGING:
-        console.print(*msg, **kwargs)
+        console.print(msg, style=style, new_line_start=new_line_start, **kwargs)
         return
 
-    for m in msg:
-        if isinstance(m, Text):
-            logger.info(m.plain.strip())
+    log = logger.info
+    if style == "error":
+        log = logger.error
+    elif style == "warning":
+        log = logger.warning
+
+    for plain in _make_plain(msg).splitlines():
+        if plain:
+            log(plain)
 
 
 def is_interactive() -> bool:

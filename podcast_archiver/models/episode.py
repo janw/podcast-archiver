@@ -11,8 +11,7 @@ from pydantic import (
     field_validator,
     model_validator,
 )
-from rich.table import Table
-from rich.text import Text
+from rich.text import Span, Text
 
 from podcast_archiver.constants import DEFAULT_DATETIME_FORMAT, MAX_TITLE_LENGTH
 from podcast_archiver.exceptions import MissingDownloadUrl
@@ -49,15 +48,7 @@ class BaseEpisode(BaseModel):
         return f"{self.published_time.strftime(DEFAULT_DATETIME_FORMAT)} {self.title}"
 
     def __rich__(self) -> RenderableType:
-        """Makes the Progress class itself renderable."""
-        grid = Table.grid()
-        grid.add_column(style="dim")
-        grid.add_column()
-        grid.add_row(
-            Text(f"{self.published_time:%Y-%m-%d} "),
-            Text(self.title, overflow="ellipsis", no_wrap=True),
-        )
-        return grid
+        return Text(f"{self.published_time:%Y-%m-%d} {self.title}", spans=[Span(0, 10, "dim")], end="")
 
     @field_validator("title", mode="after")
     @classmethod

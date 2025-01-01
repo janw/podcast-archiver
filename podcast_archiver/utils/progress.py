@@ -8,6 +8,7 @@ from rich import progress as rp
 from rich.table import Column
 
 from podcast_archiver.console import console
+from podcast_archiver.enums import DownloadResult
 from podcast_archiver.logging import REDIRECT_VIA_LOGGING
 
 if TYPE_CHECKING:
@@ -16,48 +17,80 @@ if TYPE_CHECKING:
     from podcast_archiver.models.episode import BaseEpisode
 
 
+_Column = partial(
+    Column,
+    no_wrap=True,
+    overflow="crop",
+    highlight=False,
+)
+
+_TIME_REMAINING_WIDTH = DownloadResult.max_length()
+
+PROGRESS_COLUMNS: list[rp.ProgressColumn] = [
+    rp.SpinnerColumn(
+        table_column=_Column(width=2, min_width=2, max_width=2),
+    ),
+    rp.TimeRemainingColumn(
+        compact=True,
+        table_column=_Column(
+            width=_TIME_REMAINING_WIDTH,
+            min_width=_TIME_REMAINING_WIDTH,
+            max_width=_TIME_REMAINING_WIDTH,
+            justify="center",
+        ),
+    ),
+    rp.BarColumn(
+        bar_width=16,
+        table_column=_Column(
+            width=16,
+            min_width=16,
+            max_width=16,
+        ),
+    ),
+    rp.TaskProgressColumn(
+        justify="right",
+        text_format="{task.percentage:2.0f}%",
+        style="progress.percentage",
+        table_column=_Column(
+            width=5,
+            min_width=5,
+            max_width=5,
+            justify="right",
+        ),
+    ),
+    rp.TransferSpeedColumn(
+        table_column=_Column(
+            width=10,
+            min_width=8,
+            max_width=10,
+            justify="right",
+        ),
+    ),
+]
+
+
 class EpisodeColumn(rp.RenderableColumn):
     def render(self, task: rp.Task) -> RenderableType:
         return task.fields["episode"]
 
 
-_Column = partial(
-    Column,
-    no_wrap=True,
-    overflow="ignore",
-    highlight=False,
-)
+def make_episode_column(cols: list[rp.ProgressColumn], idx: int = 2) -> None:
+    others_width = 0
+    for col in cols:
+        tabcol = col.get_table_column()
+        others_width += tabcol.width or tabcol.min_width or 0
 
-PROGRESS_COLUMNS: tuple[rp.ProgressColumn, ...] = (
-    rp.SpinnerColumn(
-        table_column=_Column(width=4),
-    ),
-    rp.TimeRemainingColumn(
-        compact=True,
-        table_column=_Column(width=11, justify="center"),
-    ),
-    EpisodeColumn(
+    col = EpisodeColumn(
         table_column=_Column(
             overflow="ellipsis",
-            min_width=40,
+            min_width=8,
+            max_width=max(console.width - others_width, 8),
         ),
-    ),
-    rp.BarColumn(
-        bar_width=20,
-        table_column=_Column(width=20),
-    ),
-    rp.TaskProgressColumn(
-        table_column=_Column(width=5),
-    ),
-    rp.TransferSpeedColumn(
-        table_column=_Column(width=10),
-    ),
-)
+    )
+    PROGRESS_COLUMNS.insert(idx, col)
 
 
-_widths = sum(col.get_table_column().width or 0 for col in [*PROGRESS_COLUMNS[:1], *PROGRESS_COLUMNS[3:]])
-description_col = PROGRESS_COLUMNS[2].get_table_column()
-description_col.width = max(console.width - _widths, description_col.min_width or 0)
+make_episode_column(PROGRESS_COLUMNS)
 
 
 class _ProgressRefreshThread(Thread):

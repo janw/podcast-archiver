@@ -37,7 +37,7 @@ class PodcastArchiver:
     def register_cleanup(self, ctx: click.RichContext) -> None:
         def _cleanup(signum: int, *args: Any) -> None:
             logger.debug("Signal %s received", signum)
-            rprint("[error]✘ Terminating.[/]")
+            rprint("✘ Terminating", style="error")
             self.processor.shutdown()
             progress_manager.stop()
             ctx.close()
@@ -67,5 +67,5 @@ class PodcastArchiver:
             result = self.processor.process(url)
             failures += result.failures
 
-        rprint("\n[completed]Done.[/]\n")
+        rprint("✔ All done", style="completed")
         return failures

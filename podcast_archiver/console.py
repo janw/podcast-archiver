@@ -6,10 +6,13 @@ from rich.theme import Theme
 _theme = Theme(
     {
         "error": "bold dark_red",
-        "warning": "magenta",
-        "missing": "orange1 bold",
-        "completed": "bold dark_cyan",
+        "warning": "orange1 bold",
+        "warning_hint": "orange1 dim",
+        "completed": "dark_cyan bold",
         "success": "dark_cyan",
+        "present": "dark_cyan",
+        "missing": "orange1",
+        "title": "bright_magenta bold",
     }
 )
 console = Console(theme=_theme)
