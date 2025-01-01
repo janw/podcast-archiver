@@ -10,7 +10,7 @@ import feedparser
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
 from podcast_archiver.constants import MAX_TITLE_LENGTH
-from podcast_archiver.exceptions import NotModified
+from podcast_archiver.exceptions import NotModified, NotSupported
 from podcast_archiver.logging import logger, rprint
 from podcast_archiver.models.episode import EpisodeOrFallback
 from podcast_archiver.models.field_types import LenientDatetime
@@ -90,6 +90,13 @@ class FeedInfo(BaseModel):
     def field_titles(cls) -> list[str]:
         return [field.title for field in cls.model_fields.values() if field.title]
 
+    @property
+    def alternate_rss(self) -> str | None:
+        for link in self.links:
+            if link.rel == "alternate" and link.link_type == "application/rss+xml":
+                return link.href
+        return None
+
 
 class FeedPage(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -103,30 +110,38 @@ class FeedPage(BaseModel):
     episodes: list[EpisodeOrFallback] = Field(default_factory=list, validation_alias=AliasChoices("entries", "items"))
 
     @classmethod
-    def parse_feed(cls, source: str | bytes, alt_url: str | None) -> FeedPage:
+    def parse_feed(cls, source: str | bytes, alt_url: str | None, retry: bool = False) -> FeedPage:
         feedobj = feedparser.parse(source)
         obj = cls.model_validate(feedobj)
-        if obj.bozo and (exc := obj.bozo_exception) and isinstance(exc, SAXParseException):
-            url = source if isinstance(source, str) and not alt_url else alt_url
+        if not obj.bozo:
+            return obj
+
+        if (fallback_url := obj.feed.alternate_rss) and not retry:
+            logger.info("Attempting to fetch alternate feed at %s", fallback_url)
+            return cls.from_url(fallback_url, retry=True)
+
+        url = source if isinstance(source, str) and not alt_url else alt_url
+        if (exc := obj.bozo_exception) and isinstance(exc, SAXParseException):
             rprint(f"Feed content is not well-formed for {url}", style="warning")
-            rprint(f"Continuing processing but here be dragons ({exc.getMessage()})", style="warning_hint")
-        return obj
+            rprint(f"Attemping processing but here be dragons ({exc.getMessage()})", style="warninghint")
+
+        raise NotSupported(f"Content at {url} is not supported")
 
     @classmethod
-    def from_url(cls, url: str, *, known_info: FeedInfo | None = None) -> FeedPage:
+    def from_url(cls, url: str, *, known_info: FeedInfo | None = None, retry: bool = False) -> FeedPage:
         parsed = urlparse(url)
         if parsed.scheme == "file":
             return cls.parse_feed(parsed.path, None)
 
         if not known_info:
-            return cls.from_response(session.get_and_raise(url), alt_url=url)
+            return cls.from_response(session.get_and_raise(url), alt_url=url, retry=retry)
 
         response = session.get_and_raise(url, last_modified=known_info.last_modified)
         if response.status_code == HTTPStatus.NOT_MODIFIED:
             logger.debug("Server reported 'not modified' from %s, skipping fetch.", known_info.last_modified)
             raise NotModified(known_info)
 
-        instance = cls.from_response(response, alt_url=url)
+        instance = cls.from_response(response, alt_url=url, retry=retry)
         if instance.feed.updated_time == known_info.updated_time:
             logger.debug("Feed's updated time %s did not change, skipping fetch.", known_info.updated_time)
             raise NotModified(known_info)
@@ -134,7 +149,7 @@ class FeedPage(BaseModel):
         return instance
 
     @classmethod
-    def from_response(cls, response: Response, alt_url: str | None) -> FeedPage:
-        instance = cls.parse_feed(response.content, alt_url=alt_url)
+    def from_response(cls, response: Response, alt_url: str | None, retry: bool) -> FeedPage:
+        instance = cls.parse_feed(response.content, alt_url=alt_url, retry=retry)
         instance.feed.last_modified = response.headers.get("Last-Modified")
         return instance

@@ -1,0 +1,108 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      user-agent:
+      - podcast-archiver/v2.1.0 (https://github.com/janw/podcast-archiver)
+    method: GET
+    uri: http://httpforever.com/
+  response:
+    body:
+      string: "<!DOCTYPE HTML>\r\n<html>\r\n\t<head>\r\n\t\t<title>HTTP Forever</title>\r\n\t\t<meta
+        http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" />\r\n\t\t<meta
+        name=\"description\" content=\"A site that will always be available over HTTP!\"
+        />\r\n\t\t<meta name=\"keywords\" content=\"HTTP WiFi Captive Portal\" />\r\n\t\t<!--[if
+        lte IE 8]><script src=\"css/ie/html5shiv.js\"></script><![endif]-->\r\n\t\t<script
+        src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js\"
+        integrity=\"sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=\" crossorigin=\"anonymous\"></script>\r\n\t\t<script
+        src=\"https://cdnjs.cloudflare.com/ajax/libs/skel/3.0.1/skel.min.js\" integrity=\"sha256-3e+NvOq+D/yeJy1qrWpYkEUr6SlOCL5mHpc2nZfX74E=\"
+        crossorigin=\"anonymous\"></script>\r\n\t\t<script src=\"https://cdnjs.cloudflare.com/ajax/libs/skel-layers/2.2.1/skel.min.js\"
+        integrity=\"sha256-6xgf/CipbscdlAaUOAAlWVmpfPy9V5cQvZejxXSEfcw=\" crossorigin=\"anonymous\"></script>\r\n\t\t<script
+        src=\"js/init.min.js\"></script>\r\n\t\t<noscript>\r\n\t\t\t<link rel=\"stylesheet\"
+        href=\"https://cdnjs.cloudflare.com/ajax/libs/skel-layers/2.2.1/skel.min.css\"
+        integrity=\"sha256-HoTbojxjAGIeiQMgAD2nqi6adFwcOUwoiPnr7mC7qBs=\" crossorigin=\"anonymous\"
+        />\r\n\t\t\t<link rel=\"stylesheet\" href=\"css/style.min.css\" />\r\n\t\t\t<link
+        rel=\"stylesheet\" href=\"css/style-wide.min.css\" />\r\n\t\t</noscript>\r\n\t\t<!--[if
+        lte IE 8]><link rel=\"stylesheet\" href=\"css/ie/v8.min.css\" /><![endif]-->\r\n\t</head>\r\n\t<body
+        class=\"landing\">\r\n\t\t\t<section id=\"banner\">\r\n\t\t\t\t<h2>HTTP FOREVER</h2>\r\n\t\t\t\t<p>A
+        reliably insecure connection</p>\r\n\t\t\t</section>\r\n\t\t\t<div class=\"wrapper
+        style1\">\r\n\t\t\t\t<section class=\"container\">\r\n\t\t\t\t\t<header class=\"major\">\r\n\t\t\t\t\t\t<h2>Why
+        does this site exist?</h2>\r\n\t\t\t\t\t\t<p>This domain started out as my
+        personal 'captive portal buster' but I wanted to publicise it for anyone to
+        use. If you're on a train, in a hotel or bar, on a flight or anywhere that
+        you have to login for WiFi, this site could help you!</p>\r\n\t\t\t\t\t</header>\r\n\t\t\t\t</section>\r\n\t\t\t</div>\r\n\t\t\t<div
+        class=\"wrapper style2\">\r\n\t\t\t\t<section class=\"container\">\r\n\t\t\t\t\t<header
+        class=\"major\">\r\n\t\t\t\t\t\t<h2>How does it work?</h2>\r\n\t\t\t\t\t\t<p>If
+        you connect to a WiFi hotspot whilst out and about, sometimes you have to
+        login or accept Terms and Conditions. To do that the 'captive portal' has
+        to intercept one of your requests and inject the login page for the WiFi.
+        This usually results in a big, red warning from your browser which you should
+        <b>never</b> click through! Instead, open a new tab in your browser and come
+        here!</b></p>\r\n\t\t\t\t\t</header>\r\n\t\t\t\t</section>\r\n\t\t\t</div>\r\n\t\t\t<div
+        class=\"wrapper style3\">\r\n\t\t\t\t<section class=\"container\">\r\n\t\t\t\t\t<header
+        class=\"major\">\r\n\t\t\t\t\t\t<h2>Can I use it?</h2>\r\n\t\t\t\t\t\t<p>Yes!
+        Anyone is free to use or link to this site, just make sure you're always on
+        the HTTP version: <a href=\"http://httpforever.com\">http://httpforever.com</a></p>\r\n\t\t\t\t\t</header>\r\n\t\t\t\t</section>\r\n\t\t\t</div>\r\n\t\t\t<div
+        class=\"wrapper style1\">\r\n\t\t\t\t<section class=\"container 75%\">\r\n\t\t\t\t\t<header
+        class=\"major\">\r\n\t\t\t\t\t\t<h2>Who built this?</h2>\r\n\t\t\t\t\t\t<p>This
+        site was built by Scott Helme, a security researcher trying to help make the
+        web more secure.</p>\r\n\t\t\t\t\t</header>\r\n\t\t\t\t\t<div id=\"contact\"
+        class=\"box\">\r\n\t\t\t\t\t\t<div class=\"row uniform\">\r\n\t\t\t\t\t\t\t<div
+        class=\"6u\">\r\n\t\t\t\t\t\t\t\t<ul class=\"labeled-icons\">\r\n\t\t\t\t\t\t\t\t\t<li>\r\n\t\t\t\t\t\t\t\t\t\t<h3
+        class=\"icon fa-twitter\"><span class=\"label\">Twitter</span></h3>\r\n\t\t\t\t\t\t\t\t\t\t<a
+        href=\"https://twitter.com/Scott_Helme\" target=\"_blank\">twitter.com/Scott_Helme</a>\r\n\t\t\t\t\t\t\t\t\t</li>\r\n\t\t\t\t\t\t\t\t\t<li>\r\n\t\t\t\t\t\t\t\t\t\t<h3
+        class=\"icon fa-facebook\"><span class=\"label\">Facebook</span></h3>\r\n\t\t\t\t\t\t\t\t\t\t<a
+        href=\"https://www.facebook.com/scott.helme\" target=\"_blank\">facebook.com/scott.helme</a>\r\n\t\t\t\t\t\t\t\t\t</li>\r\n\t\t\t\t\t\t\t\t\t<li>\r\n\t\t\t\t\t\t\t\t\t\t<h3
+        class=\"icon fa-linkedin\"><span class=\"label\">LinkedIn</span></h3>\r\n\t\t\t\t\t\t\t\t\t\t<a
+        href=\"https://www.linkedin.com/in/scotthelme/\">linkedin.com/in/scotthelme</a>\r\n\t\t\t\t\t\t\t\t\t</li>\r\n\t\t\t\t\t\t\t\t</ul>\r\n\t\t\t\t\t\t\t</div>\r\n\t\t\t\t\t\t\t<div
+        class=\"6u\">\r\n\t\t\t\t\t\t\t\t<ul class=\"labeled-icons\">\r\n\t\t\t\t\t\t\t\t\t<li>\r\n\t\t\t\t\t\t\t\t\t\t<h3
+        class=\"icon fa-globe\"><span class=\"label\">Website</span></h3>\r\n\t\t\t\t\t\t\t\t\t\t<a
+        rel=\"author\" href=\"https://scotthelme.co.uk\">scotthelme.co.uk</a>\r\n\t\t\t\t\t\t\t\t\t</li>\r\n\t\t\t\t\t\t\t\t\t<li>\r\n\t\t\t\t\t\t\t\t\t\t<h3
+        class=\"icon fa-github\"><span class=\"label\">GitHub</span></h3>\r\n\t\t\t\t\t\t\t\t\t\t<a
+        href=\"https://github.com/ScottHelme\">github.com/ScottHelme</a>\r\n\t\t\t\t\t\t\t\t\t</li>\r\n\t\t\t\t\t\t\t\t\t<li>\r\n\t\t\t\t\t\t\t\t\t\t<h3
+        class=\"icon fa-youtube\"><span class=\"label\">YouTube</span></h3>\r\n\t\t\t\t\t\t\t\t\t\t<a
+        href=\"https://www.youtube.com/user/ScottHelme\">youtube.com/user/ScottHelme</a>\r\n\t\t\t\t\t\t\t\t\t</li>\r\n\t\t\t\t\t\t\t\t</ul>\r\n\t\t\t\t\t\t\t</div>\r\n\t\t\t\t\t\t</div>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</section>\r\n\t\t\t</div>\r\n\t\t\t<footer
+        id=\"footer\">\r\n\t\t\t\t<div class=\"copyright\">\r\n\t\t\t\t\tCreated By
+        Scott Helme - License <a href=\"https://creativecommons.org/licenses/by-sa/4.0/\">CC
+        BY-SA 4.0</a> - <a href=\"https://scotthelme.co.uk/\" rel=\"author\">scotthelme.co.uk</a><br/>\r\n\t\t\t\t\tCheck
+        out my other projects like <a href=\"https://report-uri.com\">Report URI</a>,
+        <a href=\"https://securityheaders.com\">Security Headers</a> and <a href=\"https://crawler.ninja\">Crawler.Ninja</a>.\r\n\t\t\t\t</div>\r\n\t\t\t</footer>\r\n\t</body>\r\n</html>"
+    headers:
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Security-Policy:
+      - default-src 'self'; script-src cdnjs.cloudflare.com 'self'; style-src cdnjs.cloudflare.com
+        'self' fonts.googleapis.com 'unsafe-inline'; font-src fonts.googleapis.com
+        fonts.gstatic.com cdnjs.cloudflare.com; frame-ancestors 'none'; report-uri
+        https://scotthelme.report-uri.com/r/d/csp/enforce
+      Content-Type:
+      - text/html
+      Date:
+      - Fri, 03 Jan 2025 15:47:29 GMT
+      ETag:
+      - W/"641b16b8-1404"
+      Feature-Policy:
+      - accelerometer 'none'; camera 'none'; geolocation 'none'; gyroscope 'none';
+        magnetometer 'none'; microphone 'none'; payment 'none'; usb 'none'
+      Last-Modified:
+      - Wed, 22 Mar 2023 14:54:48 GMT
+      Referrer-Policy:
+      - strict-origin-when-cross-origin
+      Server:
+      - nginx/1.18.0 (Ubuntu)
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+    status:
+      code: 200
+      message: OK
+version: 1

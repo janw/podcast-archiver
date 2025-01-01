@@ -19,6 +19,7 @@ from podcast_archiver.types import (
     FutureEpisodeResult,
     ProcessingResult,
 )
+from podcast_archiver.urls import registry
 from podcast_archiver.utils import FilenameFormatter, handle_feed_request
 from podcast_archiver.utils.pretty_printing import PrettyPrintEpisodeRange
 
@@ -51,17 +52,20 @@ class FeedProcessor:
         self.known_feeds = {}
 
     def process(self, url: str, dry_run: bool = False) -> ProcessingResult:
-        if not (feed := self.load_feed(url, known_feeds=self.known_feeds)):
+        if not (feed := self.load_feed(url)):
             return ProcessingResult(feed=None, tombstone=QueueCompletionType.FAILED)
 
         result = self.process_feed(feed=feed, dry_run=dry_run)
         rprint(result, end="\n\n")
         return result
 
-    def load_feed(self, url: str, known_feeds: dict[str, FeedInfo]) -> Feed | None:
-        with handle_feed_request(url):
-            feed = Feed(url=url, known_info=known_feeds.get(url))
-            known_feeds[url] = feed.info
+    def load_feed(self, url: str) -> Feed | None:
+        resolved_url = registry.get_feed(url) or url
+        with handle_feed_request(resolved_url):
+            feed = Feed(url=resolved_url, known_info=self.known_feeds.get(url))
+            if not feed or not hasattr(feed, "info"):
+                return None
+            self.known_feeds[url] = feed.info
             return feed
 
     def _does_already_exist(self, episode: BaseEpisode, *, target: Path) -> bool:
@@ -116,7 +120,7 @@ class FeedProcessor:
                 exists = isinstance(enqueued, EpisodeResult) and enqueued.result == DownloadResult.ALREADY_EXISTS
                 pretty_range.update(exists, episode)
 
-                if not dry_run or self.settings.verbose > 0:
+                if not dry_run:
                     results.append(enqueued)
 
                 if (max_count := self.settings.maximum_episode_count) and idx == max_count:

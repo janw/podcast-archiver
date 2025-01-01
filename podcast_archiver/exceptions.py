@@ -45,3 +45,7 @@ class NotModified(PodcastArchiverException):
     def __init__(self, info: FeedInfo, *args: object) -> None:
         super().__init__(*args)
         self.info = info
+
+
+class NotSupported(PodcastArchiverException):
+    pass

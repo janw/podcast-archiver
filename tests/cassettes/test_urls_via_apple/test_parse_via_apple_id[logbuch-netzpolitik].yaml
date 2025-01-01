@@ -1,0 +1,102 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      user-agent:
+      - podcast-archiver/v2.1.0 (https://github.com/janw/podcast-archiver)
+    method: GET
+    uri: https://itunes.apple.com/lookup?id=476856034&media=podcast
+  response:
+    body:
+      string: "\n\n\n{\n \"resultCount\":1,\n \"results\": [\n{\"wrapperType\":\"track\",
+        \"kind\":\"podcast\", \"artistId\":415622166, \"collectionId\":476856034,
+        \"trackId\":476856034, \"artistName\":\"Metaebene Personal Media - Tim Pritlove\",
+        \"collectionName\":\"Logbuch:Netzpolitik\", \"trackName\":\"Logbuch:Netzpolitik\",
+        \"collectionCensoredName\":\"Logbuch:Netzpolitik\", \"trackCensoredName\":\"Logbuch:Netzpolitik\",
+        \"artistViewUrl\":\"https://podcasts.apple.com/us/artist/metaebene-personal-media-tim-pritlove/415622166?uo=4\",
+        \"collectionViewUrl\":\"https://podcasts.apple.com/us/podcast/logbuch-netzpolitik/id476856034?uo=4\",
+        \"feedUrl\":\"https://feeds.metaebene.me/lnp/mp3\", \"trackViewUrl\":\"https://podcasts.apple.com/us/podcast/logbuch-netzpolitik/id476856034?uo=4\",
+        \"artworkUrl30\":\"https://is1-ssl.mzstatic.com/image/thumb/Podcasts4/v4/73/ae/d5/73aed511-3266-3a5c-b2d1-6c5093ee275a/mza_3826130949345842894.jpg/30x30bb.jpg\",
+        \"artworkUrl60\":\"https://is1-ssl.mzstatic.com/image/thumb/Podcasts4/v4/73/ae/d5/73aed511-3266-3a5c-b2d1-6c5093ee275a/mza_3826130949345842894.jpg/60x60bb.jpg\",
+        \"artworkUrl100\":\"https://is1-ssl.mzstatic.com/image/thumb/Podcasts4/v4/73/ae/d5/73aed511-3266-3a5c-b2d1-6c5093ee275a/mza_3826130949345842894.jpg/100x100bb.jpg\",
+        \"collectionPrice\":0.00, \"trackPrice\":0.00, \"collectionHdPrice\":0, \"releaseDate\":\"2024-12-21T20:23:00Z\",
+        \"collectionExplicitness\":\"notExplicit\", \"trackExplicitness\":\"cleaned\",
+        \"trackCount\":513, \"trackTimeMillis\":5421, \"country\":\"USA\", \"currency\":\"USD\",
+        \"primaryGenreName\":\"News\", \"contentAdvisoryRating\":\"Clean\", \"artworkUrl600\":\"https://is1-ssl.mzstatic.com/image/thumb/Podcasts4/v4/73/ae/d5/73aed511-3266-3a5c-b2d1-6c5093ee275a/mza_3826130949345842894.jpg/600x600bb.jpg\",
+        \"genreIds\":[\"1489\", \"26\", \"1324\"], \"genres\":[\"News\", \"Podcasts\",
+        \"Society & Culture\"]}]\n}\n\n\n"
+    headers:
+      Cache-Control:
+      - max-age=84961
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '652'
+      Content-Type:
+      - text/javascript; charset=utf-8
+      Date:
+      - Fri, 03 Jan 2025 15:34:11 GMT
+      Server:
+      - daiquiri/5
+      Vary:
+      - Accept-Encoding
+      X-Apple-Partner:
+      - origin.0
+      X-Cache:
+      - TCP_MISS from a2-20-179-162.deploy.akamaitechnologies.com (AkamaiGHost/11.7.2.1-35a4fcef889a1f053c9fa641f2ccd99a)
+        (-)
+      X-Cache-Remote:
+      - TCP_HIT from a23-36-160-152.deploy.akamaitechnologies.com (AkamaiGHost/11.7.2.1-35a4fcef889a1f053c9fa641f2ccd99a)
+        (-)
+      X-True-Cache-Key:
+      - /L/itunes.apple.com/lookup vcd=2897 ci2=id=476856034&media=podcast///
+      apple-originating-system:
+      - MZStoreServices
+      apple-seq:
+      - '0.0'
+      apple-timing-app:
+      - 9 ms
+      apple-tk:
+      - 'false'
+      b3:
+      - 7cfef82b016f1aa8c7cf042f2e94accd-2bd4fe34f76b628e
+      content-disposition:
+      - attachment; filename=1.txt
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains
+      x-apple-application-instance:
+      - '6001922'
+      x-apple-application-site:
+      - ST11
+      x-apple-jingle-correlation-key:
+      - PT7PQKYBN4NKRR6PAQXS5FFMZU
+      x-apple-orig-url:
+      - https://itunes.apple.com/lookup?id=476856034&media=podcast
+      x-apple-request-uuid:
+      - 7cfef82b-016f-1aa8-c7cf-042f2e94accd
+      x-apple-translated-wo-url:
+      - /WebObjects/MZStoreServices.woa/ws/wsLookup?id=476856034&media=podcast&urlDesc=
+      x-b3-spanid:
+      - 2bd4fe34f76b628e
+      x-b3-traceid:
+      - 7cfef82b016f1aa8c7cf042f2e94accd
+      x-content-type-options:
+      - nosniff
+      x-daiquiri-instance:
+      - daiquiri:42282003:st53p00it-qujn11050301:7987:24RELEASE242:daiquiri-amp-store-l7shared-ext-001-st
+      x-responding-instance:
+      - 'MZStoreServices:6001922:::'
+      x-webobjects-loadaverage:
+      - '0'
+    status:
+      code: 200
+      message: OK
+version: 1

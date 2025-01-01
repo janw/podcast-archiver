@@ -1,0 +1,232 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      user-agent:
+      - podcast-archiver/v2.1.0 (https://github.com/janw/podcast-archiver)
+    method: GET
+    uri: https://castro.fm/podcast/f996ae94-70a2-4d9c-afbc-c70b5bacd120
+  response:
+    body:
+      string: "<!doctype html>\n<html lang=\"en\">\n    <head>\n        <meta charset=\"utf-8\">\n
+        \       <meta http-equiv=\"x-ua-compatible\" content=\"ie=edge\">\n        <meta
+        name=\"viewport\" content=\"width=device-width, user-scalable=no\">\n        <link
+        rel=\"icon\" type=\"image/png\" sizes=\"32x32\" href=\"/railsassets/favicon_32x32-48ece8edd100548ce89d533f07345c52d8c445bdf9933aced2fb511455ca6105.png\">\n
+        \       <link rel=\"icon\" type=\"image/png\" sizes=\"96x96\" href=\"/railsassets/favicon_96x96-b7361fe0b4687cc0297234eb6d7607aa5c699e8c22fc8ae19a98c6d32fa403d2.png\">\n\n
+        \         <meta property=\"og:url\"          content=\"https://castro.fm/podcast/f996ae94-70a2-4d9c-afbc-c70b5bacd120\"
+        />\n  <meta property=\"og:type\"         content=\"website\" />\n  <meta property=\"og:title\"
+        \       content=\"Die Wochend\xE4mmerung - Der stabile Wochenr\xFCckblick\"
+        />\n  <meta property=\"og:description\"  content=\"Immer wenn die Woche d\xE4mmert,
+        kramen Holger Klein und Katrin R\xF6nicke die bemerkenswertesten und auch
+        die weniger beachteten Nachrichten der Woche noch einmal hervor und unterf\xFCttern
+        sie mit zus\xE4tzlicher Recherche, Einordnung, einer ordentlichen Portion
+        Meinung und Interviews. Au\xDFerdem jede Woche dabei: Sham Jaff mit einem
+        Blick \xFCber den Tellerrand der wei\xDFen, deutschen Medien. Jens Ohrenblicker
+        mit einem Limerick der Woche und ein Faktencheck von N\xE1ndor Hulverscheidt
+        oder Katharina Alexander.\" />\n  <meta property=\"og:image\"        content=\"https://images.podigee-cdn.net/0x,s51MaYVzYdwuVLUPctbglVfRZHsJpyHi4Kdyt4omKD94=/https://main.podigee-cdn.net/uploads/u20309/32fef1e4-065b-4db4-8ebd-5ff8f20aa688.jpg\"
+        />\n\n  <meta name=\"apple-itunes-app\" content=\"app-id=1080840241, affiliate-data=11lLuB,
+        app-argument=https://castro.fm/podcast/YmCDfu\">\n\n  <meta name=\"twitter:app:name:iphone\"
+        content=\"Castro 2\">\n  <meta name=\"twitter:app:id:iphone\" content=\"1080840241\">\n
+        \ <meta name=\"twitter:app:url:iphone\" content=\"https://castro.fm/podcast/f996ae94-70a2-4d9c-afbc-c70b5bacd120\">\n\n
+        \ <meta name=\"twitter:card\" content=\"summary_large_image\">\n  <meta name=\"twitter:site\"
+        content=\"@castropodcasts\">\n  <meta name=\"twitter:creator\" content=\"@castropodcasts\">\n
+        \ <meta name=\"twitter:image\" content=\"https://images.podigee-cdn.net/0x,s51MaYVzYdwuVLUPctbglVfRZHsJpyHi4Kdyt4omKD94=/https://main.podigee-cdn.net/uploads/u20309/32fef1e4-065b-4db4-8ebd-5ff8f20aa688.jpg\">\n\n
+        \       <link rel=\"stylesheet\" href=\"/railsassets/web-08c6942d04dc7f67fba187cef081552ef074ab66c4df990b055a6a57a8c6aab5.css\"
+        media=\"all\" />\n        <title>    Die Wochend\xE4mmerung - Der stabile
+        Wochenr\xFCckblick\n</title>\n    </head>\n      <body id=\"podcast\".to_s>\n\n
+        \       \n\n\n<header id=\"co-supertop-castro-header\">\n    <div id=\"branding-container\">\n
+        \       <a href=\"https://castro.fm\">\n            <img src=\"/railsassets/wordmark-8c4deb5a2eb9c161cad57246cbd82eae6e8340a1a30f13bfe7a30b7aee830771.svg\"
+        />\n        </a>\n    </div>\n    <div id=\"button-container\" class=\"show-open\">\n
+        \     <a href=\"https://castro.fm/download\" class=\"castro-download\">\n
+        \       <img alt=\"Download on the App Store\" src=\"/railsassets/appstore-white-0d8e3ac59a470eaa4ec4272967787b53ba9960f7e4ede90a7c6d48ef97adf707.svg\"
+        />\n      </a>\n      <a class=\"touchscreen-only\" href=\"castro2://podcast/f996ae94-70a2-4d9c-afbc-c70b5bacd120\"><img
+        alt=\"Open In Castro\" src=\"/railsassets/open-in-castro-white-821deef187d8a637620464084856d0c1f0f1d937940b1f537fc2486d599ca235.svg\"
+        /></a>\n    </div>\n    <div id=\"artwork-container\">\n          <img alt=\"Podcast
+        artwork\" src=\"https://images.podigee-cdn.net/0x,s51MaYVzYdwuVLUPctbglVfRZHsJpyHi4Kdyt4omKD94=/https://main.podigee-cdn.net/uploads/u20309/32fef1e4-065b-4db4-8ebd-5ff8f20aa688.jpg\"
+        />\n    </div>\n</header>\n\n<div class=\"row\">\n    <div class=\"small-12
+        medium-8 medium-offset-2 columns\">\n        <hgroup id=\"co-supertop-castro-metadata\">\n
+        \           <h1>Die Wochend\xE4mmerung - Der stabile Wochenr\xFCckblick</h1>\n
+        \           <h2>Katrin R\xF6nicke und Holger Klein (hauseins)</h2>\n            <h2><a
+        href=\"https://wochendaemmerung.de\">wochendaemmerung.de</a></h2>\n        </hgroup>\n\n
+        \       <div id=\"co-supertop-castro-show-notes\">\n            Immer wenn
+        die Woche d\xE4mmert, kramen Holger Klein und Katrin R\xF6nicke die bemerkenswertesten
+        und auch die weniger beachteten Nachrichten der Woche noch einmal hervor und
+        unterf\xFCttern sie mit zus\xE4tzlicher Recherche, Einordnung, einer ordentlichen
+        Portion Meinung und Interviews. Au\xDFerdem jede Woche dabei: Sham Jaff mit
+        einem Blick \xFCber den Tellerrand der wei\xDFen, deutschen Medien. Jens Ohrenblicker
+        mit einem Limerick der Woche und ein Faktencheck von N\xE1ndor Hulverscheidt
+        oder Katharina Alexander.\n        </div>\n\n        <div id=\"co-supertop-castro-open-in-castro\">\n
+        \         <a href=\"https://castro.fm/download\" class=\"castro-download\">\n
+        \             <img alt=\"Download on the App Store\" src=\"/railsassets/appstore-17cc839a72507ae5be5d62b5458766134ed27407daee081241b8081099d29cf6.svg\"
+        />\n            </a>\n          <a class=\"touchscreen-only\" href=\"castro2://podcast/f996ae94-70a2-4d9c-afbc-c70b5bacd120\"><img
+        alt=\"Open In Castro\" src=\"/railsassets/open-in-castro-green-97ba99a50bdc7a16c4d7059bd46165458b8c3e234c3888767a3a0bd5ec853cbc.svg\"
+        /></a>\n          <hr>\n        </div>\n\n        <div class=\"row small-up-2
+        medium-up-3 large-up-4\" id=\"co-supertop-castro-open-in\">\n          <h3>Or
+        Listen Elsewhere</h3>\n          <div class=\"column\">\n            <a href=\"https://geo.itunes.apple.com/ca/podcast/feed/id1287979850?at=11lLuB\"><img
+        alt=\"Listen On Apple Podcasts\" src=\"/railsassets/listen-apple-54dd88f37aa6c60e52aae4d298de326a73ae90fea2d40733e92a0de94d4b3f4d.svg\"
+        /></a>\n          </div>\n          <div class=\"column\">  \n            <a
+        href=\"http://pca.st/itunes/1287979850\"><img alt=\"Listen In Pocket Casts\"
+        src=\"/railsassets/listen-pocketcasts-cbe25fd9c49d93972241e1de7c1792f100c30f6915daab0448a1a5d4d4bc6ade.svg\"
+        /></a>\n          </div>\n          <div class=\"column\">\n            <a
+        href=\"https://overcast.fm/itunes1287979850\"><img alt=\"Listen In Overcast\"
+        src=\"/railsassets/listen-overcast-32c99ab491ed89c382a0fc7b2cb23db2a8687c915d907fc64da09fdf85c44a34.svg\"
+        /></a>\n          </div>\n          <div class=\"column\">\n            <a
+        href=\"https://wochendaemmerung.podigee.io/feed/mp3\"><img alt=\"Subscribe
+        to RSS\" src=\"/railsassets/listen-rss-0829fbf0e834cd424dc27acc2813f1997d27c7cfc2f1cea0ed93d2fb18bacf82.svg\"
+        /></a>\n          </div>\n        </div>\n\n    </div>\n</div>\n\n        <script
+        src=\"/railsassets/web-f379a9c6b8af1084b8e23c279b9f301608e9f7a1c825360e79c0cc47ba09595e.js\"></script>\n
+        \   </body>\n</html>\n"
+    headers:
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Security-Policy:
+      - default-src 'self'; script-src 'self'; style-src 'self'; img-src * http://*;
+        object-src 'none'; child-src 'none'; media-src * http://*; connect-src * http://*;
+      Content-Type:
+      - text/html; charset=utf-8
+      Date:
+      - Fri, 03 Jan 2025 15:41:20 GMT
+      Server:
+      - nginx/1.25.5
+      Strict-Transport-Security:
+      - max-age=31536000
+      Transfer-Encoding:
+      - chunked
+      cache-control:
+      - max-age=0, private, must-revalidate
+      etag:
+      - W/"e301a34c7d1c8d45f031d16a8876bb73"
+      link:
+      - </railsassets/web-08c6942d04dc7f67fba187cef081552ef074ab66c4df990b055a6a57a8c6aab5.css>;
+        rel=preload; as=style; nopush,</railsassets/web-f379a9c6b8af1084b8e23c279b9f301608e9f7a1c825360e79c0cc47ba09595e.js>;
+        rel=preload; as=script; nopush
+      referrer-policy:
+      - strict-origin-when-cross-origin
+      vary:
+      - Accept
+      x-content-type-options:
+      - nosniff
+      x-download-options:
+      - noopen
+      x-permitted-cross-domain-policies:
+      - none
+      x-request-id:
+      - 1033875d7b6ac5f049731da817455975
+      x-runtime:
+      - '0.006831'
+      x-xss-protection:
+      - '0'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      user-agent:
+      - podcast-archiver/v2.1.0 (https://github.com/janw/podcast-archiver)
+    method: GET
+    uri: https://itunes.apple.com/lookup?id=1287979850&media=podcast
+  response:
+    body:
+      string: "\n\n\n{\n \"resultCount\":1,\n \"results\": [\n{\"wrapperType\":\"track\",
+        \"kind\":\"podcast\", \"artistId\":1492524702, \"collectionId\":1287979850,
+        \"trackId\":1287979850, \"artistName\":\"Katrin R\xF6nicke und Holger Klein
+        (hauseins)\", \"collectionName\":\"Die Wochend\xE4mmerung - Der stabile Wochenr\xFCckblick\",
+        \"trackName\":\"Die Wochend\xE4mmerung - Der stabile Wochenr\xFCckblick\",
+        \"collectionCensoredName\":\"Die Wochend\xE4mmerung - Der stabile Wochenr\xFCckblick\",
+        \"trackCensoredName\":\"Die Wochend\xE4mmerung - Der stabile Wochenr\xFCckblick\",
+        \"artistViewUrl\":\"https://podcasts.apple.com/us/artist/hauseins/1492524702?uo=4\",
+        \"collectionViewUrl\":\"https://podcasts.apple.com/us/podcast/die-wochend%C3%A4mmerung-der-stabile-wochenr%C3%BCckblick/id1287979850?uo=4\",
+        \"feedUrl\":\"https://wochendaemmerung.podigee.io/feed/mp3\", \"trackViewUrl\":\"https://podcasts.apple.com/us/podcast/die-wochend%C3%A4mmerung-der-stabile-wochenr%C3%BCckblick/id1287979850?uo=4\",
+        \"artworkUrl30\":\"https://is1-ssl.mzstatic.com/image/thumb/Podcasts114/v4/23/94/ea/2394ea5e-77d8-1527-e331-31f9a9fe9462/mza_18020857396163614866.jpg/30x30bb.jpg\",
+        \"artworkUrl60\":\"https://is1-ssl.mzstatic.com/image/thumb/Podcasts114/v4/23/94/ea/2394ea5e-77d8-1527-e331-31f9a9fe9462/mza_18020857396163614866.jpg/60x60bb.jpg\",
+        \"artworkUrl100\":\"https://is1-ssl.mzstatic.com/image/thumb/Podcasts114/v4/23/94/ea/2394ea5e-77d8-1527-e331-31f9a9fe9462/mza_18020857396163614866.jpg/100x100bb.jpg\",
+        \"collectionPrice\":0.00, \"trackPrice\":0.00, \"collectionHdPrice\":0, \"releaseDate\":\"2024-12-27T11:00:00Z\",
+        \"collectionExplicitness\":\"notExplicit\", \"trackExplicitness\":\"cleaned\",
+        \"trackCount\":444, \"trackTimeMillis\":4576, \"country\":\"USA\", \"currency\":\"USD\",
+        \"primaryGenreName\":\"Politics\", \"contentAdvisoryRating\":\"Clean\", \"artworkUrl600\":\"https://is1-ssl.mzstatic.com/image/thumb/Podcasts114/v4/23/94/ea/2394ea5e-77d8-1527-e331-31f9a9fe9462/mza_18020857396163614866.jpg/600x600bb.jpg\",
+        \"genreIds\":[\"1527\", \"26\", \"1489\", \"1530\"], \"genres\":[\"Politics\",
+        \"Podcasts\", \"News\", \"News Commentary\"]}]\n}\n\n\n"
+    headers:
+      Cache-Control:
+      - max-age=85931
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '709'
+      Content-Type:
+      - text/javascript; charset=utf-8
+      Date:
+      - Fri, 03 Jan 2025 15:41:20 GMT
+      Server:
+      - daiquiri/5
+      Vary:
+      - Accept-Encoding
+      X-Apple-Partner:
+      - origin.0
+      X-Cache:
+      - TCP_MISS from a2-23-7-23.deploy.akamaitechnologies.com (AkamaiGHost/11.7.2.1-35a4fcef889a1f053c9fa641f2ccd99a)
+        (-)
+      X-Cache-Remote:
+      - TCP_MISS from a23-213-160-209.deploy.akamaitechnologies.com (AkamaiGHost/11.7.2.1-35a4fcef889a1f053c9fa641f2ccd99a)
+        (-)
+      X-True-Cache-Key:
+      - /L/itunes.apple.com/lookup vcd=2897 ci2=id=1287979850&media=podcast///
+      apple-originating-system:
+      - MZStoreServices
+      apple-seq:
+      - '0.0'
+      apple-timing-app:
+      - 12 ms
+      apple-tk:
+      - 'false'
+      b3:
+      - 5925d9c6eea24dea928d90c0c7383b17-7c94aeb22a289eb0
+      content-disposition:
+      - attachment; filename=1.txt
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains
+      x-apple-application-instance:
+      - '6502648'
+      x-apple-application-site:
+      - MR22
+      x-apple-jingle-correlation-key:
+      - LES5TRXOUJG6VEUNSDAMOOB3C4
+      x-apple-orig-url:
+      - https://itunes.apple.com/lookup?id=1287979850&media=podcast
+      x-apple-request-uuid:
+      - 5925d9c6-eea2-4dea-928d-90c0c7383b17
+      x-apple-translated-wo-url:
+      - /WebObjects/MZStoreServices.woa/ws/wsLookup?id=1287979850&media=podcast&urlDesc=
+      x-b3-spanid:
+      - 7c94aeb22a289eb0
+      x-b3-traceid:
+      - 5925d9c6eea24dea928d90c0c7383b17
+      x-content-type-options:
+      - nosniff
+      x-daiquiri-instance:
+      - daiquiri:12282004:mr47p00it-qujn04120301:7987:24RELEASE242:daiquiri-amp-store-l7shared-ext-001-mr
+      x-responding-instance:
+      - 'MZStoreServices:6502648:::'
+      x-webobjects-loadaverage:
+      - '0'
+    status:
+      code: 200
+      message: OK
+version: 1

@@ -4,16 +4,14 @@ import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterable
+from typing import Any, Iterable
 
 import feedparser
 import pytest
+from responses import RequestsMock
 
 from podcast_archiver.models.episode import Episode
 from podcast_archiver.models.misc import Link
-
-if TYPE_CHECKING:
-    from responses import RequestsMock
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -25,6 +23,12 @@ FEED_CONTENT = (FIXTURES_DIR / "feed_lautsprecher.xml").read_text()
 FEED_CONTENT_EMPTY = (FIXTURES_DIR / "feed_lautsprecher_empty.xml").read_text()
 
 FEED_OBJ = feedparser.parse(FEED_CONTENT)
+
+
+@pytest.fixture(scope="function")
+def responses() -> Iterable[RequestsMock]:
+    with RequestsMock() as rsps:
+        yield rsps
 
 
 @pytest.fixture

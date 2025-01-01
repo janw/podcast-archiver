@@ -11,7 +11,7 @@ from pydantic import ValidationError
 from requests import HTTPError
 from slugify import slugify as _slugify
 
-from podcast_archiver.exceptions import NotModified
+from podcast_archiver.exceptions import NotModified, NotSupported
 from podcast_archiver.logging import logger, rprint
 
 if TYPE_CHECKING:
@@ -150,11 +150,17 @@ def handle_feed_request(url: str) -> Generator[None, Any, None]:
             printerr(f"Failed to retrieve feed {url}: {exc}")
             return
 
-        printerr(f"Received status code {response.status_code} from {url}")
+        printerr(f"Received status code {response.status_code} for {exc.response.url}")
+        if exc.response.url != url:
+            rprint(f"Was redirect from {url}", style="errorhint")
 
     except ValidationError as exc:
         logger.debug("Feed validation failed for %s", url, exc_info=exc)
         printerr(f"Received invalid feed from {url}")
+
+    except NotSupported as exc:
+        logger.debug("Might not be a feed: %s", url, exc_info=exc)
+        rprint(f"[error]URL {url} is not supported, might not be a feed.[/]")
 
     except NotModified as exc:
         logger.debug("Skipping retrieval for %s", exc.info)
