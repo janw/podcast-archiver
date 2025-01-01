@@ -68,6 +68,14 @@ Feeds can also be "fetched" from a local file:
 podcast-archiver -f file:/Users/janw/downloaded_feed.xml
 ```
 
+To find out if you have to the right feed, you may want to use the `--dry-run` option to output the discovered feed information and found episodes. It will prevent all downloads.
+
+```sh
+podcast-archiver -f https://feeds.feedburner.com/TheAnthropoceneReviewed --dry-run
+```
+
+![`podcast-archiver -f https://feeds.feedburner.com/TheAnthropoceneReviewed --dry-run`](.assets/podcast-archiver-dry-run.svg)
+
 ### Using a config file
 
 Podcast Archiver can be configured using a YAML config file as well. This way you can easily add and remove feeds to the list and let the archiver fetch the newest episodes, for example using a daily cronjob.
