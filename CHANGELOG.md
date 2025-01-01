@@ -1,3 +1,9 @@
+## v2.0.1 (2025-01-01)
+
+### Fix
+
+- Restore console output in non-interactive mode (#226)
+
 ## v2.0.0 (2024-12-30)
 
 ### BREAKING CHANGE
