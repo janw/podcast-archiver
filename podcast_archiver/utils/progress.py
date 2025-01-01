@@ -8,7 +8,7 @@ from rich import progress as rp
 from rich.table import Column
 
 from podcast_archiver.console import console
-from podcast_archiver.enums import DownloadResult
+from podcast_archiver.enums import RESULT_MAX_LEN
 from podcast_archiver.logging import REDIRECT_VIA_LOGGING
 
 if TYPE_CHECKING:
@@ -24,7 +24,6 @@ _Column = partial(
     highlight=False,
 )
 
-_TIME_REMAINING_WIDTH = DownloadResult.max_length()
 
 PROGRESS_COLUMNS: list[rp.ProgressColumn] = [
     rp.SpinnerColumn(
@@ -33,9 +32,9 @@ PROGRESS_COLUMNS: list[rp.ProgressColumn] = [
     rp.TimeRemainingColumn(
         compact=True,
         table_column=_Column(
-            width=_TIME_REMAINING_WIDTH,
-            min_width=_TIME_REMAINING_WIDTH,
-            max_width=_TIME_REMAINING_WIDTH,
+            width=RESULT_MAX_LEN,
+            min_width=RESULT_MAX_LEN,
+            max_width=RESULT_MAX_LEN,
             justify="center",
         ),
     ),

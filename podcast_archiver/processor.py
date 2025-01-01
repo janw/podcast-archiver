@@ -4,6 +4,8 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from threading import Event
 from typing import TYPE_CHECKING
 
+from rich.console import Group, NewLine
+
 from podcast_archiver import constants
 from podcast_archiver.config import Settings
 from podcast_archiver.database import get_database
@@ -155,7 +157,7 @@ class FeedProcessor:
             else:
                 failures += 1
 
-            rprint(episode_result, new_line_start=False)
+            rprint(Group(episode_result, NewLine()), new_line_start=False)
         return success, failures
 
     def shutdown(self) -> None:
