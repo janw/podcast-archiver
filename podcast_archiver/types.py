@@ -4,7 +4,11 @@ from concurrent.futures import Future
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol, TypeAlias
 
+from rich.console import Group
+
 if TYPE_CHECKING:
+    from rich.console import RenderableType
+
     from podcast_archiver.enums import DownloadResult, QueueCompletionType
     from podcast_archiver.models.episode import BaseEpisode
     from podcast_archiver.models.feed import Feed
@@ -16,6 +20,9 @@ class EpisodeResult:
     result: DownloadResult
     is_eager: bool = False
 
+    def __rich__(self) -> RenderableType:
+        return Group(self.result, self.episode)
+
 
 @dataclass(slots=True, frozen=True)
 class ProcessingResult:
@@ -23,6 +30,9 @@ class ProcessingResult:
     tombstone: QueueCompletionType
     success: int = 0
     failures: int = 0
+
+    def __rich__(self) -> RenderableType:
+        return self.tombstone
 
 
 class ProgressCallback(Protocol):

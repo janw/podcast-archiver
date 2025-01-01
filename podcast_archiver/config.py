@@ -162,7 +162,8 @@ class Settings(BaseModel):
             if getattr(self, name, field.default) == field.default:
                 continue
             rprint(
-                f":warning: Option '{opt_name}' / setting '{name}' is deprecated and {constants.DEPRECATION_MESSAGE}."
+                f"Option '{opt_name}' / setting '{name}' is deprecated and {constants.DEPRECATION_MESSAGE}.",
+                style="warning",
             )
         return self
 

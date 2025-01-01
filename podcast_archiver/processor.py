@@ -4,9 +4,6 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from threading import Event
 from typing import TYPE_CHECKING
 
-from rich.console import Group
-from rich.text import Text
-
 from podcast_archiver import constants
 from podcast_archiver.config import Settings
 from podcast_archiver.database import get_database
@@ -56,7 +53,7 @@ class FeedProcessor:
             return ProcessingResult(feed=None, tombstone=QueueCompletionType.FAILED)
 
         result = self.process_feed(feed=feed)
-        rprint(result.tombstone, style="completed")
+        rprint(result, end="\n\n")
         return result
 
     def load_feed(self, url: str, known_feeds: dict[str, FeedInfo]) -> Feed | None:
@@ -104,7 +101,7 @@ class FeedProcessor:
         return True
 
     def process_feed(self, feed: Feed) -> ProcessingResult:
-        rprint(f"\n[bold bright_magenta]Archiving: {feed}[/]\n")
+        rprint(f"→ Processing: {feed}", style="title")
         tombstone = QueueCompletionType.COMPLETED
         results: EpisodeResultsList = []
         with PrettyPrintEpisodeRange() as pretty_range:
@@ -153,14 +150,12 @@ class FeedProcessor:
                 continue
 
             if episode_result.result in DownloadResult.successful():
-                prefix = Text(f"✔ {episode_result.result} ", style="success", end=" ")
                 success += 1
                 self.database.add(episode_result.episode)
             else:
-                prefix = Text(f"✖ {episode_result.result} ", style="error", end=" ")
                 failures += 1
 
-            rprint(Group(prefix, episode_result.episode))
+            rprint(episode_result, new_line_start=False)
         return success, failures
 
     def shutdown(self) -> None:

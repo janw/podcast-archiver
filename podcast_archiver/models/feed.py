@@ -108,8 +108,8 @@ class FeedPage(BaseModel):
         obj = cls.model_validate(feedobj)
         if obj.bozo and (exc := obj.bozo_exception) and isinstance(exc, SAXParseException):
             url = source if isinstance(source, str) and not alt_url else alt_url
-            rprint(f"[orange1]Feed content is not well-formed for {url}[/]")
-            rprint(f"[orange1 dim]Continuing processing but here be dragons ({exc.getMessage()})[/]")
+            rprint(f"Feed content is not well-formed for {url}", style="warning")
+            rprint(f"Continuing processing but here be dragons ({exc.getMessage()})", style="warning_hint")
         return obj
 
     @classmethod
