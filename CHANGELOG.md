@@ -1,3 +1,9 @@
+## v2.0.2 (2025-01-01)
+
+### Fix
+
+- Restore printing archived during progress (#227)
+
 ## v2.0.1 (2025-01-01)
 
 ### Fix
