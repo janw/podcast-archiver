@@ -21,7 +21,6 @@ _Column = partial(
     Column,
     no_wrap=True,
     overflow="crop",
-    highlight=False,
 )
 
 
