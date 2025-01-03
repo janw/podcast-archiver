@@ -3,6 +3,7 @@
 TMPDIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'tmpdir')
 
 export FORCE_COLOR="1"
+export TERM="xterm-256color"
 export COLUMNS="120"
 export CREATED_FILES="created.txt"
 export DELETED_FILES="deleted.txt"
@@ -17,4 +18,4 @@ export PODCAST_ARCHIVER_IGNORE_DATABASE=true
 # shellcheck disable=SC2064
 trap "rm -rf '$TMPDIR'" EXIT
 
-exec poetry run rich-codex --terminal-width $COLUMNS --notrim
+poetry run rich-codex --terminal-width $COLUMNS --notrim --terminal-theme DIMMED_MONOKAI

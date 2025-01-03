@@ -1,0 +1,101 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      user-agent:
+      - podcast-archiver/v2.1.0 (https://github.com/janw/podcast-archiver)
+    method: GET
+    uri: https://itunes.apple.com/lookup?id=917918570&media=podcast
+  response:
+    body:
+      string: "\n\n\n{\n \"resultCount\":1,\n \"results\": [\n{\"wrapperType\":\"track\",
+        \"kind\":\"podcast\", \"artistId\":364380278, \"collectionId\":917918570,
+        \"trackId\":917918570, \"artistName\":\"Serial Productions & The New York
+        Times\", \"collectionName\":\"Serial\", \"trackName\":\"Serial\", \"collectionCensoredName\":\"Serial\",
+        \"trackCensoredName\":\"Serial\", \"artistViewUrl\":\"https://podcasts.apple.com/us/artist/wbez/364380278?uo=4\",
+        \"collectionViewUrl\":\"https://podcasts.apple.com/us/podcast/serial/id917918570?uo=4\",
+        \"feedUrl\":\"https://feeds.simplecast.com/PpzWFGhg\", \"trackViewUrl\":\"https://podcasts.apple.com/us/podcast/serial/id917918570?uo=4\",
+        \"artworkUrl30\":\"https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/9a/fb/87/9afb8760-0e05-2b3e-24a2-7e14cce74570/mza_14816055607064169808.jpg/30x30bb.jpg\",
+        \"artworkUrl60\":\"https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/9a/fb/87/9afb8760-0e05-2b3e-24a2-7e14cce74570/mza_14816055607064169808.jpg/60x60bb.jpg\",
+        \"artworkUrl100\":\"https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/9a/fb/87/9afb8760-0e05-2b3e-24a2-7e14cce74570/mza_14816055607064169808.jpg/100x100bb.jpg\",
+        \"collectionPrice\":0.00, \"trackPrice\":0.00, \"collectionHdPrice\":0, \"releaseDate\":\"2025-01-02T11:15:00Z\",
+        \"collectionExplicitness\":\"notExplicit\", \"trackExplicitness\":\"cleaned\",
+        \"trackCount\":104, \"trackTimeMillis\":2076, \"country\":\"USA\", \"currency\":\"USD\",
+        \"primaryGenreName\":\"News\", \"contentAdvisoryRating\":\"Clean\", \"artworkUrl600\":\"https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/9a/fb/87/9afb8760-0e05-2b3e-24a2-7e14cce74570/mza_14816055607064169808.jpg/600x600bb.jpg\",
+        \"genreIds\":[\"1489\", \"26\", \"1488\"], \"genres\":[\"News\", \"Podcasts\",
+        \"True Crime\"]}]\n}\n\n\n"
+    headers:
+      Cache-Control:
+      - max-age=84422
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '620'
+      Content-Type:
+      - text/javascript; charset=utf-8
+      Date:
+      - Fri, 03 Jan 2025 15:34:11 GMT
+      Server:
+      - daiquiri/5
+      Vary:
+      - Accept-Encoding
+      X-Apple-Partner:
+      - origin.0
+      X-Cache:
+      - TCP_MISS from a2-20-179-162.deploy.akamaitechnologies.com (AkamaiGHost/11.7.2.1-35a4fcef889a1f053c9fa641f2ccd99a)
+        (-)
+      X-Cache-Remote:
+      - TCP_HIT from a23-213-160-216.deploy.akamaitechnologies.com (AkamaiGHost/11.7.2.1-35a4fcef889a1f053c9fa641f2ccd99a)
+        (-)
+      X-True-Cache-Key:
+      - /L/itunes.apple.com/lookup vcd=2897 ci2=id=917918570&media=podcast///
+      apple-originating-system:
+      - MZStoreServices
+      apple-seq:
+      - '0.0'
+      apple-timing-app:
+      - 11 ms
+      apple-tk:
+      - 'false'
+      b3:
+      - e3f750daf4a0d812bd7e1435343c9fe7-83482e986e2408a1
+      content-disposition:
+      - attachment; filename=1.txt
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains
+      x-apple-application-instance:
+      - '6002207'
+      x-apple-application-site:
+      - ST11
+      x-apple-jingle-correlation-key:
+      - 4P3VBWXUUDMBFPL6CQ2TIPE744
+      x-apple-orig-url:
+      - https://itunes.apple.com/lookup?id=917918570&media=podcast
+      x-apple-request-uuid:
+      - e3f750da-f4a0-d812-bd7e-1435343c9fe7
+      x-apple-translated-wo-url:
+      - /WebObjects/MZStoreServices.woa/ws/wsLookup?id=917918570&media=podcast&urlDesc=
+      x-b3-spanid:
+      - 83482e986e2408a1
+      x-b3-traceid:
+      - e3f750daf4a0d812bd7e1435343c9fe7
+      x-content-type-options:
+      - nosniff
+      x-daiquiri-instance:
+      - daiquiri:42282002:st53p00it-qujn13050102:7987:24RELEASE242:daiquiri-amp-store-l7shared-ext-001-st
+      x-responding-instance:
+      - 'MZStoreServices:6002207:::'
+      x-webobjects-loadaverage:
+      - '0'
+    status:
+      code: 200
+      message: OK
+version: 1

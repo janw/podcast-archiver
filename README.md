@@ -62,11 +62,40 @@ podcast-archiver --dir ~/Podcasts --feed https://feeds.feedburner.com/TheAnthrop
 
 Podcast Archiver expects values to its `--feed/-f` argument to be URLs pointing to an [RSS feed of a podcast](https://archive.is/jYk3E).
 
+If you are not certain if the link you have for a show that you like, you can try and pass it to Podcast Archiver directly. The archiver supports a variety of links from popular podcast players and platforms, including [Apple Podcasts](https://podcasts.apple.com/us/browse), [Overcast.fm](https://overcast.fm/), [Castro](https://castro.fm/), and [Pocket Casts](https://pocketcasts.com/):
+
+```sh
+# Archive from Apple Podcasts URL
+podcast-archiver -f https://podcasts.apple.com/us/podcast/black-girl-gone-a-true-crime-podcast/id1556267741
+# ... or just the ID
+podcast-archiver -f 1556267741
+
+# From Overcast podcast URL
+podcast-archiver -f https://overcast.fm/itunes394775318/99-invisible
+# ... or episode sharing links (will resolve to all episodes)
+podcast-archiver -f https://overcast.fm/+AAyIOzrEy1g
+```
+
+#### Supported services
+
+The table below lists most of the supported services and URLs. If you think that some service you like is missing here, [please let me know](https://github.com/janw/podcast-archiver/issues/new)!
+
+| Service                               | Example URL                                                                            |
+| ------------------------------------- | -------------------------------------------------------------------------------------- |
+| Apple Podcasts                        | <https://podcasts.apple.com/us/podcast/the-anthropocene-reviewed/id1342003491>         |
+| [Overcast](https://overcast.fm/)      | <https://overcast.fm/itunes394775318/99-invisible>, <https://overcast.fm/+AAyIOzrEy1g> |
+| [Castro](https://castro.fm/)          | <https://castro.fm/podcast/f996ae94-70a2-4d9c-afbc-c70b5bacd120>                       |
+| [SoundCloud](https://soundcloud.com/) | <https://soundcloud.com/chapo-trap-house>                                              |
+
+#### Local files
+
 Feeds can also be "fetched" from a local file:
 
 ```bash
 podcast-archiver -f file:/Users/janw/downloaded_feed.xml
 ```
+
+#### Testing without downloading
 
 To find out if you have to the right feed, you may want to use the `--dry-run` option to output the discovered feed information and found episodes. It will prevent all downloads.
 

@@ -62,5 +62,6 @@ repos:
         language: system
         require_serial: true
         pass_filenames: false
+        always_run: true
         files: ^podcast_archiver/config\.py$
         types: [python]

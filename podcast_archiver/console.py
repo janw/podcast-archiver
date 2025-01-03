@@ -5,7 +5,8 @@ from rich.theme import Theme
 
 _theme = Theme(
     {
-        "error": "bold dark_red",
+        "error": "dark_red bold",
+        "errorhint": "dark_red dim",
         "warning": "orange1 bold",
         "warning_hint": "orange1 dim",
         "completed": "dark_cyan bold",

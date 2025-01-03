@@ -8,7 +8,7 @@ import pytest
 from pydantic import ValidationError
 from responses import RequestsMock
 
-from podcast_archiver.exceptions import NotModified
+from podcast_archiver.exceptions import NotModified, NotSupported
 from podcast_archiver.models.episode import Episode
 from podcast_archiver.models.feed import Feed, FeedInfo, FeedPage
 from podcast_archiver.utils import MIMETYPE_EXTENSION_MAPPING
@@ -192,6 +192,18 @@ def test_invalid_link_length() -> None:
 
 class FeedConstructor(Protocol):
     def __call__(self, url: str, *, known_info: FeedInfo | None = None) -> object: ...
+
+
+@pytest.mark.vcr
+def test_feed_from_webpage_with_alternate() -> None:
+    page = FeedPage.from_url("https://der-lautsprecher.de/")
+    assert page.feed.title == "Der Lautsprecher"
+
+
+@pytest.mark.vcr
+def test_feed_from_webpage_not_supported() -> None:
+    with pytest.raises(NotSupported):
+        FeedPage.from_url("https://example.com/")
 
 
 @pytest.mark.parametrize("constructor", [FeedPage.from_url, Feed])
