@@ -6,6 +6,7 @@ from contextlib import contextmanager
 from functools import partial
 from string import Formatter
 from typing import IO, TYPE_CHECKING, Any, Generator, Iterable, Iterator, Literal, TypedDict, overload
+from urllib.parse import urlparse
 
 from pydantic import ValidationError
 from requests import HTTPError
@@ -177,3 +178,11 @@ def get_field_titles() -> str:
 
     all_field_titles = Episode.field_titles() + FeedInfo.field_titles()
     return "'" + ", '".join(all_field_titles) + "'"
+
+
+def sanitize_url(url: str) -> str:
+    parsed_url = urlparse(url)
+    sanitized_netloc = parsed_url.hostname or ""
+    if parsed_url.port:
+        sanitized_netloc += f":{parsed_url.port}"
+    return parsed_url._replace(netloc=sanitized_netloc, query="").geturl()

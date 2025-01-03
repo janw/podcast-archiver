@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, Any
 from podcast_archiver.config import Settings
 from podcast_archiver.logging import logger, rprint
 from podcast_archiver.processor import FeedProcessor
-from podcast_archiver.utils.progress import progress_manager
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -39,7 +38,6 @@ class PodcastArchiver:
             logger.debug("Signal %s received", signum)
             rprint("✘ Terminating", style="error")
             self.processor.shutdown()
-            progress_manager.stop()
             ctx.close()
             sys.exit(0)
 

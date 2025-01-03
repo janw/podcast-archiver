@@ -117,7 +117,7 @@ class FeedPage(BaseModel):
             return obj
 
         if (fallback_url := obj.feed.alternate_rss) and not retry:
-            logger.info("Attempting to fetch alternate feed at %s", fallback_url)
+            logger.info("Attempting to load alternate feed from '%s'", fallback_url)
             return cls.from_url(fallback_url, retry=True)
 
         url = source if isinstance(source, str) and not alt_url else alt_url

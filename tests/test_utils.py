@@ -1,6 +1,6 @@
 import pytest
 
-from podcast_archiver.utils import truncate
+from podcast_archiver.utils import sanitize_url, truncate
 
 
 @pytest.mark.parametrize(
@@ -13,3 +13,15 @@ from podcast_archiver.utils import truncate
 )
 def test_truncate(input_str: str, expected_output: str) -> None:
     assert truncate(input_str, 20) == expected_output
+
+
+@pytest.mark.parametrize(
+    "url, expected_sanitized",
+    [
+        ("https://example.com", "https://example.com"),
+        ("https://foo:bar@example.com/baz", "https://example.com/baz"),
+        ("https://foo@example.com/baz?api-key=1234", "https://example.com/baz"),
+    ],
+)
+def test_sanitize_url(url: str, expected_sanitized: str) -> None:
+    assert sanitize_url(url) == expected_sanitized

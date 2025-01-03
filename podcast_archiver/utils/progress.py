@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from functools import partial
 from threading import Event, Lock, Thread
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Any, Iterable
 
 from rich import progress as rp
 from rich.table import Column
@@ -133,12 +133,18 @@ class ProgressManager:
             refresh_per_second=8,
         )
 
+    def __enter__(self) -> ProgressManager:
+        self.start()
+        return self
+
+    def __exit__(self, *args: Any) -> None:
+        self.stop()
+
     def track(self, iterable: Iterable[bytes], total: int, episode: BaseEpisode) -> Iterable[bytes]:
         if REDIRECT_VIA_LOGGING:
             yield from iterable
             return
 
-        self.start()
         task_id = self._progress.add_task("downloading", total=total, episode=episode)
         try:
             for it in iterable:
@@ -149,6 +155,8 @@ class ProgressManager:
             self._progress.refresh()
 
     def start(self) -> None:
+        if REDIRECT_VIA_LOGGING:
+            return
         with self._lock:
             if self._started:
                 return
