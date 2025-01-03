@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "podcast-archiver"
-version = "2.2.0"
+version = "2.2.1"
 description = "Archive all episodes from your favorite podcasts"
 # cspell: disable
 authors = ["Jan Willhaus <mail@janwillhaus.de>"]
