@@ -1,3 +1,9 @@
+## v2.2.0 (2025-01-03)
+
+### Feat
+
+- Add auto-discovery from popular services (#225)
+
 ## v2.1.0 (2025-01-01)
 
 ### Feat
