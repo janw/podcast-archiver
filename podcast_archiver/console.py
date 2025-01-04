@@ -8,7 +8,7 @@ _theme = Theme(
         "error": "dark_red bold",
         "errorhint": "dark_red dim",
         "warning": "orange1 bold",
-        "warning_hint": "orange1 dim",
+        "warninghint": "orange1 dim",
         "completed": "dark_cyan bold",
         "success": "dark_cyan",
         "present": "dark_cyan",

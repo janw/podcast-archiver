@@ -8,6 +8,7 @@ from rich.console import Group, NewLine
 
 from podcast_archiver import constants
 from podcast_archiver.config import Settings
+from podcast_archiver.console import console
 from podcast_archiver.database import get_database
 from podcast_archiver.download import DownloadJob
 from podcast_archiver.enums import DownloadResult, QueueCompletionType
@@ -20,8 +21,9 @@ from podcast_archiver.types import (
     ProcessingResult,
 )
 from podcast_archiver.urls import registry
-from podcast_archiver.utils import FilenameFormatter, handle_feed_request
+from podcast_archiver.utils import FilenameFormatter, handle_feed_request, sanitize_url
 from podcast_archiver.utils.pretty_printing import PrettyPrintEpisodeRange
+from podcast_archiver.utils.progress import progress_manager
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -52,10 +54,17 @@ class FeedProcessor:
         self.known_feeds = {}
 
     def process(self, url: str, dry_run: bool = False) -> ProcessingResult:
-        if not (feed := self.load_feed(url)):
+        msg = f"Loading feed from '{sanitize_url(url)}' ..."
+        logger.info(msg)
+        with console.status(msg):
+            feed = self.load_feed(url)
+        if not feed:
             return ProcessingResult(feed=None, tombstone=QueueCompletionType.FAILED)
 
-        result = self.process_feed(feed=feed, dry_run=dry_run)
+        action = "Dry-run" if dry_run else "Processing"
+        rprint(f"→ {action}: {feed.info.title}", style="title", markup=False, highlight=False)
+        with progress_manager:
+            result = self.process_feed(feed=feed, dry_run=dry_run)
         rprint(result, end="\n\n")
         return result
 
@@ -107,8 +116,6 @@ class FeedProcessor:
         return True
 
     def process_feed(self, feed: Feed, dry_run: bool) -> ProcessingResult:
-        action = "Dry-run" if dry_run else "Processing"
-        rprint(f"→ {action}: {feed}", style="title")
         tombstone = QueueCompletionType.COMPLETED
         results: EpisodeResultsList = []
         with PrettyPrintEpisodeRange() as pretty_range:
@@ -120,7 +127,7 @@ class FeedProcessor:
                 exists = isinstance(enqueued, EpisodeResult) and enqueued.result == DownloadResult.ALREADY_EXISTS
                 pretty_range.update(exists, episode)
 
-                if not dry_run:
+                if not dry_run and not exists:
                     results.append(enqueued)
 
                 if (max_count := self.settings.maximum_episode_count) and idx == max_count:

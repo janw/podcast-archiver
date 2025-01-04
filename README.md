@@ -103,8 +103,6 @@ To find out if you have to the right feed, you may want to use the `--dry-run` o
 podcast-archiver -f https://feeds.feedburner.com/TheAnthropoceneReviewed --dry-run
 ```
 
-![`podcast-archiver -f https://feeds.feedburner.com/TheAnthropoceneReviewed --dry-run`](.assets/podcast-archiver-dry-run.svg)
-
 ### Using a config file
 
 Podcast Archiver can be configured using a YAML config file as well. This way you can easily add and remove feeds to the list and let the archiver fetch the newest episodes, for example using a daily cronjob.
