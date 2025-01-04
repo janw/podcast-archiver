@@ -1,3 +1,9 @@
+## v2.3.0 (2025-01-04)
+
+### Feat
+
+- Show spinner/logline during initial feed retrieval (#230)
+
 ## v2.2.1 (2025-01-03)
 
 ### Fix
