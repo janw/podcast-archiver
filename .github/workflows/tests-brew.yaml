@@ -23,7 +23,7 @@ jobs:
 
       - name: Install poetry + poetry-brew
         run: |
-          pipx install 'poetry>=1.7.0'
+          pipx install 'poetry>=2.0.0'
           pipx inject poetry poetry-homebrew-formula
 
       - name: Configure cache

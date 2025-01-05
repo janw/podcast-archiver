@@ -65,7 +65,7 @@ class PrettyPrintEpisodeRange:
     _last_populated: _ValPair
     pairs: list[_ValPair]
 
-    __slots__ = ("_present", "_missing", "_last_populated", "pairs")
+    __slots__ = ("_last_populated", "_missing", "_present", "pairs")
 
     def __init__(self) -> None:
         self._present = _ValPair(prefix=DownloadResult.ALREADY_EXISTS)

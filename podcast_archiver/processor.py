@@ -42,7 +42,7 @@ class FeedProcessor:
 
     known_feeds: dict[str, FeedInfo]
 
-    __slots__ = ("settings", "database", "filename_formatter", "pool_executor", "stop_event", "known_feeds")
+    __slots__ = ("database", "filename_formatter", "known_feeds", "pool_executor", "settings", "stop_event")
 
     def __init__(self, settings: Settings | None = None, database: BaseDatabase | None = None) -> None:
         self.settings = settings or Settings()

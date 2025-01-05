@@ -65,7 +65,7 @@ class Database(BaseDatabase):
     lock: Lock
     conn: sqlite3.Connection
 
-    __slots__ = ("lock", "conn")
+    __slots__ = ("conn", "lock")
 
     def __init__(self, filename: str, ignore_existing: bool) -> None:
         super().__init__(filename=filename, ignore_existing=ignore_existing)

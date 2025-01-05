@@ -1,14 +1,22 @@
-[tool.poetry]
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
 name = "podcast-archiver"
 version = "2.3.0"
+requires-python = ">=3.10,<4"
 description = "Archive all episodes from your favorite podcasts"
-# cspell: disable
-authors = ["Jan Willhaus <mail@janwillhaus.de>"]
+authors = [
+  {name = "Jan Willhaus", email = "mail@janwillhaus.de"},
+]
+maintainers = [
+  {name = "Jan Willhaus", email = "mail@janwillhaus.de"},
+]
 license = "MIT"
 readme = "README.md"
-packages = [{ include = "podcast_archiver" }]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Intended Audience :: Information Technology",
     "Operating System :: MacOS",
@@ -19,34 +27,36 @@ classifiers = [
     "Topic :: System :: Archiving",
     "Topic :: Utilities",
 ]
-repository = "https://github.com/janw/podcast-archiver"
 
-[tool.poetry.urls]
-"Bug Reports" = "https://github.com/janw/podcast-archiver/issues"
+dependencies = [
+    "feedparser (>=6.0,<7)",
+    "requests (>=2.29,<3)",
+    "pydantic (>=2.5,<3)",
+    "pyyaml (>=6.0,<7)",
+    "rich-click (>=1.8,<2)",
+    "python-slugify (>=8.0,<9)",
+]
 
-[tool.poetry.scripts]
+
+[project.urls]
+Repository = "https://github.com/janw/podcast-archiver.git"
+Issues = "https://github.com/janw/podcast-archiver/issues"
+Changelog = "https://github.com/janw/podcast-archiver/blob/main/CHANGELOG.md"
+
+[project.scripts]
 podcast-archiver = 'podcast_archiver.cli:main'
 
-[tool.poetry.dependencies]
-python = "^3.10"
-feedparser = "^6.0.10"
-requests = "^2.29.0"
-pydantic = "^2.5.3"
-platformdirs = ">=3.4,<5.0"
-pyyaml = "^6.0"
-rich-click = "^1.8.0"
-python-slugify = "^8.0.1"
-tqdm = "^4.66.4"
+[tool.poetry]
+packages = [{ include = "podcast_archiver" }]
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8"
 ipdb = "*"
-ruff = "0.6.8"
+ruff = "0.8.6"
 pre-commit = ">=3,<5"
 commitizen = ">=3,<5"
 rich-codex = "^1"
 mypy = "^1"
-types-tqdm = "^4.66.0.20240417"
 
 [tool.poetry.group.tests.dependencies]
 pytest = "^8"
@@ -166,7 +176,3 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = ["podcast_archiver.compat.*"]
 implicit_reexport = true
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"

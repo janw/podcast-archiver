@@ -3,7 +3,7 @@ FROM python:3.12-slim as venv
 LABEL maintainer="Jan Willhaus <mail@janwillhaus.de>"
 
 ENV PYTHONUNBUFFERED=1
-ENV POETRY_VERSION=1.8.2
+ENV POETRY_VERSION=2.0.0
 
 WORKDIR /src
 COPY pyproject.toml poetry.lock ./

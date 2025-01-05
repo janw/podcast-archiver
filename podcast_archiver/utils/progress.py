@@ -119,7 +119,7 @@ class ProgressManager:
     _refresher: _ProgressRefreshThread
     _started: bool
 
-    __slots__ = ("_progress", "_lock", "_refresher", "_started")
+    __slots__ = ("_lock", "_progress", "_refresher", "_started")
 
     def __init__(self) -> None:
         self._started = False
